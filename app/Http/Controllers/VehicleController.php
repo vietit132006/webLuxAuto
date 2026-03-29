@@ -28,4 +28,11 @@ class VehicleController extends Controller
             'search' => $search,
         ]);
     }
+
+    public function show(Vehicle $vehicle): View
+    {
+        return view('vehicles.show', [
+            'vehicle' => $vehicle,
+        ]);
+    }
 }
