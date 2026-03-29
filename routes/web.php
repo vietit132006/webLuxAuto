@@ -13,5 +13,6 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/', HomeController::class)->name('home');
     Route::get('/xe', [VehicleController::class, 'index'])->name('vehicles.index');
+    Route::get('/xe/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 });
