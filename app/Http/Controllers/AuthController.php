@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
-use Illuminate\Foundation\Auth\User as AuthUser;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+
     // LOGIN
     public function showLogin()
     {
@@ -19,8 +19,9 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $data = $request->only('email', 'password');
+
         if (Auth::attempt($data)) {
-            return redirect()->route('home');
+            return redirect()->intended(route('vehicles.index'));
         }
 
         return back()->with('error', 'Sai tài khoản hoặc mật khẩu');
@@ -48,7 +49,7 @@ class AuthController extends Controller
             'phone' => 'required',
         ]);
 
-        AuthUser::create([
+        User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),

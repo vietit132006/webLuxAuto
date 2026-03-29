@@ -1,9 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Đăng nhập — {{ config('app.name', 'Laravel') }}</title>
+
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @endif
@@ -28,7 +30,13 @@
 <body>
     <div class="card">
         <h1>Đăng nhập</h1>
-
+        <div style="padding:10px; margin-bottom:10px; background:#dcfce7; color:#166534; border-radius:6px; animation: fade 0.5s;">
+@if(session('success'))
+    <div style="padding: 10px; margin-bottom: 10px; background: #dcfce7; color: #166534; border-radius: 6px;">
+        {{ session('success') }}
+        </div>
+    </div>
+@endif
         @if (session('error'))
             <p class="error" role="alert">{{ session('error') }}</p>
         @endif
