@@ -1,0 +1,25 @@
+<?php
+
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\VehicleController;
+use Illuminate\Support\Facades\Route;
+
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login']);
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/', HomeController::class)->name('home');
+    Route::get('/xe', [VehicleController::class, 'index'])->name('vehicles.index');
+    Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+});
+// Thêm sửa
+
+Route::get('/xe/create', [VehicleController::class, 'create'])->name('vehicles.create');
+Route::post('/xe/store', [VehicleController::class, 'store'])->name('vehicles.store');
+
+
+Route::get('/xe/edit/{id}', [VehicleController::class, 'edit'])->name('vehicles.edit');
+Route::post('/xe/update/{id}', [VehicleController::class, 'update'])->name('vehicles.update');
