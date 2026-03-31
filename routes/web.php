@@ -23,3 +23,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 });
+
+// Thêm sửa
+Route::get('/xe/create', [VehicleController::class, 'create'])->name('vehicles.create');
+Route::post('/xe/store', [VehicleController::class, 'store'])->name('vehicles.store');
+
+Route::get('/xe/edit/{id}', [VehicleController::class, 'edit'])->name('vehicles.edit');
+Route::post('/xe/update/{id}', [VehicleController::class, 'update'])->name('vehicles.update');

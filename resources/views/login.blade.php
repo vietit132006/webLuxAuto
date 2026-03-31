@@ -30,13 +30,11 @@
 <body>
     <div class="card">
         <h1>Đăng nhập</h1>
-        <div style="padding:10px; margin-bottom:10px; background:#dcfce7; color:#166534; border-radius:6px; animation: fade 0.5s;">
-@if(session('success'))
-    <div style="padding: 10px; margin-bottom: 10px; background: #dcfce7; color: #166534; border-radius: 6px;">
-        {{ session('success') }}
-        </div>
-    </div>
-@endif
+        @if(session('success'))
+            <div style="padding: 10px; margin-bottom: 10px; background: #dcfce7; color: #166534; border-radius: 6px;">
+                {{ session('success') }}
+            </div>
+        @endif
         @if (session('error'))
             <p class="error" role="alert">{{ session('error') }}</p>
         @endif

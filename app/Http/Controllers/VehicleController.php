@@ -29,10 +29,35 @@ class VehicleController extends Controller
         ]);
     }
 
+    public function create()
+    {
+        return view('vehicles.create');
+    }
+
+    public function store(Request $request)
+    {
+        Vehicle::create($request->all());
+        return redirect()->route('vehicles.index');
+    }
+
     public function show(Vehicle $vehicle): View
     {
         return view('vehicles.show', [
             'vehicle' => $vehicle,
         ]);
+    }
+
+    public function edit($id)
+    {
+        $vehicle = Vehicle::findOrFail($id);
+        return view('vehicles.edit', compact('vehicle'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $vehicle = Vehicle::findOrFail($id);
+        $vehicle->update($request->all());
+
+        return redirect()->route('vehicles.index');
     }
 }
