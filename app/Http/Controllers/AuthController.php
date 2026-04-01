@@ -18,19 +18,27 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $data = $request->only('email', 'password');
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
 
-        if (Auth::attempt($data)) {
-            return redirect()->intended(route('vehicles.index'));
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            $request->session()->regenerate();
+
+            return redirect()->intended(route('home'));
         }
 
-        return back()->with('error', 'Sai tài khoản hoặc mật khẩu');
-    }
+        return back()->withErrors(['email' => 'Sai email hoặc mật khẩu.'])->onlyInput('email');
+    }   
 
     // LOGOUT
-    public function logout()
+    public function logout(Request $request)
     {
         Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
         return redirect()->route('login');
     }
 
@@ -49,15 +57,16 @@ class AuthController extends Controller
             'phone' => 'required',
         ]);
 
+
         User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($request->password), // ✅ ĐÚNG
             'phone' => $request->phone,
             'role' => 'customer',
-            'status' => 1
+            'status' => true,
         ]);
 
-        return redirect('/login')->with('success', 'Đăng ký thành công!');
+        return redirect()->route('login')->with('success', 'Đăng ký thành công!');
     }
 }

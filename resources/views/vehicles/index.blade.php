@@ -91,9 +91,21 @@
         border: 1px dashed var(--border);
         border-radius: 12px;
     }
+    .flash-ok {
+        padding: 0.75rem 1rem;
+        margin-bottom: 1.25rem;
+        border-radius: 8px;
+        background: rgba(34, 197, 94, 0.12);
+        border: 1px solid rgba(34, 197, 94, 0.35);
+        color: #86efac;
+        font-size: 0.9375rem;
+    }
 </style>
 
 <div class="wrap">
+    @if (session('success'))
+        <p class="flash-ok" role="status">{{ session('success') }}</p>
+    @endif
     <h1 class="page-title">Danh sách xe</h1>
 
     <form class="search-bar" method="get" action="{{ route('vehicles.index') }}">

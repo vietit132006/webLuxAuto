@@ -149,6 +149,7 @@
                 @auth
                     <a href="{{ route('logout') }}" class="nav-cta">Đăng xuất</a>
                 @else
+                    <a href="{{ route('register') }}" class="nav-link">Đăng ký</a>
                     <a href="{{ route('login') }}" class="nav-cta">Đăng nhập</a>
                 @endauth
             </nav>

@@ -19,6 +19,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/', HomeController::class)->name('home');
 
     Route::get('/xe', [VehicleController::class, 'index'])->name('vehicles.index');
+    Route::get('/xe/{vehicle}/sua', [VehicleController::class, 'edit'])->name('vehicles.edit');
+    Route::put('/xe/{vehicle}', [VehicleController::class, 'update'])->name('vehicles.update');
+    Route::delete('/xe/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
     Route::get('/xe/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
 
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');

@@ -30,15 +30,16 @@
 <body>
     <div class="card">
         <h1>Đăng nhập</h1>
-        <div style="padding:10px; margin-bottom:10px; background:#dcfce7; color:#166534; border-radius:6px; animation: fade 0.5s;">
-@if(session('success'))
-    <div style="padding: 10px; margin-bottom: 10px; background: #dcfce7; color: #166534; border-radius: 6px;">
-        {{ session('success') }}
-        </div>
-    </div>
-@endif
+        @if (session('success'))
+            <p style="padding: 0.75rem; margin-bottom: 1rem; background: #dcfce7; color: #166534; border-radius: 6px; font-size: 0.875rem;">
+                {{ session('success') }}
+            </p>
+        @endif
         @if (session('error'))
             <p class="error" role="alert">{{ session('error') }}</p>
+        @endif
+        @if ($errors->any())
+            <p class="error" role="alert">{{ $errors->first() }}</p>
         @endif
 
         <form method="post" action="{{ route('login') }}" novalidate>
@@ -51,6 +52,10 @@
 
             <button type="submit">Đăng nhập</button>
         </form>
+        <p style="margin-top:0.75rem;text-align:center;font-size:0.875rem;color:#52525b;">
+            Chưa có tài khoản?
+            <a href="{{ route('register') }}" style="color:#2563eb;">Đăng ký</a>
+        </p>
     </div>
 </body>
 </html>

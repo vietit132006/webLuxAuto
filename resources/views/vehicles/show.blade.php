@@ -72,9 +72,42 @@
         border-color: var(--accent-dim);
         color: var(--accent);
     }
+    .vd-actions .btn-edit {
+        background: linear-gradient(135deg, var(--accent), var(--accent-dim));
+        border: none;
+        color: #0c0f14;
+        font-weight: 600;
+    }
+    .vd-actions .btn-edit:hover {
+        filter: brightness(1.06);
+        color: #0c0f14;
+    }
+    .vd-actions .btn-del {
+        border-color: #7f1d1d;
+        color: #fca5a5;
+        background: rgba(127, 29, 29, 0.2);
+        cursor: pointer;
+        font: inherit;
+    }
+    .vd-actions .btn-del:hover {
+        border-color: #f87171;
+        color: #fecaca;
+    }
+    .flash-ok {
+        padding: 0.75rem 1rem;
+        margin-bottom: 1.25rem;
+        border-radius: 8px;
+        background: rgba(34, 197, 94, 0.12);
+        border: 1px solid rgba(34, 197, 94, 0.35);
+        color: #86efac;
+        font-size: 0.9375rem;
+    }
 </style>
 
 <div class="wrap">
+    @if (session('success'))
+        <p class="flash-ok" role="status">{{ session('success') }}</p>
+    @endif
     <div class="vehicle-detail">
         <div class="vd-left">
             <div class="vd-img">
@@ -98,6 +131,12 @@
                 <div class="vd-desc">{{ $vehicle->description }}</div>
             @endif
             <div class="vd-actions">
+                <a href="{{ route('vehicles.edit', $vehicle) }}" class="btn-edit">Sửa</a>
+                <form action="{{ route('vehicles.destroy', $vehicle) }}" method="post" style="display:inline;" onsubmit="return confirm('Xóa xe này? Hành động không hoàn tác.');">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn-del">Xoá</button>
+                </form>
                 <a href="{{ route('vehicles.index') }}">← Quay lại danh sách</a>
             </div>
         </div>

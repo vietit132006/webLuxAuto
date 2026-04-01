@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id('ticket_id');
 
             $table->unsignedBigInteger('user_id');
-            $table->foreign('user_id')->references('user_id')->on('users')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
 
             $table->string('subject');
             $table->text('message');
