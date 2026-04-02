@@ -171,7 +171,7 @@
         <h1>Xe sang đã qua sử dụng — tuyển chọn & minh bạch</h1>
         <p>Lux Auto giúp bạn so sánh nhanh các mẫu xe cao cấp: đời xe, số km, nhiên liệu và mức giá tham khảo.</p>
         <div class="hero-actions">
-            <a class="btn btn-primary" href="{{ route('vehicles.index') }}">Xem danh sách xe</a>
+            <a class="btn btn-primary" href="{{ route('cars.index') }}">Xem danh sách xe</a>
             @guest
                 <a class="btn btn-ghost" href="{{ route('login') }}">Đăng nhập nhân viên</a>
             @endguest
@@ -180,7 +180,7 @@
 </div>
 
 <div class="wrap banners">
-    <a href="{{ route('vehicles.index') }}" class="banner-hero">
+    <a href="{{ route('cars.index') }}" class="banner-hero">
         <div class="banner-hero__box">
             <h2 class="banner-hero__title">Bộ sưu tập xe sang đang cập nhật</h2>
             <p class="banner-hero__desc">Khám phá các mẫu sedan, SUV và coupé — thông tin giá và tiến trình xe được cập nhật thường xuyên.</p>
@@ -189,7 +189,7 @@
     </a>
 
     <div class="banner-grid">
-        <a href="{{ route('vehicles.index') }}" class="banner-card banner-card--gold">
+        <a href="{{ route('cars.index') }}" class="banner-card banner-card--gold">
             <div class="banner-card__inner">
                 <span class="banner-card__tag">Tài chính</span>
                 <h3 class="banner-card__title">Hỗ trợ gói vay &amp; sang tên</h3>
@@ -197,7 +197,7 @@
                 <span class="banner-card__cta">Xem xe phù hợp →</span>
             </div>
         </a>
-        <a href="{{ route('vehicles.index') }}" class="banner-card banner-card--slate">
+        <a href="{{ route('cars.index') }}" class="banner-card banner-card--slate">
             <div class="banner-card__inner">
                 <span class="banner-card__tag">Minh bạch</span>
                 <h3 class="banner-card__title">Lịch bảo dưỡng &amp; nguồn gốc</h3>
@@ -205,7 +205,7 @@
                 <span class="banner-card__cta">Danh sách xe →</span>
             </div>
         </a>
-        <a href="{{ route('vehicles.index') }}" class="banner-card banner-card--deep">
+        <a href="{{ route('cars.index') }}" class="banner-card banner-card--deep">
             <div class="banner-card__inner">
                 <span class="banner-card__tag">Ưu đãi</span>
                 <h3 class="banner-card__title">Cập nhật giá &amp; ưu đãi theo đợt</h3>
@@ -219,19 +219,19 @@
 <div class="wrap">
     <div class="section-head">
         <h2>Xe nổi bật</h2>
-        @if ($featuredVehicles->isNotEmpty())
-            <a href="{{ route('vehicles.index') }}">Xem tất cả →</a>
+        @if ($featuredCars->isNotEmpty())
+            <a href="{{ route('cars.index') }}">Xem tất cả →</a>
         @endif
     </div>
 
-    @if ($featuredVehicles->isEmpty())
+    @if ($featuredCars->isEmpty())
         <div class="empty-state">
             Chưa có xe nổi bật. Chạy migration và seeder: <code style="color:var(--accent);">php artisan migrate --seed</code>
         </div>
     @else
         <div class="grid-cards">
-            @foreach ($featuredVehicles as $vehicle)
-                @include('partials.vehicle-card', ['vehicle' => $vehicle])
+            @foreach ($featuredCars as $car)
+                @include('partials.car-card', ['car' => $car])
             @endforeach
         </div>
     @endif

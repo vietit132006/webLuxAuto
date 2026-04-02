@@ -18,15 +18,20 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $data = $request->only('email', 'password');
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
 
-        if (Auth::attempt($data)) {
-            return redirect()->intended(route('vehicles.index'));
+        if (Auth::attempt($request->only('email', 'password'))) {
+
+            $request->session()->regenerate();
+            // dd(Auth::user()->email);
+            return redirect()->route('vehicles.index');
         }
 
         return back()->with('error', 'Sai tài khoản hoặc mật khẩu');
     }
-
     // LOGOUT
     public function logout()
     {

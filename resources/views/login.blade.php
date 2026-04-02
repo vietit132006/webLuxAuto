@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -25,22 +24,29 @@
         button:hover { background: #27272a; }
         .error { padding: 0.75rem; margin-bottom: 1rem; background: #fef2f2; color: #b91c1c;
             border-radius: 6px; font-size: 0.875rem; }
+        .success { padding: 0.75rem; margin-bottom: 1rem; background: #dcfce7; color: #166534;
+            border-radius: 6px; font-size: 0.875rem; }
     </style>
 </head>
 <body>
     <div class="card">
         <h1>Đăng nhập</h1>
+
         @if(session('success'))
-            <div style="padding: 10px; margin-bottom: 10px; background: #dcfce7; color: #166534; border-radius: 6px;">
+            <div class="success">
                 {{ session('success') }}
             </div>
         @endif
+
         @if (session('error'))
-            <p class="error" role="alert">{{ session('error') }}</p>
+            <div class="error" role="alert">
+                {{ session('error') }}
+            </div>
         @endif
 
-        <form method="post" action="{{ route('login') }}" novalidate>
+        <form method="POST" action="{{ route('login') }}" novalidate>
             @csrf
+
             <label for="email">Email</label>
             <input id="email" type="email" name="email" value="{{ old('email') }}" required autocomplete="username">
 
