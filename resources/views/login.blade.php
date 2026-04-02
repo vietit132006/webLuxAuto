@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Đăng nhập — {{ config('app.name', 'Laravel') }}</title>
+
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @endif
@@ -23,18 +24,29 @@
         button:hover { background: #27272a; }
         .error { padding: 0.75rem; margin-bottom: 1rem; background: #fef2f2; color: #b91c1c;
             border-radius: 6px; font-size: 0.875rem; }
+        .success { padding: 0.75rem; margin-bottom: 1rem; background: #dcfce7; color: #166534;
+            border-radius: 6px; font-size: 0.875rem; }
     </style>
 </head>
 <body>
     <div class="card">
         <h1>Đăng nhập</h1>
 
-        @if (session('error'))
-            <p class="error" role="alert">{{ session('error') }}</p>
+        @if(session('success'))
+            <div class="success">
+                {{ session('success') }}
+            </div>
         @endif
 
-        <form method="post" action="{{ route('login') }}" novalidate>
+        @if (session('error'))
+            <div class="error" role="alert">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('login') }}" novalidate>
             @csrf
+
             <label for="email">Email</label>
             <input id="email" type="email" name="email" value="{{ old('email') }}" required autocomplete="username">
 

@@ -145,7 +145,7 @@
             <a href="{{ route('home') }}" class="logo">Lux <span>Auto</span></a>
             <nav class="links">
                 <a href="{{ route('home') }}" class="nav-link">Trang chủ</a>
-                <a href="{{ route('vehicles.index') }}" class="nav-link">Danh sách xe</a>
+                <a href="{{ route('cars.index') }}" class="nav-link">Danh sách xe</a>
                 @auth
                     <a href="{{ route('logout') }}" class="nav-cta">Đăng xuất</a>
                 @else

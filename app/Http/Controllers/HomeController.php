@@ -2,21 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Vehicle;
+use App\Models\Car;
 use Illuminate\View\View;
 
 class HomeController extends Controller
 {
     public function __invoke(): View
     {
-        $featured = Vehicle::query()
-            ->where('is_featured', true)
+        $featured = Car::query()
+            ->where('car_id', true)
             ->latest()
             ->take(6)
             ->get();
 
         return view('home', [
-            'featuredVehicles' => $featured,
+            'featuredCars' => $featured,
         ]);
     }
 }
