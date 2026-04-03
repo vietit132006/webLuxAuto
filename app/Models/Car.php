@@ -11,17 +11,14 @@ class Car extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'name',
         'brand_id',
-        'model',
-        'year',
         'price',
-        'mileage_km',
-        'fuel_type',
-        'transmission',
+        'year',
         'color',
         'description',
-        'image_url',
-        'is_featured',
+        'stock',
+        'image',
     ];
 
     protected function casts(): array
@@ -29,20 +26,17 @@ class Car extends Model
         return [
             'year' => 'integer',
             'price' => 'integer',
-            'mileage_km' => 'integer',
-            'is_featured' => 'boolean',
+            'stock' => 'integer',
         ];
     }
 
-    // xe thuộc 1 hãng
     public function brand()
     {
         return $this->belongsTo(Brand::class, 'brand_id', 'brand_id');
     }
 
-    // title hiển thị
     public function getTitleAttribute(): string
     {
-        return $this->brand->name . ' ' . $this->model;
+        return $this->brand->name . ' ' . $this->name;
     }
 }
