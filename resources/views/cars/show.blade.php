@@ -1,6 +1,6 @@
 @extends('layouts.site')
 
-@section('title', $vehicle->title)
+@section('title', $car->title)
 
 @section('content')
 <style>
@@ -75,30 +75,34 @@
 </style>
 
 <div class="wrap">
-    <div class="vehicle-detail">
+    <div class="car-detail">
         <div class="vd-left">
             <div class="vd-img">
-                @if ($vehicle->image_url)
-                    <img src="{{ $vehicle->image_url }}" alt="{{ $vehicle->title }}">
-                @endif
+                @if ($car->image_url)
+    <img src="{{ $car->image_url }}" alt="{{ $car->title }}">
+@endif
+
+@if ($car->image)
+    <img src="{{ asset($car->image) }}" alt="{{ $car->title }}">
+@endif
             </div>
         </div>
         <div class="vd-right">
-            <h1 class="vd-head">{{ $vehicle->title }}</h1>
-            <p class="vd-meta">Đời {{ $vehicle->year }}@if ($vehicle->mileage_km) · {{ number_format($vehicle->mileage_km, 0, ',', '.') }} km @endif</p>
-            <p class="vd-price">{{ number_format($vehicle->price, 0, ',', '.') }} đ</p>
+            <h1 class="vd-head">{{ $car->title }}</h1>
+            <p class="vd-meta">Đời {{ $car->year }}@if ($car->mileage_km) · {{ number_format($car->mileage_km, 0, ',', '.') }} km @endif</p>
+            <p class="vd-price">{{ number_format($car->price, 0, ',', '.') }} đ</p>
             <div class="vd-specs">
-                <div>Nhiên liệu: <strong>{{ $vehicle->fuel_type }}</strong></div>
-                <div>Hộp số: <strong>{{ $vehicle->transmission }}</strong></div>
-                @if ($vehicle->color)
-                    <div>Màu: <strong>{{ $vehicle->color }}</strong></div>
+                <div>Nhiên liệu: <strong>{{ $car->fuel_type }}</strong></div>
+                <div>Hộp số: <strong>{{ $car->transmission }}</strong></div>
+                @if ($car->color)
+                    <div>Màu: <strong>{{ $car->color }}</strong></div>
                 @endif
             </div>
-            @if ($vehicle->description)
-                <div class="vd-desc">{{ $vehicle->description }}</div>
+            @if ($car->description)
+                <div class="vd-desc">{{ $car->description }}</div>
             @endif
             <div class="vd-actions">
-                <a href="{{ route('vehicles.index') }}">← Quay lại danh sách</a>
+                <a href="{{ route('cars.index') }}">← Quay lại danh sách</a>
             </div>
         </div>
     </div>

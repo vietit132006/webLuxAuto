@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Brand;
 use App\Models\Car;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -13,7 +14,7 @@ class CarController extends Controller
         // dd($request->all());
         $search = trim((string) $request->get('q', ''));
 
-        $query = Car::query()->orderByDesc('year')->orderByDesc('id');
+        $query = Car::query()->orderByDesc('year')->orderByDesc('car_id');
 
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
@@ -51,7 +52,8 @@ class CarController extends Controller
     public function edit($id)
     {
         $car = Car::findOrFail($id);
-        return view('cars.edit', compact('car'));
+        $brands = Brand::all();
+        return view('cars.edit', compact('car', 'brands'));
     }
 
     public function update(Request $request, $id)

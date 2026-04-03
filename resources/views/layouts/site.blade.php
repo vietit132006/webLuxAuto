@@ -146,7 +146,11 @@
             <nav class="links">
                 <a href="{{ route('home') }}" class="nav-link">Trang chủ</a>
                 <a href="{{ route('cars.index') }}" class="nav-link">Danh sách xe</a>
+
                 @auth
+                    <span style="font-size: 0.9375rem; color: var(--muted);">
+                        Chào, <strong style="color: var(--text);">{{ auth()->user()->name }}</strong>
+                    </span>
                     <a href="{{ route('logout') }}" class="nav-cta">Đăng xuất</a>
                 @else
                     <a href="{{ route('login') }}" class="nav-cta">Đăng nhập</a>

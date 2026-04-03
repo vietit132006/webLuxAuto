@@ -56,7 +56,7 @@
 <div class="wrap form-wrap">
     <h1 class="page-title">Thêm xe</h1>
 
-    <form method="POST" action="{{ route('vehicles.store') }}">
+    <form method="POST" action="{{ route('cars.store') }}">
         @csrf
 
         <div class="form-group">
@@ -108,7 +108,7 @@
 
         <div class="form-actions">
             <button type="submit" class="btn-submit">Thêm</button>
-            <a href="{{ route('vehicles.index') }}" class="btn-back">Quay lại</a>
+            <a href="{{ route('cars.index') }}" class="btn-back">Quay lại</a>
         </div>
     </form>
 </div>

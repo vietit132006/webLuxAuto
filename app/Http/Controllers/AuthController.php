@@ -18,17 +18,18 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
-        ]);
-
+        // Thử đăng nhập
         if (Auth::attempt($request->only('email', 'password'))) {
 
+            // DÙNG LỆNH NÀY ĐỂ BẮT BỆNH:
+            // dd('ĐĂNG NHẬP THÀNH CÔNG!', 'ID của User là:', Auth::user()->id);
+
             $request->session()->regenerate();
-            // dd(Auth::user()->email);
-            return redirect()->route('vehicles.index');
+            return redirect()->route('cars.index');
         }
+
+        // NẾU SAI TÀI KHOẢN/MẬT KHẨU SẼ IN RA DÒNG NÀY:
+        // dd('ĐĂNG NHẬP THẤT BẠI! Lỗi do sai Email hoặc Mật khẩu.');
 
         return back()->with('error', 'Sai tài khoản hoặc mật khẩu');
     }

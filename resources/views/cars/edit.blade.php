@@ -6,60 +6,62 @@
 <div class="wrap form-wrap">
     <h1 class="page-title">Sửa xe</h1>
 
-    <form method="POST" action="{{ route('vehicles.update', $vehicle->id) }}">
+    <form method="POST" action="{{ route('cars.update', $car->car_id) }}">
         @csrf
+        @method('PUT')
 
         <div class="form-group">
-            <input name="brand" value="{{ old('brand', $vehicle->brand) }}">
+            <label>Hãng xe</label>
+            <select name="brand_id" required style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid #ccc;">
+                <option value="">-- Chọn hãng xe --</option>
+
+                @foreach($brands as $brand)
+                    <option value="{{ $brand->brand_id }}"
+                        {{ old('brand_id', $car->brand_id) == $brand->brand_id ? 'selected' : '' }}>
+                        {{ $brand->name }}
+                    </option>
+                @endforeach
+            </select>
         </div>
 
         <div class="form-group">
-            <input name="model" value="{{ old('model', $vehicle->model) }}">
+            <label>Tên xe</label>
+            <input name="name" value="{{ old('name', $car->name) }}" required>
         </div>
 
         <div class="form-group">
-            <input name="year" value="{{ old('year', $vehicle->year) }}">
+            <label>Năm sản xuất</label>
+            <input type="number" name="year" value="{{ old('year', $car->year) }}" required>
         </div>
 
         <div class="form-group">
-            <input name="price" value="{{ old('price', $vehicle->price) }}">
+            <label>Giá (VNĐ)</label>
+            <input type="number" name="price" value="{{ old('price', $car->price) }}" required>
         </div>
 
         <div class="form-group">
-            <input name="mileage_km" value="{{ old('mileage_km', $vehicle->mileage_km) }}">
+            <label>Màu sắc</label>
+            <input name="color" value="{{ old('color', $car->color) }}">
         </div>
 
         <div class="form-group">
-            <input name="fuel_type" value="{{ old('fuel_type', $vehicle->fuel_type) }}">
+            <label>Số lượng trong kho (Stock)</label>
+            <input type="number" name="stock" value="{{ old('stock', $car->stock) }}">
         </div>
 
         <div class="form-group">
-            <input name="transmission" value="{{ old('transmission', $vehicle->transmission) }}">
+            <label>Mô tả chi tiết</label>
+            <textarea name="description" rows="4" style="width: 100%;">{{ old('description', $car->description) }}</textarea>
         </div>
 
         <div class="form-group">
-            <input name="color" value="{{ old('color', $vehicle->color) }}">
+            <label>Tên file ảnh hoặc Link ảnh</label>
+            <input name="image" value="{{ old('image', $car->image) }}">
         </div>
 
-        <div class="form-group">
-            <textarea name="description">{{ old('description', $vehicle->description) }}</textarea>
-        </div>
-
-        <div class="form-group">
-            <input name="image_url" value="{{ old('image_url', $vehicle->image_url) }}">
-        </div>
-
-        <div class="form-group">
-            <label>
-                <input type="checkbox" name="is_featured" value="1"
-                    {{ $vehicle->is_featured ? 'checked' : '' }}>
-                Xe nổi bật
-            </label>
-        </div>
-
-        <div class="form-actions">
+        <div class="form-actions" style="margin-top: 1.5rem;">
             <button type="submit" class="btn-submit">Cập nhật</button>
-            <a href="{{ route('vehicles.index') }}" class="btn-back">Quay lại</a>
+            <a href="{{ route('cars.index') }}" class="btn-back" style="margin-left: 10px;">Quay lại</a>
         </div>
     </form>
 </div>
