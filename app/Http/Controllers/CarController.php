@@ -30,7 +30,18 @@ class CarController extends Controller
             'search' => $search,
         ]);
     }
+    public function adminIndex(Request $request)
+    {
+        $search = $request->input('q');
 
+        // Lấy danh sách xe, sắp xếp xe mới thêm lên đầu
+        $cars = Car::when($search, function ($query, $search) {
+            return $query->where('name', 'like', "%{$search}%");
+        })->orderBy('car_id', 'desc')->paginate(15);
+
+        // Trả về đúng file view trong thư mục admin của bạn
+        return view('admin.list_of_cars', compact('cars', 'search'));
+    }
     public function create()
     {
         return view('cars.create');
