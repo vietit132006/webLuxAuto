@@ -18,7 +18,7 @@ class User extends Authenticatable
         'role',
         'status',
     ];
-
+    protected $primaryKey = 'user_id';
     protected $hidden = [
         'password',
         'remember_token',

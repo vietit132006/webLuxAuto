@@ -4,6 +4,15 @@
 
 @section('content')
 <style>
+    /* THÊM MỚI: Định dạng cho class wrap để căn giữa toàn bộ nội dung */
+    .wrap {
+        max-width: 1200px; /* Bạn có thể tăng lên 1400px nếu muốn rộng hơn */
+        margin: 0 auto;    /* Tự động chia lề 2 bên để căn giữa */
+        padding: 0 1rem;   /* Lề an toàn cho màn hình nhỏ */
+        width: 100%;
+        box-sizing: border-box;
+    }
+
     .hero {
         padding: 2.5rem 0 3rem;
         border-bottom: 1px solid var(--border);
@@ -68,7 +77,7 @@
         border-radius: 12px;
     }
     .banners {
-        margin: 0 0 2.5rem;
+        margin: 0 auto 2.5rem; /* Cập nhật để banner không bị lệch */
     }
     .banner-grid {
         display: grid;

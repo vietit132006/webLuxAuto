@@ -145,8 +145,17 @@
             <a href="{{ route('home') }}" class="logo">Lux <span>Auto</span></a>
             <nav class="links">
                 <a href="{{ route('home') }}" class="nav-link">Trang chủ</a>
-                <a href="{{ route('cars.index') }}" class="nav-link">Danh sách xe</a>
+
+                @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'staff']))
+                    <a href="{{ route('admin.cars.index') }}" class="nav-link">Quản lý xe</a>
+                @else
+                    <a href="{{ route('cars.index') }}" class="nav-link">Danh sách xe</a>
+                @endif
+
                 @auth
+                    <span style="font-size: 0.9375rem; color: var(--muted);">
+                        Chào, <strong style="color: var(--text);">{{ auth()->user()->name }}</strong>
+                    </span>
                     <a href="{{ route('logout') }}" class="nav-cta">Đăng xuất</a>
                 @else
                     <a href="{{ route('login') }}" class="nav-cta">Đăng nhập</a>

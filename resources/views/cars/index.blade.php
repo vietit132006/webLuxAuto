@@ -4,10 +4,30 @@
 
 @section('content')
 <style>
+    .header-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
     .page-title {
-        margin: 0 0 1rem;
+        margin: 0;
         font-size: 1.75rem;
         font-weight: 700;
+    }
+    .btn-add {
+        background: var(--accent);
+        color: #0c0f14;
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+    .btn-add:hover {
+        filter: brightness(1.05);
+        color: #0c0f14;
     }
     .search-bar {
         display: flex;
@@ -94,25 +114,29 @@
 </style>
 
 <div class="wrap">
-    <h1 class="page-title">Danh sách xe</h1>
+    <div class="header-actions">
+        <h1 class="page-title">Danh sách xe</h1>
+    </div>
 
-    <form class="search-bar" method="get" action="{{ route('vehicles.index') }}">
-        <input type="search" name="q" value="{{ $search }}" placeholder="Tìm theo hãng hoặc dòng xe…" autocomplete="off">
+    <form class="search-bar" method="get" action="{{ route('cars.index') }}">
+        <input type="search" name="q" value="{{ $search ?? '' }}" placeholder="Tìm theo hãng hoặc dòng xe…" autocomplete="off">
         <button type="submit">Tìm kiếm</button>
     </form>
-
-    @if ($vehicles->isEmpty())
-        <div class="empty-state">Không có xe phù hợp. Thử bộ lọc khác hoặc <a href="{{ route('vehicles.index') }}">xóa tìm kiếm</a>.</div>
+        @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'staff']))
+            <a href="{{ route('cars.create') }}" class="btn-add">Thêm xe mới</a>
+        @endif
+    @if ($cars->isEmpty())
+        <div class="empty-state">Không có xe phù hợp. Thử bộ lọc khác hoặc <a href="{{ route('cars.index') }}">xóa tìm kiếm</a>.</div>
     @else
         <div class="grid-cards">
-            @foreach ($vehicles as $vehicle)
-                @include('partials.vehicle-card', ['vehicle' => $vehicle])
+            @foreach ($cars as $car)
+                @include('partials.car-card', ['car' => $car])
             @endforeach
         </div>
 
-        @if ($vehicles->hasPages())
+        @if ($cars->hasPages())
             <div class="pagination-wrap">
-                {{ $vehicles->links('pagination.lux') }}
+                {{ $cars->links('pagination.lux') }}
             </div>
         @endif
     @endif
