@@ -42,14 +42,33 @@ class CarController extends Controller
         // Trả về đúng file view trong thư mục admin của bạn
         return view('admin.list_of_cars', compact('cars', 'search'));
     }
+    // Nhớ kiểm tra xem đã import Model Brand ở trên đầu file chưa nhé
+    // use App\Models\Brand;
+
     public function create()
     {
-        return view('cars.create');
+        // Lấy toàn bộ danh sách hãng xe từ database
+        $brands = Brand::all();
+
+        // Truyền biến $brands sang view
+        return view('admin.create', compact('brands'));
     }
 
     public function store(Request $request)
     {
-        Car::create($request->all());
+        $data = $request->except('image');
+
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('images', 'public');
+            $data['image'] = $imagePath;
+        }
+
+        // Nếu checkbox 'is_featured' không được tích, request sẽ không có trường này.
+        // Ta gán mặc định là 0 để tránh lỗi.
+        $data['is_featured'] = $request->has('is_featured') ? 1 : 0;
+
+        Car::create($data);
+
         return redirect()->route('cars.index');
     }
 

@@ -19,6 +19,10 @@ class Car extends Model
         'description',
         'stock',
         'image',
+        'mileage_km',
+        'fuel_type',
+        'transmission',
+        'is_featured'
     ];
 
     protected function casts(): array
@@ -27,6 +31,7 @@ class Car extends Model
             'year' => 'integer',
             'price' => 'integer',
             'stock' => 'integer',
+            'created_at' => 'datetime',
         ];
     }
 

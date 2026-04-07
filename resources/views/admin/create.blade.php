@@ -4,6 +4,7 @@
 
 @section('content')
 <style>
+/* ... (Giữ nguyên phần CSS của bạn) ... */
 .form-wrap {
     max-width: 700px;
     margin: 0 auto;
@@ -22,7 +23,8 @@
     color: var(--text);
 }
 .form-group input:focus,
-.form-group textarea:focus {
+.form-group textarea:focus,
+.form-group select:focus {
     outline: none;
     border-color: var(--accent-dim);
     box-shadow: 0 0 0 3px rgba(201, 169, 98, 0.15);
@@ -51,21 +53,31 @@
     color: red;
     font-size: 0.85rem;
 }
+/* CSS bổ sung cho input file nhìn đẹp hơn một chút */
+input[type="file"] {
+    padding: 0.4rem;
+    background: #fff;
+}
 </style>
 
 <div class="wrap form-wrap">
     <h1 class="page-title">Thêm xe</h1>
 
-    <form method="POST" action="{{ route('cars.store') }}">
+    <form method="POST" action="{{ route('cars.store') }}" enctype="multipart/form-data">
         @csrf
 
         <div class="form-group">
-            <input name="brand" placeholder="Hãng xe" value="{{ old('brand') }}">
-            @error('brand') <div class="error">{{ $message }}</div> @enderror
+            <select name="brand_id" class="form-control" required>
+    <option value="">-- Chọn hãng xe --</option>
+    @foreach($brands as $brand)
+        <option value="{{ $brand->brand_id }}">{{ $brand->name }}</option>
+    @endforeach
+</select>
+            @error('brand_id') <div class="error">{{ $message }}</div> @enderror
         </div>
 
         <div class="form-group">
-            <input name="model" placeholder="Dòng xe" value="{{ old('model') }}">
+            <input name="name" placeholder="Dòng xe" value="{{ old('name') }}">
         </div>
 
         <div class="form-group">
@@ -77,32 +89,33 @@
         </div>
 
         <div class="form-group">
-            <input name="mileage_km" placeholder="Số km đã đi">
+            <input name="mileage_km" placeholder="Số km đã đi" value="{{ old('mileage_km') }}">
         </div>
 
         <div class="form-group">
-            <input name="fuel_type" placeholder="Loại nhiên liệu">
+            <input name="fuel_type" placeholder="Loại nhiên liệu" value="{{ old('fuel_type') }}">
         </div>
 
         <div class="form-group">
-            <input name="transmission" placeholder="Hộp số">
+            <input name="transmission" placeholder="Hộp số" value="{{ old('transmission') }}">
         </div>
 
         <div class="form-group">
-            <input name="color" placeholder="Màu xe">
+            <input name="color" placeholder="Màu xe" value="{{ old('color') }}">
         </div>
 
         <div class="form-group">
-            <textarea name="description" placeholder="Mô tả"></textarea>
+            <textarea name="description" placeholder="Mô tả">{{ old('description') }}</textarea>
         </div>
 
         <div class="form-group">
-            <input name="image_url" placeholder="Link ảnh">
+            <input type="file" name="image" accept="image/*">
+            @error('image') <div class="error">{{ $message }}</div> @enderror
         </div>
 
         <div class="form-group">
             <label>
-                <input type="checkbox" name="is_featured" value="1"> Xe nổi bật
+                <input type="checkbox" name="is_featured" value="1" {{ old('is_featured') ? 'checked' : '' }}> Xe nổi bật
             </label>
         </div>
 
