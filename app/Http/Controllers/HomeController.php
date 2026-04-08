@@ -15,7 +15,7 @@ class HomeController extends Controller
             ->take(6)
             ->get();
 
-        return view('home', [
+        return view('client.home', [
             'featuredCars' => $featured,
         ]);
     }

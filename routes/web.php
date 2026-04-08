@@ -2,10 +2,13 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CarController;
+use App\Http\Controllers\AdminController; // Đã thêm dòng này
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 
+// ==========================================
 // 1. NHÓM CHƯA ĐĂNG NHẬP (Khách)
+// ==========================================
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
@@ -14,37 +17,44 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
 });
 
-// 2. NHÓM ĐÃ ĐĂNG NHẬP (Thành viên)
+// ==========================================
+// 2. NHÓM ĐÃ ĐĂNG NHẬP (Thành viên & Admin)
+// ==========================================
 Route::middleware('auth')->group(function () {
 
     // Trang chủ
     Route::get('/', HomeController::class)->name('home');
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    // ==========================================
-    // KHU VỰC KHÁCH HÀNG (Giao diện dạng Thẻ/Card)
-    // ==========================================
+    // ------------------------------------------
+    // KHU VỰC KHÁCH HÀNG (Dành cho người mua)
+    // ------------------------------------------
     Route::get('/xe', [CarController::class, 'index'])->name('cars.index');
-    Route::get('/xe/{car}', [CarController::class, 'show'])->name('cars.show');
+    Route::get('/xe/{car}', [CarController::class, 'show'])->name('cars.show_public'); // Đã sửa lại tên cho chuẩn
 
-    // ==========================================
-    // KHU VỰC QUẢN TRỊ VIÊN (Giao diện dạng Bảng)
-    // Đường dẫn sẽ tự động thêm chữ /admin/ phía trước
-    // ==========================================
-    Route::middleware('role:admin,staff')->prefix('admin')->group(function () {
+    // ------------------------------------------
+    // KHU VỰC QUẢN TRỊ VIÊN (Chỉ Admin & Staff)
+    // - Tự động thêm tiền tố /admin vào URL
+    // - Tự động thêm tiền tố admin. vào tên Route
+    // ------------------------------------------
+    Route::middleware('role:admin,staff')->prefix('admin')->name('admin.')->group(function () {
 
-        // Danh sách xe dành riêng cho Admin
-        Route::get('/xe', [CarController::class, 'adminIndex'])->name('admin.cars.index');
+        // Bảng điều khiển -> URL: /admin/dashboard
+        Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 
-        // Thêm xe mới
-        Route::get('/xe/create', [CarController::class, 'create'])->name('cars.create');
-        Route::post('/xe', [CarController::class, 'store'])->name('cars.store');
+        // Quản lý xe (Tất cả trỏ về AdminController)
+        Route::get('/xe', [AdminController::class, 'index'])->name('cars.index');
+        Route::get('/xe/create', [AdminController::class, 'create'])->name('cars.create');
+        Route::post('/xe', [AdminController::class, 'store'])->name('cars.store');
+
+        // Xem chi tiết xe góc nhìn Admin -> URL: /admin/xe/{id}
+        Route::get('/xe/{car}', [AdminController::class, 'show'])->name('cars.show');
 
         // Sửa xe
-        Route::get('/xe/edit/{id}', [CarController::class, 'edit'])->name('cars.edit');
-        Route::put('/xe/{id}', [CarController::class, 'update'])->name('cars.update');
+        Route::get('/xe/{id}/edit', [AdminController::class, 'edit'])->name('cars.edit'); // Chuẩn hóa URL
+        Route::put('/xe/{id}', [AdminController::class, 'update'])->name('cars.update');
 
-        // Xóa xe (Mới được bổ sung)
-        Route::delete('/xe/{id}', [CarController::class, 'destroy'])->name('cars.destroy');
+        // Xóa xe
+        Route::delete('/xe/{id}', [AdminController::class, 'destroy'])->name('cars.destroy');
     });
 });

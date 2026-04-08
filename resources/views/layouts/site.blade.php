@@ -144,12 +144,15 @@
         <div class="wrap nav-inner">
             <a href="{{ route('home') }}" class="logo">Lux <span>Auto</span></a>
             <nav class="links">
-                <a href="{{ route('home') }}" class="nav-link">Trang chủ</a>
 
                 @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'staff']))
+                <a href="{{ route('admin.dashboard') }}" class="nav-link">Dashboard</a>
+
                     <a href="{{ route('admin.cars.index') }}" class="nav-link">Quản lý xe</a>
                 @else
                     <a href="{{ route('cars.index') }}" class="nav-link">Danh sách xe</a>
+                <a href="{{ route('home') }}" class="nav-link">Trang chủ</a>
+
                 @endif
 
                 @auth

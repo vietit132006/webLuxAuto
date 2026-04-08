@@ -21,16 +21,21 @@ class AuthController extends Controller
         // Thử đăng nhập
         if (Auth::attempt($request->only('email', 'password'))) {
 
-            // DÙNG LỆNH NÀY ĐỂ BẮT BỆNH:
-            // dd('ĐĂNG NHẬP THÀNH CÔNG!', 'ID của User là:', Auth::user()->id);
-
             $request->session()->regenerate();
-            return redirect()->route('cars.index');
+
+            // Lấy thông tin user vừa đăng nhập thành công
+            $user = Auth::user();
+
+            // Kiểm tra: Nếu là admin hoặc staff thì cho vào Dashboard
+            if (in_array($user->role, ['admin', 'staff'])) {
+                return redirect()->route('admin.dashboard');
+            }
+
+            // Nếu là khách hàng bình thường (customer), cho ra trang chủ / trang danh sách xe
+            return redirect()->route('home');
         }
 
-        // NẾU SAI TÀI KHOẢN/MẬT KHẨU SẼ IN RA DÒNG NÀY:
-        // dd('ĐĂNG NHẬP THẤT BẠI! Lỗi do sai Email hoặc Mật khẩu.');
-
+        // Trả về lỗi nếu sai email hoặc mật khẩu
         return back()->with('error', 'Sai tài khoản hoặc mật khẩu');
     }
     // LOGOUT

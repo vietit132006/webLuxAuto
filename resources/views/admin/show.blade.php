@@ -161,9 +161,9 @@
             @endif
 
             <div class="vd-actions">
-                <a href="{{ route('cars.index') }}" class="btn-back">← Quay lại danh sách</a>
+                <a href="{{ route('admin.cars.index') }}" class="btn-back">← Quay lại danh sách</a>
 
-                <a href="{{ route('cars.edit', $car->car_id) }}" class="btn-edit">✏️ Sửa thông tin</a>
+                <a href="{{ route('admin.cars.edit', $car->car_id) }}" class="btn-edit">✏️ Sửa thông tin</a>
             </div>
         </div>
     </div>

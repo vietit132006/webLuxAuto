@@ -78,7 +78,7 @@
         text-align: left;
     }
     .admin-table th, .admin-table td {
-        padding: 0.85rem 1rem; /* Thu gọn khoảng cách dọc */
+        padding: 0.85rem 1rem;
         border-bottom: 1px solid var(--border);
         vertical-align: middle;
     }
@@ -103,7 +103,7 @@
         background: #000;
     }
 
-    /* --- CSS CHO CÁC NÚT HÀNH ĐỘNG GỌN GÀNG (TEXT) --- */
+    /* --- CSS CHO CÁC NÚT HÀNH ĐỘNG --- */
     .action-btns {
         display: flex;
         gap: 0.35rem;
@@ -112,9 +112,9 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 0.35rem 0.6rem; /* Làm nút mỏng và gọn hơn */
+        padding: 0.35rem 0.6rem;
         border-radius: 4px;
-        font-size: 0.8rem; /* Font chữ nhỏ lại */
+        font-size: 0.8rem;
         font-weight: 600;
         text-decoration: none;
         cursor: pointer;
@@ -122,7 +122,6 @@
         transition: all 0.2s ease;
     }
 
-    /* Nút Chi tiết (Xanh lam nhạt) */
     .btn-view {
         background: rgba(59, 130, 246, 0.1);
         color: #60a5fa;
@@ -132,7 +131,6 @@
         color: #fff;
     }
 
-    /* Nút Sửa (Vàng nhạt) */
     .btn-edit {
         background: rgba(234, 179, 8, 0.1);
         color: #facc15;
@@ -142,7 +140,6 @@
         color: #fff;
     }
 
-    /* Nút Xóa (Đỏ nhạt) */
     .btn-delete {
         background: rgba(239, 68, 68, 0.1);
         color: #f87171;
@@ -168,10 +165,68 @@
         <h1 class="page-title">Quản lý danh sách xe</h1>
 
         @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'staff']))
-            <a href="{{ route('cars.create') }}" class="btn-add">+ Thêm xe mới</a>
+            <a href="{{ route('admin.cars.create') }}" class="btn-add">+ Thêm xe mới</a>
         @endif
     </div>
 
+    @if(session('success'))
+        <style>
+            .flash-alert {
+                background-color: #d1fae5;
+                color: #065f46;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                margin-bottom: 1.5rem;
+                border: 1px solid #34d399;
+                font-weight: 600;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                transition: opacity 0.5s ease, transform 0.5s ease;
+            }
+            .flash-alert.hide {
+                opacity: 0;
+                transform: translateY(-10px);
+                pointer-events: none;
+            }
+            .btn-close-alert {
+                background: none;
+                border: none;
+                color: #065f46;
+                font-size: 1.5rem;
+                line-height: 1;
+                cursor: pointer;
+                padding: 0 0 0 1rem;
+                transition: transform 0.2s;
+            }
+            .btn-close-alert:hover {
+                transform: scale(1.2);
+                color: #047857;
+            }
+        </style>
+
+        <div id="success-alert" class="flash-alert">
+            <span>✅ {{ session('success') }}</span>
+            <button type="button" class="btn-close-alert" onclick="closeAlert()" aria-label="Đóng">&times;</button>
+        </div>
+
+        <script>
+            function closeAlert() {
+                const alertBox = document.getElementById('success-alert');
+                if (alertBox) {
+                    alertBox.classList.add('hide');
+                    setTimeout(() => {
+                        alertBox.remove();
+                    }, 500);
+                }
+            }
+
+            // Tự động gọi hàm đóng sau 2 giây (2000 ms)
+            setTimeout(() => {
+                closeAlert();
+            }, 2000);
+        </script>
+    @endif
     <form class="search-bar" method="get" action="{{ route('admin.cars.index') }}">
         <input type="search" name="q" value="{{ $search ?? '' }}" placeholder="Tìm theo tên xe…" autocomplete="off">
         <button type="submit">Tìm kiếm</button>
@@ -198,7 +253,7 @@
                     <tr>
                         <td>
                             @if($car->image)
-                                <img src="{{ asset($car->image) }}" alt="{{ $car->name }}" class="table-img">
+                                <img src="{{ asset('storage/' . $car->image) }}" alt="{{ $car->name }}" class="table-img">
                             @else
                                 <span style="font-size: 0.75rem; color: var(--muted); padding: 0.5rem; border: 1px dashed var(--border); border-radius: 4px; display: inline-block;">Trống</span>
                             @endif
@@ -210,12 +265,12 @@
                         <td>{{ $car->stock ?? 0 }}</td>
                         <td>
                             <div class="action-btns">
-                                <a href="{{ route('cars.show', $car->car_id) }}" class="btn-sm btn-view">Chi tiết</a>
+                                <a href="{{ route('admin.cars.show', $car->car_id) }}" class="btn-sm btn-view">Chi tiết</a>
 
                                 @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'staff']))
-                                    <a href="{{ route('cars.edit', $car->car_id) }}" class="btn-sm btn-edit">Sửa</a>
+                                    <a href="{{ route('admin.cars.edit', $car->car_id) }}" class="btn-sm btn-edit">Sửa</a>
 
-                                    <form action="{{ route('cars.destroy', $car->car_id) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa chiếc xe này không?');">
+                                    <form action="{{ route('admin.cars.destroy', $car->car_id) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa chiếc xe này không?');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn-sm btn-delete">Xóa</button>

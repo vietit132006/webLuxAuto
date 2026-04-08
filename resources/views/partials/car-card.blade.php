@@ -5,14 +5,14 @@
 <article class="v-card">
     <div class="v-card__img-wrap">
         @if ($car->image)
-            <a href="{{ route('cars.show', $car) }}">
+            <a href="{{ route('admin.cars.show', $car) }}">
                 <img class="v-card__img"
                      src="{{ $car->image }}"
                      alt="{{ $car->brand->name }} {{ $car->name }}"
                      loading="lazy">
             </a>
         @else
-            <a href="{{ route('cars.show', $car) }}"
+            <a href="{{ route('admin.cars.show', $car) }}"
                class="v-card__img"
                style="display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:0.875rem;">
                Chưa có ảnh
@@ -22,7 +22,7 @@
 
     <div class="v-card__body">
         <h3 class="v-card__title">
-            <a href="{{ route('cars.show', $car) }}" style="color:inherit;text-decoration:none;">
+            <a href="{{ route('admin.cars.show', $car) }}" style="color:inherit;text-decoration:none;">
                 {{ $car->brand->name }} {{ $car->name }}
             </a>
         </h3>
