@@ -5,16 +5,18 @@
 <article class="v-card">
     <div class="v-card__img-wrap">
         @if ($car->image)
-            <a href="{{ route('admin.cars.show', $car) }}">
+            <a href="{{ route('cars.show_public', $car->car_id) }}">
+
                 <img class="v-card__img"
-                     src="{{ $car->image }}"
-                     alt="{{ $car->brand->name }} {{ $car->name }}"
+                     src="{{ asset('storage/' . $car->image) }}"
+                     alt="{{ $car->brand->name ?? 'Hãng' }} {{ $car->name }}"
                      loading="lazy">
+
             </a>
         @else
-            <a href="{{ route('admin.cars.show', $car) }}"
+            <a href="{{ route('cars.show_public', $car->car_id) }}"
                class="v-card__img"
-               style="display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:0.875rem;">
+               style="display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:0.875rem;background:#f3f4f6;">
                Chưa có ảnh
             </a>
         @endif
@@ -22,8 +24,8 @@
 
     <div class="v-card__body">
         <h3 class="v-card__title">
-            <a href="{{ route('admin.cars.show', $car) }}" style="color:inherit;text-decoration:none;">
-                {{ $car->brand->name }} {{ $car->name }}
+            <a href="{{ route('cars.show_public', $car->car_id) }}" style="color:inherit;text-decoration:none;">
+                {{ $car->brand->name ?? '' }} {{ $car->name }}
             </a>
         </h3>
 
@@ -33,11 +35,11 @@
 
         <div class="v-card__row">
             @if ($car->color)
-                <span>{{ $car->color }}</span>
+                <span>Màu: {{ $car->color }}</span>
             @endif
         </div>
 
-        <p class="v-card__price">
+        <p class="v-card__price" style="font-weight: bold; color: var(--accent); margin-top: 10px;">
             {{ number_format($car->price, 0, ',', '.') }} đ
         </p>
     </div>

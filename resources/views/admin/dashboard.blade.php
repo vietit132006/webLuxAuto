@@ -1,4 +1,4 @@
-@extends('layouts.site')
+@extends('layouts.admin')
 
 @section('title', 'Bảng điều khiển Admin')
 

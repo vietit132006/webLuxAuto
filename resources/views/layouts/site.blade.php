@@ -150,8 +150,9 @@
 
                     <a href="{{ route('admin.cars.index') }}" class="nav-link">Quản lý xe</a>
                 @else
-                    <a href="{{ route('cars.index') }}" class="nav-link">Danh sách xe</a>
                 <a href="{{ route('home') }}" class="nav-link">Trang chủ</a>
+                    <a href="{{ route('cars.index') }}" class="nav-link">Danh sách xe</a>
+
 
                 @endif
 
@@ -173,7 +174,7 @@
 
     <footer class="site">
         <div class="wrap">
-            © {{ date('Y') }} Lux Auto. Giá và thông tin chỉ mang tính minh họa.
+            © {{ date('Y') }} Lux Auto.
         </div>
     </footer>
     @stack('scripts')
