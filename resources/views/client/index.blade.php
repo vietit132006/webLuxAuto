@@ -122,9 +122,6 @@
         <input type="search" name="q" value="{{ $search ?? '' }}" placeholder="Tìm theo hãng hoặc dòng xe…" autocomplete="off">
         <button type="submit">Tìm kiếm</button>
     </form>
-        @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'staff']))
-            <a href="{{ route('cars.create') }}" class="btn-add">Thêm xe mới</a>
-        @endif
     @if ($cars->isEmpty())
         <div class="empty-state">Không có xe phù hợp. Thử bộ lọc khác hoặc <a href="{{ route('cars.index') }}">xóa tìm kiếm</a>.</div>
     @else
