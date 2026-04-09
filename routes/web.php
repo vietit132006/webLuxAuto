@@ -8,7 +8,7 @@ use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProfileController;
-
+use App\Http\Controllers\ResetPasswordController;
 // ==========================================
 // 1. NHÓM CHƯA ĐĂNG NHẬP (Khách)
 // ==========================================
@@ -18,6 +18,14 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
+
+    // QUÊN MẬT KHẨU
+    Route::get('/forgot-password', [ResetPasswordController::class, 'showForgotForm'])->name('password.request');
+    Route::post('/forgot-password', [ResetPasswordController::class, 'sendResetLink'])->name('password.email');
+
+    // ĐẶT LẠI MẬT KHẨU (Gắn token)
+    Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/reset-password', [ResetPasswordController::class, 'resetPassword'])->name('password.update');
 });
 
 // ==========================================

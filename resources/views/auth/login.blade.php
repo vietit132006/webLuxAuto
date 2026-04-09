@@ -54,6 +54,7 @@
             <input id="password" type="password" name="password" required autocomplete="current-password">
 
             <button type="submit">Đăng nhập</button>
+            <a href="{{ route('password.request') }}">Quên mật khẩu?</a>
         </form>
     </div>
 </body>
