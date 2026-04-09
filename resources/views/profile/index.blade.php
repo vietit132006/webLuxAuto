@@ -12,7 +12,16 @@
         </div>
         <script>setTimeout(() => { document.getElementById('success-alert').style.opacity = '0'; setTimeout(() => document.getElementById('success-alert').remove(), 500); }, 2000);</script>
     @endif
+        @if(session('force_logout'))
+        <script>
+            // 1. Lệnh alert sẽ làm trình duyệt khựng lại và hiện hộp thoại
+            alert("{{ session('force_logout') }}");
 
+            // 2. Ngay sau khi người dùng bấm nút "OK", dòng code dưới đây mới chạy
+            // Nó sẽ tự động gọi đường dẫn Đăng xuất của bạn để đẩy về trang đăng nhập
+            window.location.href = "{{ route('logout') }}";
+        </script>
+    @endif
     <form method="POST" action="{{ route('profile.update') }}">
         @csrf
         @method('PUT')

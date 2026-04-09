@@ -18,14 +18,15 @@ class ProfileController extends Controller
     // 2. Xử lý cập nhật thông tin
     public function update(Request $request)
     {
+// THÊM DÒNG CHÚ THÍCH NÀY ĐỂ "NHẮC BÀI" CHO VS CODE
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
         $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:20',
-            // Nếu có nhập mật khẩu mới, thì mật khẩu hiện tại là bắt buộc
             'current_password' => 'nullable|required_with:new_password',
-            'new_password' => 'nullable|min:6|confirmed', // confirmed yêu cầu trường new_password_confirmation
+            'new_password' => 'nullable|min:6|confirmed',
         ]);
 
         // Cập nhật thông tin cơ bản
@@ -34,16 +35,21 @@ class ProfileController extends Controller
 
         // Xử lý đổi mật khẩu (Nếu người dùng có nhập mật khẩu mới)
         if ($request->filled('new_password')) {
-            // Kiểm tra mật khẩu cũ xem có đúng không
+            // Kiểm tra mật khẩu cũ
             if (!Hash::check($request->current_password, $user->password)) {
                 return back()->withErrors(['current_password' => 'Mật khẩu hiện tại không chính xác!']);
             }
-            // Đổi thành mật khẩu mới
+
+            // Đổi thành mật khẩu mới và lưu vào DB
             $user->password = Hash::make($request->new_password);
+            $user->save();
+
+            // THAY ĐỔI Ở ĐÂY: Trả về trang cũ nhưng kèm theo lệnh bắt buộc Đăng xuất
+            return back()->with('force_logout', 'Phiên của bạn đã hết hạn do thay đổi mật khẩu. Vui lòng đăng nhập lại!');
         }
 
+        // Nếu chỉ cập nhật tên/SĐT thì lưu bình thường
         $user->save();
-
         return back()->with('success', 'Đã cập nhật hồ sơ thành công!');
     }
 }
