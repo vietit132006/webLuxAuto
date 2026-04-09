@@ -142,6 +142,9 @@
             <a href="{{ route('admin.brands.index') }}" class="sidebar-link {{ request()->routeIs('admin.brands.*') ? 'active' : '' }}">
         🏢 Quản lý hãng xe
     </a>
+    <a href="{{ route('admin.users.index') }}" class="sidebar-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+        👥 Quản lý người dùng
+    </a>
         </nav>
     </aside>
 
