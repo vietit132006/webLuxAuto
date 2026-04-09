@@ -161,6 +161,7 @@
                         Chào, <strong style="color: var(--text);">{{ auth()->user()->name }}</strong>
                     </span>
                     <a href="{{ route('logout') }}" class="nav-cta">Đăng xuất</a>
+                    <a href="{{ route('profile.index') }}" class="nav-link" style="color: var(--accent);">Hồ sơ của tôi</a>
                 @else
                     <a href="{{ route('login') }}" class="nav-cta">Đăng nhập</a>
                 @endauth

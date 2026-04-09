@@ -7,6 +7,7 @@ use App\Http\Controllers\CarController;
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ProfileController;
 
 // ==========================================
 // 1. NHÓM CHƯA ĐĂNG NHẬP (Khách)
@@ -27,6 +28,10 @@ Route::middleware('auth')->group(function () {
     // Trang chủ
     Route::get('/', HomeController::class)->name('home');
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    // THÊM MỚI: QUẢN LÝ HỒ SƠ CÁ NHÂN
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
     // ------------------------------------------
     // KHU VỰC KHÁCH HÀNG (Dành cho người mua)

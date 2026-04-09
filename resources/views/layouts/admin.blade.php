@@ -152,6 +152,7 @@
         <header class="admin-topbar">
             <div class="admin-topbar-info">
                 <span>Xin chào, <strong style="color: var(--accent);">{{ auth()->user()->name ?? 'Admin' }}</strong></span>
+                <a href="{{ route('profile.index') }}" style="color: var(--text); font-size: 0.9rem;">Hồ sơ của tôi</a>
                 <a href="{{ route('logout') }}" class="btn-logout">Đăng xuất</a>
             </div>
         </header>
