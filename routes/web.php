@@ -1,8 +1,9 @@
 <?php
 
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\CarController;
 use App\Http\Controllers\AdminController; // Đã thêm dòng này
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BrandController;
+use App\Http\Controllers\CarController;
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 
@@ -56,5 +57,15 @@ Route::middleware('auth')->group(function () {
 
         // Xóa xe
         Route::delete('/xe/{id}', [AdminController::class, 'destroy'])->name('cars.destroy');
+
+
+        // Quản lý brands (Dành cho Admin)
+        // THÊM MỚI: QUẢN LÝ HÃNG XE (BRANDS)
+        Route::get('/brands', [BrandController::class, 'index'])->name('brands.index');
+        Route::get('/brands/create', [BrandController::class, 'create'])->name('brands.create');
+        Route::post('/brands', [BrandController::class, 'store'])->name('brands.store');
+        Route::get('/brands/{id}/edit', [BrandController::class, 'edit'])->name('brands.edit');
+        Route::put('/brands/{id}', [BrandController::class, 'update'])->name('brands.update');
+        Route::delete('/brands/{id}', [BrandController::class, 'destroy'])->name('brands.destroy');
     });
 });

@@ -139,6 +139,9 @@
             <a href="{{ route('admin.cars.index') }}" class="sidebar-link {{ request()->routeIs('admin.cars.*') ? 'active' : '' }}">
                 🚘 Quản lý kho xe
             </a>
+            <a href="{{ route('admin.brands.index') }}" class="sidebar-link {{ request()->routeIs('admin.brands.*') ? 'active' : '' }}">
+        🏢 Quản lý hãng xe
+    </a>
         </nav>
     </aside>
 
