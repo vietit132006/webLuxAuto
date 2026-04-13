@@ -152,6 +152,7 @@
                 @else
                 <a href="{{ route('home') }}" class="nav-link">Trang chủ</a>
                     <a href="{{ route('cars.index') }}" class="nav-link">Danh sách xe</a>
+                    <a href="{{ route('news.index') }}" class="nav-link">Tin tức</a>
 
 
                 @endif
