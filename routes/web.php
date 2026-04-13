@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResetPasswordController;
+use App\Http\Controllers\AdminNewsController;
+use App\Http\Controllers\NewsController;
+
+
+
 // ==========================================
 // 1. NHÓM CHƯA ĐĂNG NHẬP (Khách)
 // ==========================================
@@ -36,6 +41,10 @@ Route::middleware('auth')->group(function () {
     // Trang chủ
     Route::get('/', HomeController::class)->name('home');
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    // 1. ROUTE CHO KHÁCH HÀNG
+    Route::get('/tin-tuc', [NewsController::class, 'index'])->name('news.index');
+    Route::get('/tin-tuc/{slug}', [NewsController::class, 'show'])->name('news.show');
 
     // THÊM MỚI: QUẢN LÝ HỒ SƠ CÁ NHÂN
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
@@ -89,5 +98,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
         Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
         Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+
+        // THÊM MỚI: QUẢN LÝ TIN TỨC (NEWS)
+        Route::get('/news', [AdminNewsController::class, 'index'])->name('news.index');
+        Route::get('/news/create', [AdminNewsController::class, 'create'])->name('news.create');
+        Route::post('/news', [AdminNewsController::class, 'store'])->name('news.store');
+        Route::get('/news/{id}/edit', [AdminNewsController::class, 'edit'])->name('news.edit');
+        Route::put('/news/{id}', [AdminNewsController::class, 'update'])->name('news.update');
+        Route::delete('/news/{id}', [AdminNewsController::class, 'destroy'])->name('news.destroy');
     });
 });
