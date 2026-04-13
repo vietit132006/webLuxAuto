@@ -252,7 +252,7 @@
 
                         <td>
                             <div class="action-btns">
-                                <a href="{{ route('news.show', $item->slug ?? 'preview') }}" target="_blank" class="btn-sm btn-view">Xem</a>
+                                <a href="{{ route('admin.news.show', $item->news_id) }}" class="btn-sm btn-view">Xem</a>
 
                                 @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'staff']))
                                     <a href="{{ route('admin.news.edit', $item->news_id) }}" class="btn-sm btn-edit">Sửa</a>

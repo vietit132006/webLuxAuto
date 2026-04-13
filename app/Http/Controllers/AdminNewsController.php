@@ -17,7 +17,11 @@ class AdminNewsController extends Controller
 
         return view('admin.news.index', compact('news', 'search'));
     }
-
+    public function show($id)
+    {
+        $news = News::findOrFail($id);
+        return view('admin.news.show', compact('news'));
+    }
     public function create()
     {
         return view('admin.news.form');

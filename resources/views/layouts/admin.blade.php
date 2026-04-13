@@ -145,6 +145,9 @@
     <a href="{{ route('admin.users.index') }}" class="sidebar-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
         👥 Quản lý người dùng
     </a>
+    <a href="{{ route('admin.news.index') }}" class="sidebar-link {{ request()->routeIs('admin.news.*') ? 'active' : '' }}">
+        � Quản lý tin tức
+    </a>
         </nav>
     </aside>
 
