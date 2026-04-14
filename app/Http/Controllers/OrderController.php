@@ -27,24 +27,24 @@ class OrderController extends Controller
     public function processDeposit(Request $request, $car_id)
     {
         if (!Auth::check()) {
-            return redirect()->route('login')->withErrors(['Lỗi' => 'Vui lòng đăng nhập để đặt cọc xe.']);
+            return redirect()->route('login')
+                ->withErrors(['Lỗi' => 'Vui lòng đăng nhập để đặt cọc xe.']);
         }
 
         $car = Car::findOrFail($car_id);
-        $deposit_amount = 20000000; // Cọc 20 triệu
+        $deposit_amount = 20000000; // 20 triệu
 
         try {
             DB::beginTransaction();
 
-            // 1. Tạo Đơn hàng
+            // 1. Tạo đơn hàng
             $order = Order::create([
                 'user_id' => Auth::id(),
                 'total_price' => $car->price,
-                'status' => 0 // 0 = Chờ thanh toán
+                'status' => 0
             ]);
 
-
-            // 2. Tạo Chi tiết đơn
+            // 2. Chi tiết đơn
             OrderDetail::create([
                 'order_id' => $order->order_id,
                 'car_id' => $car->car_id,
@@ -54,22 +54,22 @@ class OrderController extends Controller
 
             DB::commit();
 
-            // ==========================================
-            // 3. TẠO URL THANH TOÁN VNPAY VÀ CHUYỂN HƯỚNG
-            // ==========================================
+            // =========================
+            // VNPAY CONFIG
+            // =========================
             $vnp_TmnCode = env('VNP_TMN_CODE');
             $vnp_HashSecret = env('VNP_HASH_SECRET');
             $vnp_Url = env('VNP_URL');
             $vnp_Returnurl = env('VNP_RETURN_URL');
 
-            $vnp_TxnRef = $order->order_id; // Mã đơn hàng
+            $vnp_TxnRef = $order->order_id;
             $vnp_OrderInfo = "Thanh toan dat coc xe " . $car->name;
             $vnp_OrderType = 'billpayment';
-            $vnp_Amount = $deposit_amount * 100; // VNPay yêu cầu nhân 100
+            $vnp_Amount = $deposit_amount * 100;
             $vnp_Locale = 'vn';
-            $vnp_IpAddr = $_SERVER['REMOTE_ADDR'];
+            $vnp_IpAddr = $request->ip(); // ✅ FIX
 
-            $inputData = array(
+            $inputData = [
                 "vnp_Version" => "2.1.0",
                 "vnp_TmnCode" => $vnp_TmnCode,
                 "vnp_Amount" => $vnp_Amount,
@@ -82,34 +82,24 @@ class OrderController extends Controller
                 "vnp_OrderType" => $vnp_OrderType,
                 "vnp_ReturnUrl" => $vnp_Returnurl,
                 "vnp_TxnRef" => $vnp_TxnRef,
-            );
+            ];
 
-            // Sắp xếp dữ liệu và tạo mã băm bảo mật
             ksort($inputData);
-            $query = "";
-            $i = 0;
-            $hashdata = "";
-            foreach ($inputData as $key => $value) {
-                if ($i == 1) {
-                    $hashdata .= '&' . urlencode($key) . "=" . urlencode($value);
-                } else {
-                    $hashdata .= urlencode($key) . "=" . urlencode($value);
-                    $i = 1;
-                }
-                $query .= urlencode($key) . "=" . urlencode($value) . '&';
-            }
 
-            $vnp_Url = $vnp_Url . "?" . $query;
-            if (isset($vnp_HashSecret)) {
-                $vnpSecureHash = hash_hmac('sha512', $hashdata, $vnp_HashSecret);
-                $vnp_Url .= 'vnp_SecureHash=' . $vnpSecureHash;
-            }
+            $query = http_build_query($inputData);
+            $hashdata = urldecode($query);
 
-            // Đẩy khách hàng sang trang của VNPay
-            return redirect($vnp_Url);
+            $vnpSecureHash = hash_hmac('sha512', $hashdata, $vnp_HashSecret);
+
+            $paymentUrl = $vnp_Url . "?" . $query . '&vnp_SecureHash=' . $vnpSecureHash;
+
+            // 👉 Redirect sang VNPAY
+            return redirect($paymentUrl);
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['Lỗi hệ thống' => 'Không thể tạo đơn: ' . $e->getMessage()]);
+            return back()->withErrors([
+                'Lỗi hệ thống' => 'Không thể tạo đơn: ' . $e->getMessage()
+            ]);
         }
     }
 
