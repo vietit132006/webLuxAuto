@@ -173,6 +173,51 @@
         color: var(--text);
         font-size: 1.05rem;
     }
+    /* --- CSS Nút Đặt Cọc Lux Auto --- */
+    .deposit-box {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        text-align: center;
+    }
+    .btn-deposit {
+        width: 100%;
+        background: linear-gradient(135deg, var(--accent) 0%, #b89453 100%);
+        color: #000;
+        border: none;
+        padding: 1.2rem;
+        border-radius: 8px;
+        font-size: 1.25rem;
+        font-weight: 800;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 20px rgba(201, 169, 98, 0.2);
+        display: block;
+        text-decoration: none;
+    }
+    .btn-deposit:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 25px rgba(201, 169, 98, 0.4);
+        background: linear-gradient(135deg, #fcebb6 0%, var(--accent) 100%);
+    }
+    .btn-deposit.login-to-book {
+        background: #1f2937;
+        color: var(--text);
+        box-shadow: none;
+    }
+    .btn-deposit.login-to-book:hover {
+        background: #374151;
+    }
+    .deposit-policy {
+        color: var(--muted);
+        font-size: 0.85rem;
+        margin-top: 1rem;
+        line-height: 1.5;
+    }
 </style>
 
 <div class="wrap">
@@ -182,7 +227,7 @@
         <span style="color: var(--accent)">{{ $car->brand->name ?? 'Hãng khác' }} {{ $car->name }}</span>
     </div>
 
-    <div class="product-detail">
+<div class="product-detail">
         <div class="pd-left">
             <div class="pd-image-wrapper">
                 @if($car->is_featured)
@@ -205,6 +250,40 @@
                 <div class="pd-price">
                     {{ number_format($car->price, 0, ',', '.') }} VNĐ
                 </div>
+                @if($errors->any())
+    <div style="background: #fee2e2; border: 1px solid #ef4444; color: #b91c1c; padding: 1rem; border-radius: 8px; margin-top: 1rem; margin-bottom: 1rem;">
+        <strong style="display: block; margin-bottom: 0.5rem;">⚠️ Chú ý:</strong>
+        <ul style="margin: 0; padding-left: 1.5rem;">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+<div class="deposit-box">
+    @auth
+        <form action="{{ route('order.deposit', $car->car_id) }}" method="POST" onsubmit="return confirm('Bạn xác nhận muốn đặt cọc 20.000.000 VNĐ để giữ chiếc {{ $car->name }} này chứ?');">
+            @csrf
+            <button type="submit" class="btn-deposit">
+                ĐẶT CỌC NGAY
+                <span style="display:block; font-weight:500; font-size:0.9rem; margin-top:5px; color: rgba(0,0,0,0.7);">
+                    Phí giữ xe: 20.000.000 VNĐ
+                </span>
+            </button>
+        </form>
+    @else
+        <a href="{{ route('login') }}" class="btn-deposit login-to-book">
+            ĐĂNG NHẬP ĐỂ ĐẶT CỌC
+            <span style="display:block; font-weight:500; font-size:0.9rem; margin-top:5px; color: var(--muted);">
+                Vui lòng đăng nhập tài khoản của bạn
+            </span>
+        </a>
+    @endauth
+
+    <div class="deposit-policy">
+        🛡️ Xe sẽ được giữ chân trong 24h kể từ khi thanh toán tiền cọc thành công. Lux Auto cam kết hoàn tiền 100% nếu xe không đúng mô tả.
+    </div>
+</div>
 
                 <div class="pd-specs-grid">
                     <div class="spec-card">

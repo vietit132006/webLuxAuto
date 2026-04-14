@@ -11,8 +11,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResetPasswordController;
 use App\Http\Controllers\AdminNewsController;
 use App\Http\Controllers\NewsController;
-
-
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\AdminOrderController;
 
 // ==========================================
 // 1. NHÓM CHƯA ĐĂNG NHẬP (Khách)
@@ -49,7 +49,8 @@ Route::middleware('auth')->group(function () {
     // THÊM MỚI: QUẢN LÝ HỒ SƠ CÁ NHÂN
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
-
+    // Route xử lý đặt cọc
+    Route::post('/dat-coc/{car_id}', [OrderController::class, 'processDeposit'])->name('order.deposit');
     // ------------------------------------------
     // KHU VỰC KHÁCH HÀNG (Dành cho người mua)
     // ------------------------------------------
@@ -107,5 +108,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/news/{id}/edit', [AdminNewsController::class, 'edit'])->name('news.edit');
         Route::put('/news/{id}', [AdminNewsController::class, 'update'])->name('news.update');
         Route::delete('/news/{id}', [AdminNewsController::class, 'destroy'])->name('news.destroy');
+
+        // QUẢN LÝ ĐƠN HÀNG
+        Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+        Route::post('/orders/{id}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
     });
 });

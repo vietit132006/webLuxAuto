@@ -128,7 +128,7 @@
 <body>
 
     <aside class="admin-sidebar">
-        <a href="{{ route('home') }}" class="sidebar-brand" target="_blank" title="Mở trang khách hàng">
+<a href="{{ route('home') }}" class="sidebar-brand" target="_blank" title="Mở trang khách hàng">
             Lux <span>Auto</span>
         </a>
         <nav class="sidebar-nav">
@@ -139,15 +139,24 @@
             <a href="{{ route('admin.cars.index') }}" class="sidebar-link {{ request()->routeIs('admin.cars.*') ? 'active' : '' }}">
                 🚘 Quản lý kho xe
             </a>
+
             <a href="{{ route('admin.brands.index') }}" class="sidebar-link {{ request()->routeIs('admin.brands.*') ? 'active' : '' }}">
-        🏢 Quản lý hãng xe
-    </a>
-    <a href="{{ route('admin.users.index') }}" class="sidebar-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-        👥 Quản lý người dùng
-    </a>
-    <a href="{{ route('admin.news.index') }}" class="sidebar-link {{ request()->routeIs('admin.news.*') ? 'active' : '' }}">
-        � Quản lý tin tức
-    </a>
+                🏢 Quản lý hãng xe
+            </a>
+
+            <a href="{{ route('admin.users.index') }}" class="sidebar-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                👥 Quản lý người dùng
+            </a>
+
+            <a href="{{ route('admin.news.index') }}" class="sidebar-link {{ request()->routeIs('admin.news.*') ? 'active' : '' }}">
+                📰 Quản lý tin tức
+            </a>
+
+            <a href="{{ route('admin.orders.index') }}" class="sidebar-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
+                🛒 Quản lý Đơn hàng
+            </a>
+        </nav>
+
         </nav>
     </aside>
 
