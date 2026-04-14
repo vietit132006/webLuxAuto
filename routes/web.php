@@ -49,13 +49,17 @@ Route::middleware('auth')->group(function () {
     // THÊM MỚI: QUẢN LÝ HỒ SƠ CÁ NHÂN
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
     // Route xử lý đặt cọc
     Route::post('/dat-coc/{car_id}', [OrderController::class, 'processDeposit'])->name('order.deposit');
+
+    //Route xem lịch sử
+    Route::get('/lich-su-giao-dich', [OrderController::class, 'history'])->name('order.history');
     // ------------------------------------------
     // KHU VỰC KHÁCH HÀNG (Dành cho người mua)
     // ------------------------------------------
     Route::get('/xe', [CarController::class, 'index'])->name('cars.index');
-    Route::get('/xe/{car}', [CarController::class, 'show'])->name('cars.show_public'); // Đã sửa lại tên cho chuẩn
+    Route::get('/xe/{car}', [CarController::class, 'show'])->name('cars.show_public');
 
     // ------------------------------------------
     // KHU VỰC QUẢN TRỊ VIÊN (Chỉ Admin & Staff)

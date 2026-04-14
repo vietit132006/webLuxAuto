@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Car;
@@ -42,10 +43,20 @@ class OrderController extends Controller
             // Tạm thời trả về trang danh sách xe và báo thành công
             // (Sau này chúng ta sẽ chuyển hướng sang cổng VNPay ở đây)
             return redirect()->route('cars.index')->with('success', 'Tạo đơn đặt cọc thành công! Chờ nhân viên liên hệ.');
-
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withErrors(['Lỗi hệ thống' => 'Không thể tạo đơn hàng lúc này: ' . $e->getMessage()]);
         }
+    }
+    // Xem lịch sử đơn hàng của khách
+    public function history()
+    {
+        // Lấy danh sách đơn hàng của người đang đăng nhập
+        $orders = Order::with('details.car')
+            ->where('user_id', auth()->id())
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return view('client.orders.history', compact('orders'));
     }
 }
