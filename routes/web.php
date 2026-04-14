@@ -37,7 +37,7 @@ Route::middleware('guest')->group(function () {
 // 2. NHÓM ĐÃ ĐĂNG NHẬP (Thành viên & Admin)
 // ==========================================
 Route::middleware('auth')->group(function () {
-
+    Route::get('/thanh-toan/vnpay-return', [\App\Http\Controllers\OrderController::class, 'vnpayReturn'])->name('vnpay.return');
     // Trang chủ
     Route::get('/', HomeController::class)->name('home');
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
