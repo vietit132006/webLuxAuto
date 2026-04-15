@@ -8,8 +8,11 @@ class Car extends Model
 {
     protected $table = 'cars';
     protected $primaryKey = 'car_id';
+
+    // Tắt tự động timestamps vì bảng của bạn chỉ có created_at (DB tự sinh)
     public $timestamps = false;
 
+    // Khai báo các cột được phép lưu dữ liệu
     protected $fillable = [
         'name',
         'brand_id',
@@ -20,9 +23,10 @@ class Car extends Model
         'stock',
         'image',
         'mileage_km',
-        'fuel_type',
+        'fuel',          // Đã đổi từ fuel_type thành fuel
         'transmission',
-        'is_featured'
+        'is_featured',
+        'status'         // Đã bổ sung thêm status
     ];
 
     protected function casts(): array
@@ -42,6 +46,6 @@ class Car extends Model
 
     public function getTitleAttribute(): string
     {
-        return $this->brand->name . ' ' . $this->name;
+        return $this->brand ? $this->brand->name . ' ' . $this->name : $this->name;
     }
 }

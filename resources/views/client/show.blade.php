@@ -246,7 +246,14 @@
             <div class="pd-info">
                 <div class="pd-brand">{{ $car->brand->name ?? 'Hãng xe' }}</div>
                 <h1 class="pd-title">{{ $car->name }}</h1>
-
+@if(isset($car->status))
+    <div style="margin-top: 0.5rem; margin-bottom: 1.5rem;">
+        <span style="display: inline-block; background: {{ $car->status == 1 ? 'var(--accent)' : '#4b5563' }}; color: {{ $car->status == 1 ? '#000' : '#fff' }}; padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.9rem; font-weight: bold;">
+            <i style="margin-right: 5px;">{{ $car->status == 1 ? '✨' : '🔄' }}</i>
+            {{ $car->status == 1 ? 'Mới 100%' : 'Xe lướt (Cũ)' }}
+        </span>
+    </div>
+@endif
                 <div class="pd-price">
                     {{ number_format($car->price, 0, ',', '.') }} VNĐ
                 </div>
@@ -285,30 +292,42 @@
     </div>
 </div>
 
-                <div class="pd-specs-grid">
-                    <div class="spec-card">
-                        <span class="label">Năm sản xuất</span>
-                        <span class="value">{{ $car->year }}</span>
-                    </div>
-                    <div class="spec-card">
-                        <span class="label">Đã đi (Odo)</span>
-                        <span class="value">{{ $car->mileage_km ? number_format($car->mileage_km, 0, ',', '.') . ' km' : 'Xe mới' }}</span>
-                    </div>
-                    <div class="spec-card">
-                        <span class="label">Nhiên liệu</span>
-                        <span class="value">{{ $car->fuel_type ?? 'Cập nhật sau' }}</span>
-                    </div>
-                    <div class="spec-card">
-                        <span class="label">Hộp số</span>
-                        <span class="value">{{ $car->transmission ?? 'Cập nhật sau' }}</span>
-                    </div>
-                    @if($car->color)
-                    <div class="spec-card">
-                        <span class="label">Màu ngoại thất</span>
-                        <span class="value">{{ $car->color }}</span>
-                    </div>
-                    @endif
-                </div>
+              <div class="pd-specs-grid">
+
+    <div class="spec-card">
+        <span class="label">Năm sản xuất</span>
+        <span class="value">{{ $car->year ?? 'Cập nhật sau' }}</span>
+    </div>
+
+    <div class="spec-card">
+        <span class="label">Đã đi (Odo)</span>
+        <span class="value">
+            @if($car->mileage_km)
+                {{ number_format($car->mileage_km, 0, ',', '.') }} km
+            @else
+                {{ (isset($car->status) && $car->status == 1) ? 'Xe mới 100%' : 'Chưa cập nhật' }}
+            @endif
+        </span>
+    </div>
+
+    <div class="spec-card">
+        <span class="label">Nhiên liệu</span>
+        <span class="value">{{ $car->fuel ?? 'Cập nhật sau' }}</span>
+    </div>
+
+    <div class="spec-card">
+        <span class="label">Hộp số</span>
+        <span class="value">{{ $car->transmission ?? 'Cập nhật sau' }}</span>
+    </div>
+
+    @if($car->color)
+    <div class="spec-card">
+        <span class="label">Màu ngoại thất</span>
+        <span class="value">{{ $car->color }}</span>
+    </div>
+    @endif
+
+</div>
 
                 <div class="pd-actions">
                     <a href="tel:0988888888" class="btn-primary-cta">📞 Gọi Hotline tư vấn</a>

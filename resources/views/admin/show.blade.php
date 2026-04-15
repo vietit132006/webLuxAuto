@@ -138,20 +138,75 @@
 
             <p class="vd-price">{{ number_format($car->price, 0, ',', '.') }} VNĐ</p>
 
-            <div class="vd-specs">
-                <div><span class="label">Mã ID</span> <strong>#{{ $car->car_id }}</strong></div>
-                <div><span class="label">Hãng xe</span> <strong>{{ $car->brand->name ?? 'N/A' }}</strong></div>
-                <div><span class="label">Dòng xe</span> <strong>{{ $car->name }}</strong></div>
-                <div><span class="label">Năm sản xuất</span> <strong>{{ $car->year }}</strong></div>
+           <div class="vd-specs">
+                <div>
+                    <span class="label" style="color: #64748b; font-size: 0.85rem; text-transform: uppercase;">Mã ID</span>
+                    <strong style="color: #0f172a; font-size: 1.05rem;">#{{ $car->car_id }}</strong>
+                </div>
 
-                <div><span class="label">Số Km đã đi</span> <strong>{{ $car->mileage_km ? number_format($car->mileage_km, 0, ',', '.') . ' km' : 'Chưa cập nhật' }}</strong></div>
-                <div><span class="label">Tồn kho</span> <strong>{{ $car->stock }} chiếc</strong></div>
+                <div>
+                    <span class="label" style="color: #64748b; font-size: 0.85rem; text-transform: uppercase;">Hãng xe</span>
+                    <strong style="color: #0f172a; font-size: 1.05rem;">{{ $car->brand->name ?? 'N/A' }}</strong>
+                </div>
 
-                <div><span class="label">Nhiên liệu</span> <strong>{{ $car->fuel_type ?? 'Chưa cập nhật' }}</strong></div>
-                <div><span class="label">Hộp số</span> <strong>{{ $car->transmission ?? 'Chưa cập nhật' }}</strong></div>
+                <div>
+                    <span class="label" style="color: #64748b; font-size: 0.85rem; text-transform: uppercase;">Dòng xe</span>
+                    <strong style="color: #0f172a; font-size: 1.05rem;">{{ $car->name }}</strong>
+                </div>
 
-                <div><span class="label">Màu sắc</span> <strong>{{ $car->color ?? 'Chưa cập nhật' }}</strong></div>
-                <div><span class="label">Ngày đăng</span> <strong>{{ $car->created_at ? $car->created_at->format('d/m/Y H:i') : 'N/A' }}</strong></div>
+                <div>
+                    <span class="label" style="color: #64748b; font-size: 0.85rem; text-transform: uppercase;">Năm sản xuất</span>
+                    <strong style="color: #0f172a; font-size: 1.05rem;">{{ $car->year ?? 'Chưa cập nhật' }}</strong>
+                </div>
+
+                <div>
+                    <span class="label" style="color: #64748b; font-size: 0.85rem; text-transform: uppercase;">Tình trạng</span>
+                    <strong style="font-size: 1.05rem;">
+                        @if(isset($car->status))
+                            <span style="color: {{ $car->status == 1 ? '#059669' : '#ea580c' }}; font-weight: 800;">
+                                {{ $car->status == 1 ? 'Mới 100%' : 'Xe lướt (Cũ)' }}
+                            </span>
+                        @else
+                            <span style="color: #0f172a;">Chưa cập nhật</span>
+                        @endif
+                    </strong>
+                </div>
+
+                <div>
+                    <span class="label" style="color: #64748b; font-size: 0.85rem; text-transform: uppercase;">Số Km đã đi</span>
+                    <strong style="color: #0f172a; font-size: 1.05rem;">
+                        @if($car->mileage_km)
+                            {{ number_format($car->mileage_km, 0, ',', '.') }} km
+                        @else
+                            {{ (isset($car->status) && $car->status == 1) ? 'Xe mới 100%' : 'Chưa cập nhật' }}
+                        @endif
+                    </strong>
+                </div>
+
+                <div>
+                    <span class="label" style="color: #64748b; font-size: 0.85rem; text-transform: uppercase;">Tồn kho</span>
+                    <strong style="color: #0f172a; font-size: 1.05rem;">{{ $car->stock }} chiếc</strong>
+                </div>
+
+                <div>
+                    <span class="label" style="color: #64748b; font-size: 0.85rem; text-transform: uppercase;">Nhiên liệu</span>
+                    <strong style="color: #0f172a; font-size: 1.05rem;">{{ $car->fuel ?? 'Chưa cập nhật' }}</strong>
+                </div>
+
+                <div>
+                    <span class="label" style="color: #64748b; font-size: 0.85rem; text-transform: uppercase;">Hộp số</span>
+                    <strong style="color: #0f172a; font-size: 1.05rem;">{{ $car->transmission ?? 'Chưa cập nhật' }}</strong>
+                </div>
+
+                <div>
+                    <span class="label" style="color: #64748b; font-size: 0.85rem; text-transform: uppercase;">Màu sắc</span>
+                    <strong style="color: #0f172a; font-size: 1.05rem;">{{ $car->color ?? 'Chưa cập nhật' }}</strong>
+                </div>
+
+                <div style="grid-column: span 2;">
+                    <span class="label" style="color: #64748b; font-size: 0.85rem; text-transform: uppercase;">Ngày đăng</span>
+                    <strong style="color: #0f172a; font-size: 1.05rem;">{{ $car->created_at ? $car->created_at->format('d/m/Y H:i') : 'N/A' }}</strong>
+                </div>
             </div>
 
             @if ($car->description)
@@ -161,9 +216,9 @@
             @endif
 
             <div class="vd-actions">
-                <a href="{{ route('admin.cars.index') }}" class="btn-back">← Quay lại danh sách</a>
+                <a href="{{ route('admin.cars.index') }}" class="btn-back" style="color: #000000">← Quay lại danh sách</a>
 
-                <a href="{{ route('admin.cars.edit', $car->car_id) }}" class="btn-edit">✏️ Sửa thông tin</a>
+                <a href="{{ route('admin.cars.edit', $car->car_id) }}" class="btn-edit" style="color: #e63946">Sửa thông tin</a>
             </div>
         </div>
     </div>
