@@ -1,0 +1,406 @@
+@extends('layouts.site')
+
+@section('title', $car->brand->name . ' ' . $car->name)
+
+@section('content')
+<style>
+    /* --- BREADCRUMB --- */
+    .breadcrumb {
+        margin-bottom: 1.5rem;
+        font-size: 0.9rem;
+        color: var(--muted);
+    }
+    .breadcrumb a {
+        color: var(--text);
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    .breadcrumb a:hover {
+        color: var(--accent);
+    }
+
+    /* --- LAYOUT CHÍNH --- */
+    .product-detail {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+        background: var(--surface);
+        padding: 0;
+        border-radius: 0;
+    }
+    @media (min-width: 992px) {
+        .product-detail { grid-template-columns: 1.4fr 1fr; }
+    }
+
+    /* --- BÊN TRÁI: HÌNH ẢNH --- */
+    .pd-image-wrapper {
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        aspect-ratio: 16 / 10;
+        background: #0a0d12;
+        position: relative;
+    }
+    .pd-image-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+    .badge-hot {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background: #e63946;
+        color: #fff;
+        padding: 0.4rem 1rem;
+        border-radius: 30px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        box-shadow: 0 4px 10px rgba(230, 57, 70, 0.4);
+    }
+
+    /* --- BÊN PHẢI: THÔNG TIN --- */
+    .pd-info {
+        display: flex;
+        flex-direction: column;
+    }
+    .pd-brand {
+        font-size: 1rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+    .pd-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: var(--text);
+        margin: 0 0 1rem;
+        line-height: 1.2;
+    }
+    .pd-price {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--accent); /* Giả sử màu accent của bạn là màu vàng kim/cam */
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* --- LƯỚI THÔNG SỐ (KIỂU CARD NHỎ) --- */
+    .pd-specs-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    .spec-card {
+        background: rgba(255, 255, 255, 0.03); /* Chỉnh lại màu này nếu site của bạn nền sáng */
+        border: 1px solid var(--border);
+        padding: 1rem;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    .spec-card .label {
+        font-size: 0.85rem;
+        color: var(--muted);
+    }
+    .spec-card .value {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    /* --- NÚT LIÊN HỆ --- */
+    .pd-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: auto;
+    }
+    .btn-primary-cta {
+        background: var(--accent);
+        color: #0c0f14;
+        text-align: center;
+        padding: 1rem;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        text-decoration: none;
+        text-transform: uppercase;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(201, 169, 98, 0.3); /* Chỉnh màu shadow theo var(--accent) của bạn */
+    }
+    .btn-primary-cta:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(201, 169, 98, 0.4);
+    }
+    .btn-secondary-cta {
+        background: transparent;
+        color: var(--text);
+        border: 2px solid var(--border);
+        text-align: center;
+        padding: 1rem;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+    .btn-secondary-cta:hover {
+        border-color: var(--text);
+    }
+
+    /* --- MÔ TẢ CHI TIẾT DƯỚI CÙNG --- */
+    .pd-description-box {
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid var(--border);
+    }
+    .pd-description-box h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        color: var(--text);
+    }
+    .pd-desc-content {
+        line-height: 1.8;
+        color: var(--text);
+        font-size: 1.05rem;
+    }
+    /* --- CSS Nút Đặt Cọc Lux Auto --- */
+    .deposit-box {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        text-align: center;
+    }
+    .btn-deposit {
+        width: 100%;
+        background: linear-gradient(135deg, var(--accent) 0%, #b89453 100%);
+        color: #000;
+        border: none;
+        padding: 1.2rem;
+        border-radius: 8px;
+        font-size: 1.25rem;
+        font-weight: 800;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 20px rgba(201, 169, 98, 0.2);
+        display: block;
+        text-decoration: none;
+    }
+    .btn-deposit:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 25px rgba(201, 169, 98, 0.4);
+        background: linear-gradient(135deg, #fcebb6 0%, var(--accent) 100%);
+    }
+    .btn-deposit.login-to-book {
+        background: #1f2937;
+        color: var(--text);
+        box-shadow: none;
+    }
+    .btn-deposit.login-to-book:hover {
+        background: #374151;
+    }
+    .deposit-policy {
+        color: var(--muted);
+        font-size: 0.85rem;
+        margin-top: 1rem;
+        line-height: 1.5;
+    }
+</style>
+
+<div class="wrap">
+    <div class="breadcrumb">
+        <a href="/">Trang chủ</a> &nbsp; / &nbsp;
+        <a href="#">Xe đã qua sử dụng</a> &nbsp; / &nbsp;
+        <span style="color: var(--accent)">{{ $car->brand->name ?? 'Hãng khác' }} {{ $car->name }}</span>
+    </div>
+
+<div class="product-detail">
+        <div class="pd-left">
+            <div class="pd-image-wrapper">
+                @if($car->is_featured)
+                    <div class="badge-hot">Xe nổi bật</div>
+                @endif
+
+                @if ($car->image)
+                    <img src="{{ asset('storage/' . $car->image) }}" alt="{{ $car->name }}">
+                @else
+                    <img src="https://via.placeholder.com/800x500?text=Chua+co+hinh+anh" alt="Chưa có hình">
+                @endif
+            </div>
+        </div>
+
+        <div class="pd-right">
+            <div class="pd-info">
+                <div class="pd-brand">{{ $car->brand->name ?? 'Hãng xe' }}</div>
+                <h1 class="pd-title">{{ $car->name }}</h1>
+
+                <div class="pd-price">
+                    {{ number_format($car->price, 0, ',', '.') }} VNĐ
+                </div>
+                @if($errors->any())
+    <div style="background: #fee2e2; border: 1px solid #ef4444; color: #b91c1c; padding: 1rem; border-radius: 8px; margin-top: 1rem; margin-bottom: 1rem;">
+        <strong style="display: block; margin-bottom: 0.5rem;">⚠️ Chú ý:</strong>
+        <ul style="margin: 0; padding-left: 1.5rem;">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+<div class="deposit-box">
+    @auth
+        <form action="{{ route('order.deposit', $car->car_id) }}" method="POST" onsubmit="return confirm('Bạn xác nhận muốn đặt cọc 20.000.000 VNĐ để giữ chiếc {{ $car->name }} này chứ?');">
+            @csrf
+            <button type="submit" class="btn-deposit">
+                ĐẶT CỌC NGAY
+                <span style="display:block; font-weight:500; font-size:0.9rem; margin-top:5px; color: rgba(0,0,0,0.7);">
+                    Phí giữ xe: 20.000.000 VNĐ
+                </span>
+            </button>
+        </form>
+    @else
+        <a href="{{ route('login') }}" class="btn-deposit login-to-book">
+            ĐĂNG NHẬP ĐỂ ĐẶT CỌC
+            <span style="display:block; font-weight:500; font-size:0.9rem; margin-top:5px; color: var(--muted);">
+                Vui lòng đăng nhập tài khoản của bạn
+            </span>
+        </a>
+    @endauth
+
+    <div class="deposit-policy">
+        🛡️ Xe sẽ được giữ chân trong 24h kể từ khi thanh toán tiền cọc thành công. Lux Auto cam kết hoàn tiền 100% nếu xe không đúng mô tả.
+    </div>
+</div>
+
+                <div class="pd-specs-grid">
+                    <div class="spec-card">
+                        <span class="label">Năm sản xuất</span>
+                        <span class="value">{{ $car->year }}</span>
+                    </div>
+                    <div class="spec-card">
+                        <span class="label">Đã đi (Odo)</span>
+                        <span class="value">{{ $car->mileage_km ? number_format($car->mileage_km, 0, ',', '.') . ' km' : 'Xe mới' }}</span>
+                    </div>
+                    <div class="spec-card">
+                        <span class="label">Nhiên liệu</span>
+                        <span class="value">{{ $car->fuel_type ?? 'Cập nhật sau' }}</span>
+                    </div>
+                    <div class="spec-card">
+                        <span class="label">Hộp số</span>
+                        <span class="value">{{ $car->transmission ?? 'Cập nhật sau' }}</span>
+                    </div>
+                    @if($car->color)
+                    <div class="spec-card">
+                        <span class="label">Màu ngoại thất</span>
+                        <span class="value">{{ $car->color }}</span>
+                    </div>
+                    @endif
+                </div>
+
+                <div class="pd-actions">
+                    <a href="tel:0988888888" class="btn-primary-cta">📞 Gọi Hotline tư vấn</a>
+
+                    <a href="#" class="btn-secondary-cta">✉️ Đăng ký lái thử</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if ($car->description)
+        <div class="pd-description-box">
+            <h3>Thông tin chi tiết</h3>
+            <div class="pd-desc-content">
+                {!! nl2br(e($car->description)) !!}
+            </div>
+        </div>
+    @endif
+
+    <div class="pd-description-box" style="margin-top: 1.25rem;">
+        <h3>Đánh giá sản phẩm</h3>
+
+        <div style="display:flex; flex-wrap:wrap; gap: 12px; align-items:center; margin-bottom: 1rem;">
+            <div style="font-weight: 700; color: var(--text);">
+                {{ number_format($avgRating ?? 0, 2) }}/5
+            </div>
+            <div style="color: var(--muted);">
+                ({{ $reviewCount ?? 0 }} đánh giá)
+            </div>
+        </div>
+
+        @auth
+            <form action="{{ route('reviews.store') }}" method="POST" style="border:1px solid var(--border); border-radius: 12px; padding: 1rem; background: var(--surface); margin-bottom: 1rem;">
+                @csrf
+                <input type="hidden" name="car_id" value="{{ $car->car_id }}">
+
+                <div style="display:flex; flex-wrap:wrap; gap: 12px; align-items:center; margin-bottom: .75rem;">
+                    <label style="min-width: 120px; color: var(--muted);">Số sao</label>
+                    <select name="rating" required style="background:#0a0d12; color: var(--text); border:1px solid var(--border); padding:.5rem .75rem; border-radius: 8px;">
+                        @for($i=5; $i>=1; $i--)
+                            <option value="{{ $i }}" {{ (old('rating') ?? ($myReview->rating ?? null)) == $i ? 'selected' : '' }}>{{ $i }} sao</option>
+                        @endfor
+                    </select>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap: 8px; margin-bottom: .75rem;">
+                    <label style="color: var(--muted);">Nhận xét (tuỳ chọn)</label>
+                    <textarea name="comment" rows="3" style="width:100%; background:#0a0d12; color: var(--text); border:1px solid var(--border); padding:.75rem; border-radius: 10px; resize: vertical;">{{ old('comment') ?? ($myReview->comment ?? '') }}</textarea>
+                </div>
+
+                <button type="submit" style="background: var(--accent); color:#000; border:none; padding:.6rem 1rem; border-radius: 10px; font-weight: 700; cursor:pointer;">
+                    Gửi đánh giá
+                </button>
+            </form>
+        @else
+            <div style="border:1px solid var(--border); border-radius: 12px; padding: 1rem; background: var(--surface); color: var(--muted); margin-bottom: 1rem;">
+                Vui lòng <a href="{{ route('login') }}" style="color: var(--accent); font-weight: 700;">đăng nhập</a> để đánh giá xe.
+            </div>
+        @endauth
+
+        <div style="display:flex; flex-direction:column; gap: 12px;">
+            @forelse(($reviews ?? []) as $review)
+                <div style="border:1px solid var(--border); border-radius: 12px; padding: 1rem; background: var(--surface);">
+                    <div style="display:flex; justify-content:space-between; gap: 12px; align-items:flex-start;">
+                        <div style="font-weight: 700; color: var(--text);">
+                            {{ $review->user->name ?? 'Người dùng' }}
+                        </div>
+                        <div style="color: var(--muted); font-size: .9rem;">
+                            {{ $review->created_at ? $review->created_at->format('d/m/Y H:i') : '' }}
+                        </div>
+                    </div>
+                    <div style="margin:.35rem 0 .5rem; color: #facc15; font-weight: 800;">
+                        {{ str_repeat('★', (int) $review->rating) }}{{ str_repeat('☆', 5 - (int) $review->rating) }}
+                    </div>
+                    @if($review->comment)
+                        <div style="color: var(--text); line-height: 1.55;">
+                            {{ $review->comment }}
+                        </div>
+                    @endif
+                </div>
+            @empty
+                <div style="color: var(--muted);">
+                    Chưa có đánh giá nào cho xe này.
+                </div>
+            @endforelse
+        </div>
+
+        @if(isset($reviews) && method_exists($reviews, 'links'))
+            <div style="margin-top: 1rem;">
+                {{ $reviews->links('pagination.lux') }}
+            </div>
+        @endif
+    </div>
+</div>
+@endsection
