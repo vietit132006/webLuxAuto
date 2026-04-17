@@ -44,6 +44,12 @@
             </div>
         @endif
 
+        @if ($errors->any())
+            <div class="error" role="alert">
+                {{ $errors->first() }}
+            </div>
+        @endif
+
         <form method="POST" action="{{ route('login') }}" novalidate>
             @csrf
 
@@ -53,9 +59,17 @@
             <label for="password">Mật khẩu</label>
             <input id="password" type="password" name="password" required autocomplete="current-password">
 
-            <button type="submit">Đăng nhập</button>
-            <a href="{{ route('password.request') }}">Quên mật khẩu?</a>
+            <button type="submit" style="margin-bottom: 1rem;">Đăng nhập</button>
+
+            <div style="text-align: center;">
+                <a href="{{ route('password.request') }}" style="color:#2563eb; font-size: 0.875rem; text-decoration: none;">Quên mật khẩu?</a>
+            </div>
         </form>
+
+        <p style="margin-top:1.5rem; text-align:center; font-size:0.875rem; color:#52525b;">
+            Chưa có tài khoản?
+            <a href="{{ route('register') }}" style="color:#2563eb; font-weight: 500; text-decoration: none;">Đăng ký</a>
+        </p>
     </div>
 </body>
 </html>

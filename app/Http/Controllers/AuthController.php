@@ -18,12 +18,17 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
+        // Validate input (lấy từ code teammate)
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string'],
+        ]);
+
         // Thử đăng nhập
         if (Auth::attempt($request->only('email', 'password'))) {
 
             $request->session()->regenerate();
 
-            // Lấy thông tin user vừa đăng nhập thành công
             $user = Auth::user();
 
             // Kiểm tra: Nếu là admin hoặc staff thì cho vào Dashboard
@@ -42,6 +47,9 @@ class AuthController extends Controller
     public function logout()
     {
         Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
         return redirect()->route('login');
     }
 
