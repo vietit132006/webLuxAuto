@@ -44,7 +44,7 @@ class AuthController extends Controller
         return back()->with('error', 'Sai tài khoản hoặc mật khẩu');
     }
     // LOGOUT
-    public function logout()
+    public function logout(Request $request)
     {
         Auth::logout();
         $request->session()->invalidate();
