@@ -1,18 +1,19 @@
 <?php
 
 use App\Http\Controllers\AdminController; // Đã thêm dòng này
+use App\Http\Controllers\AdminNewsController;
+use App\Http\Controllers\AdminOrderController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CarController;
 use App\Http\Controllers\HomeController;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ResetPasswordController;
-use App\Http\Controllers\AdminNewsController;
+use App\Http\Controllers\LiveController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\AdminOrderController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ResetPasswordController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Route;
 
 // ==========================================
 // 1. NHÓM CHƯA ĐĂNG NHẬP (Khách)
@@ -45,6 +46,8 @@ Route::middleware('auth')->group(function () {
     // 1. ROUTE CHO KHÁCH HÀNG
     Route::get('/tin-tuc', [NewsController::class, 'index'])->name('news.index');
     Route::get('/tin-tuc/{slug}', [NewsController::class, 'show'])->name('news.show');
+
+    Route::get('/livestream', [LiveController::class, 'index'])->name('livestream');
 
     // THÊM MỚI: QUẢN LÝ HỒ SƠ CÁ NHÂN
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
