@@ -119,5 +119,9 @@ Route::middleware('auth')->group(function () {
         // QUẢN LÝ ĐƠN HÀNG
         Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
         Route::post('/orders/{id}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
+
+        // QUẢN LÝ LIVESTREAM
+        Route::get('/live', [App\Http\Controllers\AdminLiveController::class, 'index'])->name('live.index');
+        Route::post('/live/update', [App\Http\Controllers\AdminLiveController::class, 'update'])->name('live.update');
     });
 });

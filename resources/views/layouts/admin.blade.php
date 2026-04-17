@@ -79,6 +79,13 @@
             border-left: 3px solid var(--accent);
         }
 
+        /* Highlight đặc biệt cho nút Live */
+        .sidebar-link-live.active {
+            background: rgba(239, 68, 68, 0.1) !important;
+            color: #ef4444 !important;
+            border-left: 3px solid #ef4444 !important;
+        }
+
         /* --- KHU VỰC NỘI DUNG BÊN PHẢI --- */
         .admin-wrapper {
             flex: 1;
@@ -128,7 +135,7 @@
 <body>
 
     <aside class="admin-sidebar">
-<a href="{{ route('home') }}" class="sidebar-brand" target="_blank" title="Mở trang khách hàng">
+        <a href="{{ route('home') }}" class="sidebar-brand" target="_blank" title="Mở trang khách hàng">
             Lux <span>Auto</span>
         </a>
         <nav class="sidebar-nav">
@@ -138,6 +145,10 @@
 
             <a href="{{ route('admin.cars.index') }}" class="sidebar-link {{ request()->routeIs('admin.cars.*') ? 'active' : '' }}">
                 🚘 Quản lý kho xe
+            </a>
+
+            <a href="{{ route('admin.live.index') }}" class="sidebar-link sidebar-link-live {{ request()->routeIs('admin.live.*') ? 'active' : '' }}" style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 1.1rem;">🔴</span> Quản lý Livestream
             </a>
 
             <a href="{{ route('admin.brands.index') }}" class="sidebar-link {{ request()->routeIs('admin.brands.*') ? 'active' : '' }}">
@@ -155,8 +166,6 @@
             <a href="{{ route('admin.orders.index') }}" class="sidebar-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
                 🛒 Quản lý Đơn hàng
             </a>
-        </nav>
-
         </nav>
     </aside>
 
