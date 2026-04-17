@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Brand;
+use App\Models\Car; // Thêm dòng này để gọi được Model Car
 use Illuminate\Http\Request;
 
 class BrandController extends Controller
@@ -48,12 +49,22 @@ class BrandController extends Controller
         return redirect()->route('admin.brands.index')->with('success', 'Đã cập nhật hãng xe!');
     }
 
-    // 6. Xử lý xóa
+    // 6. Xử lý xóa (Đã được nâng cấp để chống xóa nhầm)
     public function destroy($id)
     {
         $brand = Brand::findOrFail($id);
+
+        // ĐẾM SỐ XE ĐANG THUỘC VỀ HÃNG NÀY TRONG KHO
+        $carCount = Car::where('brand_id', $id)->count();
+
+        // NẾU CÓ LỚN HƠN 0 CHIẾC XE -> CHẶN LẠI VÀ BÁO LỖI
+        if ($carCount > 0) {
+            return back()->with('error', 'Cảnh báo: Không thể xóa! Hãng xe này đang có ' . $carCount . ' chiếc xe trong kho. Vui lòng xóa xe trước.');
+        }
+
+        // NẾU KHO TRỐNG -> CHO PHÉP XÓA BÌNH THƯỜNG
         $brand->delete();
 
-        return redirect()->route('admin.brands.index')->with('success', 'Đã xóa hãng xe!');
+        return redirect()->route('admin.brands.index')->with('success', 'Đã xóa hãng xe thành công!');
     }
 }

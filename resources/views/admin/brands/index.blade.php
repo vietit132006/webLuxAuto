@@ -5,67 +5,78 @@
 <div class="wrap">
     <div class="header-actions" style="display: flex; justify-content: space-between; margin-bottom: 1.5rem;">
         <h1 class="page-title" style="margin: 0; font-size: 1.5rem;">Quản lý Hãng Xe</h1>
-        <a href="{{ route('admin.brands.create') }}" style="background: var(--accent); color: #000; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold;">+ Thêm hãng mới</a>
+        <a href="{{ route('admin.brands.create') }}" style="background: var(--accent); color: #000; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; text-decoration: none;">+ Thêm hãng mới</a>
     </div>
 
-    @if(session('success'))
-        <style>
-            .flash-alert {
-                background-color: #d1fae5;
-                color: #065f46;
-                padding: 1rem 1.5rem;
-                border-radius: 8px;
-                margin-bottom: 1.5rem;
-                border: 1px solid #34d399;
-                font-weight: 600;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                transition: opacity 0.5s ease, transform 0.5s ease;
-            }
-            .flash-alert.hide {
-                opacity: 0;
-                transform: translateY(-10px);
-                pointer-events: none;
-            }
-            .btn-close-alert {
-                background: none;
-                border: none;
-                color: #065f46;
-                font-size: 1.5rem;
-                line-height: 1;
-                cursor: pointer;
-                padding: 0 0 0 1rem;
-                transition: transform 0.2s;
-            }
-            .btn-close-alert:hover {
-                transform: scale(1.2);
-                color: #047857;
-            }
-        </style>
+    <style>
+        .flash-alert {
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .flash-success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #34d399;
+        }
+        .flash-error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #f87171;
+        }
+        .flash-alert.hide {
+            opacity: 0;
+            transform: translateY(-10px);
+            pointer-events: none;
+        }
+        .btn-close-alert {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0 0 0 1rem;
+            transition: transform 0.2s;
+        }
+        .flash-success .btn-close-alert { color: #065f46; }
+        .flash-error .btn-close-alert { color: #991b1b; }
+        .btn-close-alert:hover { transform: scale(1.2); }
+    </style>
 
-        <div id="success-alert" class="flash-alert">
+    {{-- Thông báo Thành Công --}}
+    @if(session('success'))
+        <div id="flash-message" class="flash-alert flash-success">
             <span>✅ {{ session('success') }}</span>
             <button type="button" class="btn-close-alert" onclick="closeAlert()" aria-label="Đóng">&times;</button>
         </div>
-
-        <script>
-            function closeAlert() {
-                const alertBox = document.getElementById('success-alert');
-                if (alertBox) {
-                    alertBox.classList.add('hide');
-                    setTimeout(() => {
-                        alertBox.remove();
-                    }, 500);
-                }
-            }
-
-            // Tự động gọi hàm đóng sau 2 giây (2000 ms)
-            setTimeout(() => {
-                closeAlert();
-            }, 2000);
-        </script>
     @endif
+
+    {{-- Thông báo Lỗi (Đã được tách ra ngoài độc lập) --}}
+    @if(session('error'))
+        <div id="flash-message" class="flash-alert flash-error">
+            <span>⚠️ {{ session('error') }}</span>
+            <button type="button" class="btn-close-alert" onclick="closeAlert()" aria-label="Đóng">&times;</button>
+        </div>
+    @endif
+
+    {{-- Script đóng thông báo --}}
+    <script>
+        function closeAlert() {
+            const alertBox = document.getElementById('flash-message');
+            if (alertBox) {
+                alertBox.classList.add('hide');
+                setTimeout(() => { alertBox.remove(); }, 500);
+            }
+        }
+
+        // Tự động tắt sau 3 giây (3000ms) để người dùng kịp đọc lỗi dài
+        setTimeout(() => { closeAlert(); }, 3000);
+    </script>
     <div class="table-responsive" style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;">
         <table class="admin-table" style="width: 100%; border-collapse: collapse; text-align: left;">
             <thead>
@@ -83,10 +94,10 @@
                     <td style="padding: 1rem; font-weight: bold; color: var(--text);">{{ $brand->name }}</td>
                     <td style="padding: 1rem;">{{ $brand->country ?? 'Chưa cập nhật' }}</td>
                     <td style="padding: 1rem; text-align: right;">
-                        <a href="{{ route('admin.brands.edit', $brand->brand_id) }}" style="color: #facc15; margin-right: 10px;">Sửa</a>
+                        <a href="{{ route('admin.brands.edit', $brand->brand_id) }}" style="color: #facc15; margin-right: 10px; text-decoration: none;">Sửa</a>
                         <form action="{{ route('admin.brands.destroy', $brand->brand_id) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('Xóa hãng xe này?');">
                             @csrf @method('DELETE')
-                            <button type="submit" style="background: none; border: none; color: #f87171; cursor: pointer; padding: 0;">Xóa</button>
+                            <button type="submit" style="background: none; border: none; color: #f87171; cursor: pointer; padding: 0; font-size: 1rem;">Xóa</button>
                         </form>
                     </td>
                 </tr>
