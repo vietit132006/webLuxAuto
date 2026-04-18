@@ -3,8 +3,9 @@
 
 @section('content')
 <style>
+    /* TRÀN MÀN HÌNH BẰNG 98% */
     .history-wrap {
-        max-width: 1000px;
+        max-width: 98%;
         margin: 3rem auto;
         padding: 0 1.5rem;
     }
@@ -18,16 +19,25 @@
         text-align: center;
     }
 
+    /* LƯỚI GRID CHO CÁC ĐƠN HÀNG */
+    .history-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+
     .history-card {
         background: var(--surface);
         border: 1px solid var(--border);
         border-radius: 12px;
         overflow: hidden;
-        margin-bottom: 1.5rem;
-        transition: transform 0.2s;
+        transition: transform 0.2s, border-color 0.3s;
+        display: flex;
+        flex-direction: column;
     }
     .history-card:hover {
         border-color: var(--accent-dim);
+        transform: translateY(-3px);
     }
 
     /* Header của mỗi đơn hàng */
@@ -57,10 +67,16 @@
         display: flex;
         align-items: center;
         gap: 1.5rem;
+        flex: 1; /* Để thẻ tự động giãn đều chiều cao nếu có nhiều xe */
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
+    .h-card-body:last-child {
+        border-bottom: none;
+    }
+
     .h-car-img {
-        width: 120px;
-        height: 80px;
+        width: 140px;
+        height: 90px;
         object-fit: cover;
         border-radius: 6px;
         border: 1px solid var(--border);
@@ -87,6 +103,7 @@
         font-size: 0.85rem;
         font-weight: bold;
         display: inline-block;
+        white-space: nowrap;
     }
     .badge-0 { background: rgba(234, 179, 8, 0.1); color: #facc15; border: 1px solid rgba(250, 204, 21, 0.2); }
     .badge-1 { background: rgba(59, 130, 246, 0.1); color: #60a5fa; border: 1px solid rgba(96, 165, 250, 0.2); }
@@ -99,6 +116,18 @@
         background: var(--surface);
         border: 1px dashed var(--border);
         border-radius: 12px;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+        .history-grid { grid-template-columns: 1fr; } /* Trở về 1 cột trên màn hình nhỏ */
+    }
+    @media (max-width: 576px) {
+        .h-card-body { flex-direction: column; align-items: flex-start; }
+        .h-car-img { width: 100%; height: 160px; }
+        .h-card-header { flex-direction: column; align-items: flex-start; }
     }
 </style>
 
@@ -109,47 +138,49 @@
         <div class="empty-state">
             <h3 style="color: var(--text); margin-top:0;">Bạn chưa có giao dịch nào!</h3>
             <p style="color: var(--muted); margin-bottom: 2rem;">Hãy khám phá các dòng xe sang trọng tại Lux Auto và trải nghiệm dịch vụ đẳng cấp của chúng tôi.</p>
-            <a href="{{ route('cars.index') }}" style="background: var(--accent); color: #000; padding: 0.8rem 2rem; border-radius: 50px; text-decoration: none; font-weight: bold;">Khám phá xe ngay</a>
+            <a href="{{ route('cars.index') }}" style="background: var(--accent); color: #000; padding: 0.8rem 2rem; border-radius: 50px; text-decoration: none; font-weight: bold; transition: 0.3s;" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='brightness(1)'">Khám phá xe ngay</a>
         </div>
     @else
-        @foreach($orders as $order)
-            <div class="history-card">
-                <div class="h-card-header">
-                    <div>
-                        <span class="h-code">Mã đơn: #{{ $order->order_id }}</span>
-                        <span style="margin: 0 10px; color: var(--border);">|</span>
-                        <span class="h-date">Ngày đặt: {{ $order->created_at ? $order->created_at->format('H:i - d/m/Y') : 'N/A' }}</span>
+        <div class="history-grid">
+            @foreach($orders as $order)
+                <div class="history-card">
+                    <div class="h-card-header">
+                        <div>
+                            <span class="h-code">Mã đơn: #{{ $order->order_id }}</span>
+                            <span style="margin: 0 10px; color: var(--border);">|</span>
+                            <span class="h-date">Ngày đặt: {{ $order->created_at ? $order->created_at->format('H:i - d/m/Y') : 'N/A' }}</span>
+                        </div>
+                        <div>
+                            @if($order->status == 0) <span class="badge badge-0">⏳ Đang chờ xác nhận</span>
+                            @elseif($order->status == 1) <span class="badge badge-1">💸 Đã đặt cọc thành công</span>
+                            @elseif($order->status == 2) <span class="badge badge-2">✅ Giao dịch hoàn tất</span>
+                            @elseif($order->status == 3) <span class="badge badge-3">❌ Đã hủy</span>
+                            @endif
+                        </div>
                     </div>
-                    <div>
-                        @if($order->status == 0) <span class="badge badge-0">⏳ Đang chờ xác nhận</span>
-                        @elseif($order->status == 1) <span class="badge badge-1">💸 Đã đặt cọc thành công</span>
-                        @elseif($order->status == 2) <span class="badge badge-2">✅ Giao dịch hoàn tất</span>
-                        @elseif($order->status == 3) <span class="badge badge-3">❌ Đã hủy</span>
+
+                    @foreach($order->details as $detail)
+                    <div class="h-card-body">
+                        @if($detail->car && $detail->car->image)
+                            <img src="{{ asset('storage/' . $detail->car->image) }}" alt="Car" class="h-car-img">
+                        @else
+                            <div style="width: 140px; height: 90px; background: #0a0d12; border-radius: 6px; display:flex; align-items:center; justify-content:center; color: var(--muted); font-size: 0.8rem;">NO IMAGE</div>
                         @endif
-                    </div>
-                </div>
 
-                @foreach($order->details as $detail)
-                <div class="h-card-body">
-                    @if($detail->car && $detail->car->image)
-                        <img src="{{ asset('storage/' . $detail->car->image) }}" alt="Car" class="h-car-img">
-                    @else
-                        <div style="width: 120px; height: 80px; background: #0a0d12; border-radius: 6px; display:flex; align-items:center; justify-content:center; color: var(--muted); font-size: 0.8rem;">NO IMAGE</div>
-                    @endif
-
-                    <div class="h-car-info">
-                        <h4 class="h-car-name">
-                            <a href="{{ $detail->car ? route('cars.show_public', $detail->car->car_id) : '#' }}" style="color: inherit; text-decoration: none;">
-                                {{ $detail->car ? $detail->car->name : 'Xe đã bị gỡ khỏi hệ thống' }}
-                            </a>
-                        </h4>
-                        <div class="h-price">Giá xe: {{ number_format($detail->price, 0, ',', '.') }} đ</div>
-                        <div style="font-size: 0.85rem; color: var(--muted); margin-top: 5px;">Số tiền cần cọc: 20.000.000 đ</div>
+                        <div class="h-car-info">
+                            <h4 class="h-car-name">
+                                <a href="{{ $detail->car ? route('cars.show_public', $detail->car->car_id) : '#' }}" style="color: inherit; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='inherit'">
+                                    {{ $detail->car ? $detail->car->name : 'Xe đã bị gỡ khỏi hệ thống' }}
+                                </a>
+                            </h4>
+                            <div class="h-price">Giá xe: {{ number_format($detail->price, 0, ',', '.') }} đ</div>
+                            <div style="font-size: 0.85rem; color: var(--muted); margin-top: 5px;">Số tiền cần cọc: 20.000.000 đ</div>
+                        </div>
                     </div>
+                    @endforeach
                 </div>
-                @endforeach
-            </div>
-        @endforeach
+            @endforeach
+        </div>
 
         @if ($orders->hasPages())
             <div style="margin-top: 2rem; display: flex; justify-content: center;">

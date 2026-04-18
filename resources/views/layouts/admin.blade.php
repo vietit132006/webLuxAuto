@@ -166,6 +166,9 @@
             <a href="{{ route('admin.orders.index') }}" class="sidebar-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
                 🛒 Quản lý Đơn hàng
             </a>
+            <a href="{{ route('admin.tickets.index') }}" class="sidebar-link {{ request()->routeIs('admin.tickets.*') ? 'active' : '' }}">
+                🎧 Quản lý Hỗ trợ
+            </a>
         </nav>
     </aside>
 

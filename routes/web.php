@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\AdminController; // Đã thêm dòng này
+use App\Http\Controllers\AdminLiveController;
 use App\Http\Controllers\AdminNewsController;
 use App\Http\Controllers\AdminOrderController;
+use App\Http\Controllers\AdminTicketController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CarController;
@@ -12,6 +14,7 @@ use App\Http\Controllers\NewsController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResetPasswordController;
+use App\Http\Controllers\TicketController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -38,7 +41,7 @@ Route::middleware('guest')->group(function () {
 // 2. NHÓM ĐÃ ĐĂNG NHẬP (Thành viên & Admin)
 // ==========================================
 Route::middleware('auth')->group(function () {
-    Route::get('/thanh-toan/vnpay-return', [\App\Http\Controllers\OrderController::class, 'vnpayReturn'])->name('vnpay.return');
+    Route::get('/thanh-toan/vnpay-return', [OrderController::class, 'vnpayReturn'])->name('vnpay.return');
     // Trang chủ
     Route::get('/', HomeController::class)->name('home');
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -63,6 +66,11 @@ Route::middleware('auth')->group(function () {
     // ------------------------------------------
     Route::get('/xe', [CarController::class, 'index'])->name('cars.index');
     Route::get('/xe/{car}', [CarController::class, 'show'])->name('cars.show_public');
+
+    // 1. DÀNH CHO KHÁCH HÀNG (Đặt trong nhóm middleware 'auth')
+    Route::get('/ho-tro', [TicketController::class, 'history'])->name('ticket.history'); // Lịch sử hỗ trợ
+    Route::get('/ho-tro/tao-moi', [TicketController::class, 'create'])->name('ticket.create'); // Form tạo ticket
+    Route::post('/ho-tro', [TicketController::class, 'store'])->name('ticket.store'); // Xử lý lưu ticket
 
     // ------------------------------------------
     // KHU VỰC QUẢN TRỊ VIÊN (Chỉ Admin & Staff)
@@ -121,7 +129,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/orders/{id}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
 
         // QUẢN LÝ LIVESTREAM
-        Route::get('/live', [App\Http\Controllers\AdminLiveController::class, 'index'])->name('live.index');
-        Route::post('/live/update', [App\Http\Controllers\AdminLiveController::class, 'update'])->name('live.update');
+        Route::get('/live', [AdminLiveController::class, 'index'])->name('live.index');
+        Route::post('/live/update', [AdminLiveController::class, 'update'])->name('live.update');
+
+        // 2. DÀNH CHO ADMIN (Đặt trong nhóm middleware 'role:admin,staff' có prefix 'admin')
+        Route::get('/tickets', [AdminTicketController::class, 'index'])->name('tickets.index'); // Quản lý ticket
+        Route::post('/tickets/{id}/reply', [AdminTicketController::class, 'reply'])->name('tickets.reply'); // Admin trả lời
     });
 });

@@ -219,39 +219,41 @@
 </head>
 <body>
 <header class="site">
-        <div class="wrap nav-inner">
-            <a href="{{ route('home') }}" class="logo">Lux <span>Auto</span></a>
-            <nav class="links">
+    <div class="wrap nav-inner">
+        <a href="{{ route('home') }}" class="logo">Lux <span>Auto</span></a>
+        <nav class="links">
 
-                {{-- Menu cho Admin/Staff --}}
-                @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'staff']))
-                    <a href="{{ route('admin.dashboard') }}" class="nav-link">Dashboard</a>
-                    <a href="{{ route('admin.cars.index') }}" class="nav-link">Quản lý xe</a>
+            {{-- Menu cho Admin/Staff --}}
+            @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'staff']))
+                <a href="{{ route('admin.dashboard') }}" class="nav-link">Dashboard</a>
+                <a href="{{ route('admin.cars.index') }}" class="nav-link">Quản lý xe</a>
 
-                {{-- Menu cho Khách hàng --}}
-                @else
-                    <a href="{{ route('home') }}" class="nav-link">Trang chủ</a>
-                    <a href="{{ route('cars.index') }}" class="nav-link">Danh sách xe</a>
-                    <a href="{{ route('news.index') }}" class="nav-link">Tin tức</a>
-                @endif
+            {{-- Menu cho Khách hàng --}}
+            @else
+                <a href="{{ route('home') }}" class="nav-link">Trang chủ</a>
+                <a href="{{ route('cars.index') }}" class="nav-link">Danh sách xe</a>
+                <a href="{{ route('news.index') }}" class="nav-link">Tin tức</a>
+            @endif
 
-                <a href="{{ route('livestream') }}" class="nav-link" style="color: #ef4444; font-weight: 900; text-transform: uppercase;">🔴 Live</a>
+            <a href="{{ route('livestream') }}" class="nav-link" style="color: #ef4444; font-weight: 900; text-transform: uppercase;">🔴 Live</a>
 
-                {{-- Menu Tài khoản / Đăng nhập --}}
-                @auth
-                    <a href="{{ route('order.history') }}" class="nav-link" style="color: var(--accent);">Đơn hàng</a>
-                    <a href="{{ route('profile.index') }}" class="nav-link" style="color: var(--accent);">Hồ sơ</a>
-                    <span style="font-size: 0.9375rem; color: var(--muted);">
-                        Chào, <strong style="color: var(--text);">{{ auth()->user()->name }}</strong>
-                    </span>
-                    <a href="{{ route('logout') }}" class="nav-cta">Đăng xuất</a>
-                @else
-                    <a href="{{ route('register') }}" class="nav-link">Đăng ký</a>
-                    <a href="{{ route('login') }}" class="nav-cta">Đăng nhập</a>
-                @endauth
+            {{-- Menu Tài khoản / Đăng nhập --}}
+            @auth
+                <a href="{{ route('ticket.history') }}" class="nav-link" style="color: var(--accent); font-weight: bold;">Hỗ trợ 🎧</a>
 
-            </nav>
-        </div>
+                <a href="{{ route('order.history') }}" class="nav-link" style="color: var(--accent);">Đơn hàng</a>
+                <a href="{{ route('profile.index') }}" class="nav-link" style="color: var(--accent);">Hồ sơ</a>
+                <span style="font-size: 0.9375rem; color: var(--muted);">
+                    Chào, <strong style="color: var(--text);">{{ auth()->user()->name }}</strong>
+                </span>
+                <a href="{{ route('logout') }}" class="nav-cta">Đăng xuất</a>
+            @else
+                <a href="{{ route('register') }}" class="nav-link">Đăng ký</a>
+                <a href="{{ route('login') }}" class="nav-cta">Đăng nhập</a>
+            @endauth
+
+        </nav>
+    </div>
 </header>
 
     <main class="site-main">
