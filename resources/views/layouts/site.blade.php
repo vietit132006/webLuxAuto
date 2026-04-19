@@ -227,11 +227,15 @@
             @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'staff']))
                 <a href="{{ route('admin.dashboard') }}" class="nav-link">Dashboard</a>
                 <a href="{{ route('admin.cars.index') }}" class="nav-link">Quản lý xe</a>
+                <a href="{{ route('compare.index') }}" class="nav-link">So sánh xe</a>
+                <a href="{{ route('promotions.index') }}" class="nav-link">Khuyến mãi</a>
 
             {{-- Menu cho Khách hàng --}}
             @else
                 <a href="{{ route('home') }}" class="nav-link">Trang chủ</a>
                 <a href="{{ route('cars.index') }}" class="nav-link">Danh sách xe</a>
+                <a href="{{ route('compare.index') }}" class="nav-link">So sánh xe</a>
+                <a href="{{ route('promotions.index') }}" class="nav-link">Khuyến mãi</a>
                 <a href="{{ route('news.index') }}" class="nav-link">Tin tức</a>
             @endif
 

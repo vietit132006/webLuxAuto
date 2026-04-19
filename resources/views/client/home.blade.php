@@ -181,6 +181,8 @@
         <p>Lux Auto giúp bạn so sánh nhanh các mẫu xe cao cấp: đời xe, số km, nhiên liệu và mức giá tham khảo.</p>
         <div class="hero-actions">
             <a class="btn btn-primary" href="{{ route('cars.index') }}">Xem danh sách xe</a>
+            <a class="btn btn-ghost" href="{{ route('compare.index') }}">So sánh xe</a>
+            <a class="btn btn-ghost" href="{{ route('promotions.index') }}">Khuyến mãi</a>
             @guest
                 <a class="btn btn-ghost" href="{{ route('login') }}">Đăng nhập nhân viên</a>
             @endguest
@@ -214,12 +216,12 @@
                 <span class="banner-card__cta">Danh sách xe →</span>
             </div>
         </a>
-        <a href="{{ route('cars.index') }}" class="banner-card banner-card--deep">
+        <a href="{{ route('promotions.index') }}" class="banner-card banner-card--deep">
             <div class="banner-card__inner">
                 <span class="banner-card__tag">Ưu đãi</span>
                 <h3 class="banner-card__title">Cập nhật giá &amp; ưu đãi theo đợt</h3>
                 <p class="banner-card__desc">Theo dõi bảng giá tham khảo và các gói hỗ trợ khi đặt cọc hoặc đổi xe trong thời gian ngắn.</p>
-                <span class="banner-card__cta">Xem ngay →</span>
+                <span class="banner-card__cta">Xem khuyến mãi →</span>
             </div>
         </a>
     </div>

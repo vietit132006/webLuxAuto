@@ -82,6 +82,12 @@
 
     <div class="header-actions">
         <h1 class="page-title">Danh sách xe</h1>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+            <a href="{{ route('compare.index') }}" id="lux-compare-bar" style="display: none; padding: 0.5rem 1rem; border-radius: 8px; background: rgba(201, 169, 98, 0.15); border: 1px solid var(--accent-dim); color: var(--accent); font-weight: 700; font-size: 0.9rem; text-decoration: none;">
+                So sánh đã chọn (<span id="lux-compare-n">0</span>)
+            </a>
+            <a href="{{ route('promotions.index') }}" style="padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--border); color: var(--text); font-weight: 600; font-size: 0.9rem; text-decoration: none;">Khuyến mãi</a>
+        </div>
     </div>
 
     <form class="search-bar" method="get" action="{{ route('cars.index') }}">
@@ -185,9 +191,14 @@
                                 {{ number_format($car->price, 0, ',', '.') }} đ
                             </div>
 
-                            <a href="{{ route('cars.show_public', $car->car_id ?? $car->id) }}" style="display: block; text-align: center; background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 0.75rem; border-radius: 8px; text-decoration: none; font-weight: bold; transition: all 0.3s;" onmouseover="this.style.background='var(--accent)'; this.style.color='#000';" onmouseout="this.style.background='transparent'; this.style.color='var(--accent)';">
-                                Xem Chi Tiết
-                            </a>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                <a href="{{ route('cars.show_public', $car->car_id ?? $car->id) }}" style="display: block; text-align: center; background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 0.65rem; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 0.875rem; transition: all 0.3s;" onmouseover="this.style.background='var(--accent)'; this.style.color='#000';" onmouseout="this.style.background='transparent'; this.style.color='var(--accent)';">
+                                    Chi tiết
+                                </a>
+                                <button type="button" class="lux-btn-cmp" data-id="{{ $car->car_id }}" style="padding: 0.65rem; border-radius: 8px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); font-weight: 600; font-size: 0.875rem; cursor: pointer; font-family: inherit;">
+                                    + So sánh
+                                </button>
+                            </div>
 
                         </div>
                     </div>
@@ -204,4 +215,44 @@
         </main>
     </div>
 </div>
+@push('scripts')
+<script>
+(function () {
+    var KEY = 'lux_compare_ids';
+    function refreshBar() {
+        var raw = localStorage.getItem(KEY) || '';
+        var arr = raw ? raw.split(',').filter(Boolean) : [];
+        var n = arr.length;
+        var bar = document.getElementById('lux-compare-bar');
+        var num = document.getElementById('lux-compare-n');
+        if (bar && num) {
+            num.textContent = n;
+            bar.style.display = n ? 'inline-flex' : 'none';
+            bar.href = @json(route('compare.index')) + '?ids=' + encodeURIComponent(arr.join(','));
+        }
+    }
+    refreshBar();
+    document.querySelectorAll('.lux-btn-cmp').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var id = parseInt(btn.getAttribute('data-id'), 10);
+            var raw = localStorage.getItem(KEY) || '';
+            var arr = raw ? raw.split(',').map(function (x) { return parseInt(x, 10); }).filter(Boolean) : [];
+            if (arr.indexOf(id) !== -1) {
+                alert('Xe đã có trong danh sách so sánh.');
+                return;
+            }
+            if (arr.length >= 4) {
+                alert('Tối đa 4 xe so sánh.');
+                return;
+            }
+            arr.push(id);
+            localStorage.setItem(KEY, arr.join(','));
+            refreshBar();
+            btn.textContent = 'Đã thêm ✓';
+            setTimeout(function () { btn.textContent = '+ So sánh'; }, 1500);
+        });
+    });
+})();
+</script>
+@endpush
 @endsection

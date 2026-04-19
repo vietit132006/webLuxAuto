@@ -232,8 +232,9 @@
                 <a href="{{ route('admin.cars.index') }}" class="action-btn">
                     <i>📋</i> Quản lý danh sách xe
                 </a>
-                <a href="#" class="action-btn"> <i>🏢</i> Quản lý hãng xe
-                </a>
+                <a href="{{ route('admin.reports.sales') }}" class="action-btn"><i>📈</i> Báo cáo doanh số</a>
+                <a href="{{ route('admin.promotions') }}" class="action-btn"><i>🏷️</i> Nội dung khuyến mãi</a>
+                <a href="{{ route('admin.brands.index') }}" class="action-btn"><i>🏢</i> Quản lý hãng xe</a>
                 <a href="/" target="_blank" class="action-btn">
                     <i>🌐</i> Xem trang khách hàng
                 </a>

@@ -218,12 +218,121 @@
         margin-top: 1rem;
         line-height: 1.5;
     }
+
+    /* --- ĐÁNH GIÁ --- */
+    .pd-rating-summary {
+        margin: -1rem 0 1.25rem;
+        font-size: 1rem;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        flex-wrap: wrap;
+    }
+    .pd-rating-summary .stars-fill {
+        color: #fbbf24;
+        letter-spacing: 1px;
+        font-size: 1.05rem;
+    }
+    .reviews-section {
+        margin-top: 2.5rem;
+        padding-top: 2rem;
+        border-top: 1px solid var(--border);
+        scroll-margin-top: 88px;
+    }
+    .reviews-section h3 {
+        font-size: 1.35rem;
+        margin: 0 0 1rem;
+        color: var(--text);
+    }
+    .reviews-summary-bar {
+        background: rgba(251, 191, 36, 0.08);
+        border: 1px solid rgba(251, 191, 36, 0.25);
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 0.75rem 1.5rem;
+    }
+    .reviews-summary-bar .big {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--accent);
+        line-height: 1;
+    }
+    .reviews-summary-bar .sub {
+        font-size: 0.9rem;
+        color: var(--muted);
+    }
+    .review-flash {
+        background: #d1fae5;
+        color: #065f46;
+        padding: 0.85rem 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        font-weight: 600;
+        border: 1px solid #34d399;
+    }
+    .review-form {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 1.75rem;
+    }
+    .review-form label { display: block; font-weight: 600; margin-bottom: 0.4rem; font-size: 0.9rem; }
+    .review-form select, .review-form textarea {
+        width: 100%;
+        max-width: 420px;
+        padding: 0.55rem 0.75rem;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: #0a0d12;
+        color: var(--text);
+        font-family: inherit;
+    }
+    .review-form textarea { min-height: 100px; resize: vertical; max-width: 100%; }
+    .review-form .btn-send {
+        margin-top: 0.85rem;
+        padding: 0.65rem 1.35rem;
+        border-radius: 8px;
+        border: none;
+        background: var(--accent);
+        color: #0c0f14;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: inherit;
+    }
+    .review-form .hint { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
+    .reviews-list { display: flex; flex-direction: column; gap: 1rem; }
+    .review-item {
+        background: rgba(255,255,255,0.02);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1rem 1.15rem;
+    }
+    .review-item__head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 0.5rem;
+    }
+    .review-item__name { font-weight: 700; color: var(--text); }
+    .review-item__date { font-size: 0.8rem; color: var(--muted); }
+    .review-item__stars { color: #fbbf24; letter-spacing: 2px; font-size: 0.95rem; }
+    .review-item__text { color: var(--text); line-height: 1.6; font-size: 0.95rem; margin: 0; }
+    .reviews-empty { color: var(--muted); padding: 1rem 0; font-size: 0.95rem; }
+    .pagination-wrap { margin-top: 1.25rem; display: flex; justify-content: center; }
 </style>
 
 <div class="wrap">
     <div class="breadcrumb">
-        <a href="/">Trang chủ</a> &nbsp; / &nbsp;
-        <a href="#">Xe đã qua sử dụng</a> &nbsp; / &nbsp;
+        <a href="{{ route('home') }}">Trang chủ</a> &nbsp; / &nbsp;
+        <a href="{{ route('cars.index') }}">Danh sách xe</a> &nbsp; / &nbsp;
         <span style="color: var(--accent)">{{ $car->brand->name ?? 'Hãng khác' }} {{ $car->name }}</span>
     </div>
 
@@ -254,6 +363,15 @@
         </span>
     </div>
 @endif
+                @if(($reviewCount ?? 0) > 0)
+                    <div class="pd-rating-summary">
+                        <span class="stars-fill" aria-hidden="true">{{ str_repeat('★', (int) round($avgRating ?? 0)) }}{{ str_repeat('☆', max(0, 5 - (int) round($avgRating ?? 0))) }}</span>
+                        <strong style="color: var(--text);">{{ number_format((float) ($avgRating ?? 0), 1) }}/5</strong>
+                        <span>— {{ $reviewCount }} đánh giá</span>
+                        <a href="#danh-gia" style="font-size: 0.85rem; font-weight: 600;">Xem chi tiết ↓</a>
+                    </div>
+                @endif
+
                 <div class="pd-price">
                     {{ number_format($car->price, 0, ',', '.') }} VNĐ
                 </div>
@@ -330,9 +448,12 @@
 </div>
 
                 <div class="pd-actions">
+                    <button type="button" class="btn-secondary-cta" id="btn-add-compare" data-car-id="{{ $car->car_id }}" style="cursor: pointer; font-family: inherit;">
+                        ⚖️ Thêm vào so sánh
+                    </button>
                     <a href="tel:0988888888" class="btn-primary-cta">📞 Gọi Hotline tư vấn</a>
 
-                    <a href="#" class="btn-secondary-cta">✉️ Đăng ký lái thử</a>
+                    <a href="{{ route('ticket.create') }}" class="btn-secondary-cta">✉️ Đăng ký lái thử / Hỗ trợ</a>
                 </div>
             </div>
         </div>
@@ -346,5 +467,117 @@
             </div>
         </div>
     @endif
+
+    <section id="danh-gia" class="reviews-section">
+        <h3>Đánh giá từ khách hàng</h3>
+
+        @if(($reviewCount ?? 0) > 0)
+            <div class="reviews-summary-bar">
+                <span class="big">{{ number_format((float) ($avgRating ?? 0), 1) }}</span>
+                <div>
+                    <div style="color: #fbbf24; letter-spacing: 3px; font-size: 1.1rem;">
+                        @for($s = 1; $s <= 5; $s++)
+                            {{ $s <= round($avgRating ?? 0) ? '★' : '☆' }}
+                        @endfor
+                    </div>
+                    <div class="sub">{{ $reviewCount }} lượt đánh giá</div>
+                </div>
+            </div>
+        @else
+            <p class="reviews-empty">Chưa có đánh giá nào cho xe này. Hãy là người đầu tiên chia sẻ trải nghiệm.</p>
+        @endif
+
+        @if(session('review_success'))
+            <div class="review-flash" role="status">✓ {{ session('review_success') }}</div>
+        @endif
+
+        @auth
+            @if(auth()->user()->role === 'customer')
+                <div class="review-form">
+                    <form action="{{ route('cars.reviews.store', $car->car_id) }}" method="post">
+                        @csrf
+                        @error('review')
+                            <p style="color:#f87171;font-size:0.9rem;margin:0 0 0.75rem;font-weight:600;">{{ $message }}</p>
+                        @enderror
+                        <label for="rating">Điểm đánh giá</label>
+                        <select name="rating" id="rating" required>
+                            @for($r = 5; $r >= 1; $r--)
+                                <option value="{{ $r }}" @selected(old('rating', $userReview?->rating ?? 5) == $r)>{{ $r }} sao</option>
+                            @endfor
+                        </select>
+                        @error('rating') <p style="color:#f87171;font-size:0.85rem;margin:0.35rem 0 0;">{{ $message }}</p> @enderror
+
+                        <label for="comment" style="margin-top: 1rem;">Nhận xét (tuỳ chọn)</label>
+                        <textarea name="comment" id="comment" maxlength="2000" placeholder="Chia sẻ trải nghiệm của bạn về xe này…">{{ old('comment', $userReview?->comment ?? '') }}</textarea>
+                        @error('comment') <p style="color:#f87171;font-size:0.85rem;margin:0.35rem 0 0;">{{ $message }}</p> @enderror
+
+                        <button type="submit" class="btn-send">{{ $userReview ? 'Cập nhật đánh giá' : 'Gửi đánh giá' }}</button>
+                        @if($userReview)
+                            <p class="hint">Bạn đã đánh giá trước đó — gửi lại để chỉnh sửa.</p>
+                        @endif
+                    </form>
+                </div>
+            @else
+                <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 1.25rem;">Tài khoản nhân viên chỉ xem đánh giá của khách.</p>
+            @endif
+        @else
+            <p style="margin-bottom: 1.25rem;">
+                <a href="{{ route('login') }}" style="font-weight: 600;">Đăng nhập</a>
+                để gửi đánh giá cho sản phẩm này.
+            </p>
+        @endauth
+
+        <div class="reviews-list">
+            @forelse($reviews ?? [] as $review)
+                <article class="review-item">
+                    <div class="review-item__head">
+                        <span class="review-item__name">{{ $review->user->name ?? 'Khách hàng' }}</span>
+                        <span class="review-item__date">{{ $review->created_at?->format('d/m/Y H:i') }}</span>
+                    </div>
+                    <div class="review-item__stars" aria-label="{{ $review->rating }} trên 5 sao">
+                        @for($s = 1; $s <= 5; $s++)
+                            {{ $s <= (int) $review->rating ? '★' : '☆' }}
+                        @endfor
+                    </div>
+                    @if($review->comment)
+                        <p class="review-item__text">{{ $review->comment }}</p>
+                    @else
+                        <p class="review-item__text" style="color: var(--muted); font-style: italic;">(Không có nhận xét)</p>
+                    @endif
+                </article>
+            @empty
+            @endforelse
+        </div>
+
+        @if(isset($reviews) && $reviews->hasPages())
+            <div class="pagination-wrap">{{ $reviews->links('pagination.lux') }}</div>
+        @endif
+    </section>
 </div>
+@push('scripts')
+<script>
+(function () {
+    var KEY = 'lux_compare_ids';
+    var btn = document.getElementById('btn-add-compare');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+        var id = parseInt(btn.getAttribute('data-car-id'), 10);
+        if (!id) return;
+        var raw = localStorage.getItem(KEY) || '';
+        var arr = raw ? raw.split(',').map(function (x) { return parseInt(x, 10); }).filter(Boolean) : [];
+        if (arr.indexOf(id) !== -1) {
+            alert('Xe này đã có trong danh sách so sánh.');
+            return;
+        }
+        if (arr.length >= 4) {
+            alert('Chỉ có thể so sánh tối đa 4 xe.');
+            return;
+        }
+        arr.push(id);
+        localStorage.setItem(KEY, arr.join(','));
+        window.location.href = @json(route('compare.index')) + '?ids=' + encodeURIComponent(arr.join(','));
+    });
+})();
+</script>
+@endpush
 @endsection

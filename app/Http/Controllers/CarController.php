@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Car;
+use App\Models\Review;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -50,9 +52,62 @@ class CarController extends Controller
     // Hiển thị trang chi tiết xe dành cho Khách hàng
     public function show(Car $car): View
     {
-        // Nhớ tạo view 'cars.detail' bằng đoạn code giao diện Khách hàng tôi đã gửi trước đó nhé
+        $car->load('brand');
+
+        $reviews = Review::query()
+            ->with('user:user_id,name')
+            ->where('car_id', $car->car_id)
+            ->orderByDesc('created_at')
+            ->paginate(8)
+            ->withQueryString();
+
+        $avgRating = (float) (Review::where('car_id', $car->car_id)->avg('rating') ?? 0);
+        $reviewCount = Review::where('car_id', $car->car_id)->count();
+
+        $userReview = null;
+        if (auth()->check()) {
+            $userReview = Review::where('car_id', $car->car_id)
+                ->where('user_id', auth()->id())
+                ->first();
+        }
+
         return view('client.show', [
             'car' => $car,
+            'reviews' => $reviews,
+            'avgRating' => $avgRating,
+            'reviewCount' => $reviewCount,
+            'userReview' => $userReview,
         ]);
+    }
+
+    public function storeReview(Request $request, Car $car): RedirectResponse
+    {
+        $user = $request->user();
+        if ($user->role !== 'customer') {
+            return back()
+                ->withInput()
+                ->withErrors(['review' => 'Chỉ tài khoản khách hàng mới có thể gửi đánh giá sản phẩm.']);
+        }
+
+        $data = $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string|max:2000',
+        ]);
+
+        Review::updateOrCreate(
+            [
+                'user_id' => $user->user_id,
+                'car_id' => $car->car_id,
+            ],
+            [
+                'rating' => $data['rating'],
+                'comment' => $data['comment'] ?? null,
+            ]
+        );
+
+        return redirect()
+            ->route('cars.show_public', $car->car_id)
+            ->withFragment('danh-gia')
+            ->with('review_success', 'Đã lưu đánh giá của bạn. Cảm ơn bạn!');
     }
 }

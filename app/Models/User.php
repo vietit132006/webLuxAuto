@@ -31,4 +31,9 @@ class User extends Authenticatable
             'status' => 'boolean',
         ];
     }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'user_id', 'user_id');
+    }
 }

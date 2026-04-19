@@ -169,6 +169,14 @@
             <a href="{{ route('admin.tickets.index') }}" class="sidebar-link {{ request()->routeIs('admin.tickets.*') ? 'active' : '' }}">
                 🎧 Quản lý Hỗ trợ
             </a>
+
+            <div style="margin: 1rem 0 0.35rem; padding: 0 1rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);">Báo cáo</div>
+            <a href="{{ route('admin.reports.sales') }}" class="sidebar-link {{ request()->routeIs('admin.reports.sales') ? 'active' : '' }}">📈 Doanh số</a>
+            <a href="{{ route('admin.reports.inventory') }}" class="sidebar-link {{ request()->routeIs('admin.reports.inventory') ? 'active' : '' }}">📦 Tồn kho</a>
+            <a href="{{ route('admin.reports.inventory_check') }}" class="sidebar-link {{ request()->routeIs('admin.reports.inventory_check') ? 'active' : '' }}">✅ Kiểm tra tồn</a>
+            <a href="{{ route('admin.reports.customers') }}" class="sidebar-link {{ request()->routeIs('admin.reports.customers') ? 'active' : '' }}">👤 Khách hàng</a>
+            <a href="{{ route('admin.reports.reviews') }}" class="sidebar-link {{ request()->routeIs('admin.reports.reviews') ? 'active' : '' }}">⭐ Đánh giá</a>
+            <a href="{{ route('admin.promotions') }}" class="sidebar-link {{ request()->routeIs('admin.promotions*') ? 'active' : '' }}">🏷️ Khuyến mãi</a>
         </nav>
     </aside>
 

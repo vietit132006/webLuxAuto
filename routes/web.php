@@ -4,11 +4,14 @@ use App\Http\Controllers\AdminController; // Đã thêm dòng này
 use App\Http\Controllers\AdminLiveController;
 use App\Http\Controllers\AdminNewsController;
 use App\Http\Controllers\AdminOrderController;
+use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AdminTicketController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CarController;
+use App\Http\Controllers\CompareController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\LiveController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\OrderController;
@@ -66,6 +69,10 @@ Route::middleware('auth')->group(function () {
     // ------------------------------------------
     Route::get('/xe', [CarController::class, 'index'])->name('cars.index');
     Route::get('/xe/{car}', [CarController::class, 'show'])->name('cars.show_public');
+    Route::post('/xe/{car}/danh-gia', [CarController::class, 'storeReview'])->name('cars.reviews.store');
+
+    Route::get('/khuyen-mai', [PromotionController::class, 'index'])->name('promotions.index');
+    Route::get('/so-sanh-xe', [CompareController::class, 'index'])->name('compare.index');
 
     // 1. DÀNH CHO KHÁCH HÀNG (Đặt trong nhóm middleware 'auth')
     Route::get('/ho-tro', [TicketController::class, 'history'])->name('ticket.history'); // Lịch sử hỗ trợ
@@ -127,6 +134,16 @@ Route::middleware('auth')->group(function () {
         // QUẢN LÝ ĐƠN HÀNG
         Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
         Route::post('/orders/{id}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
+
+        // BÁO CÁO & KHUYẾN MÃI
+        Route::get('/reports/sales', [AdminReportController::class, 'sales'])->name('reports.sales');
+        Route::get('/reports/inventory', [AdminReportController::class, 'inventory'])->name('reports.inventory');
+        Route::get('/reports/inventory-check', [AdminReportController::class, 'inventoryCheck'])->name('reports.inventory_check');
+        Route::post('/reports/inventory-log', [AdminReportController::class, 'storeInventoryLog'])->name('reports.inventory_log');
+        Route::get('/reports/customers', [AdminReportController::class, 'customers'])->name('reports.customers');
+        Route::get('/reports/reviews', [AdminReportController::class, 'reviews'])->name('reports.reviews');
+        Route::get('/promotions', [AdminReportController::class, 'promotions'])->name('promotions');
+        Route::put('/promotions', [AdminReportController::class, 'updatePromotions'])->name('promotions.update');
 
         // QUẢN LÝ LIVESTREAM
         Route::get('/live', [AdminLiveController::class, 'index'])->name('live.index');

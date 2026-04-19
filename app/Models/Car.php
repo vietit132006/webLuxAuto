@@ -44,6 +44,16 @@ class Car extends Model
         return $this->belongsTo(Brand::class, 'brand_id', 'brand_id');
     }
 
+    public function reviews()
+    {
+        return $this->hasMany(Review::class, 'car_id', 'car_id');
+    }
+
+    public function inventoryLogs()
+    {
+        return $this->hasMany(InventoryLog::class, 'car_id', 'car_id');
+    }
+
     public function getTitleAttribute(): string
     {
         return $this->brand ? $this->brand->name . ' ' . $this->name : $this->name;
