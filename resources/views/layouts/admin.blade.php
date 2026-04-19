@@ -4,6 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Admin Dashboard') — Lux Auto</title>
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @endif
     <style>
         :root {
             --bg: #0c0f14;
@@ -168,6 +171,9 @@
             </a>
             <a href="{{ route('admin.tickets.index') }}" class="sidebar-link {{ request()->routeIs('admin.tickets.*') ? 'active' : '' }}">
                 🎧 Quản lý Hỗ trợ
+            </a>
+            <a href="{{ route('admin.test_drives.index') }}" class="sidebar-link {{ request()->routeIs('admin.test_drives.*') ? 'active' : '' }}">
+                🗓️ Đặt lịch lái thử
             </a>
 
             <div style="margin: 1rem 0 0.35rem; padding: 0 1rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);">Báo cáo</div>

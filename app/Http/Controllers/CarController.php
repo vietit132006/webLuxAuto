@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Car;
+use App\Models\OrderDetail;
 use App\Models\Review;
+use App\Models\Ticket;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
 class CarController extends Controller
@@ -65,10 +68,30 @@ class CarController extends Controller
         $reviewCount = Review::where('car_id', $car->car_id)->count();
 
         $userReview = null;
+        $canReview = false;
         if (auth()->check()) {
             $userReview = Review::where('car_id', $car->car_id)
                 ->where('user_id', auth()->id())
                 ->first();
+
+            $hasDepositOrBuy = OrderDetail::query()
+                ->where('car_id', $car->car_id)
+                ->whereHas('order', function ($query) {
+                    $query->where('user_id', auth()->id())
+                        ->whereIn('status', [1, 2]);
+                })
+                ->exists();
+
+            $hasTestDrive = false;
+            if (Schema::hasColumn('support_tickets', 'ticket_type') && Schema::hasColumn('support_tickets', 'car_id')) {
+                $hasTestDrive = Ticket::query()
+                    ->where('user_id', auth()->id())
+                    ->where('ticket_type', 'test_drive')
+                    ->where('car_id', $car->car_id)
+                    ->exists();
+            }
+
+            $canReview = $hasDepositOrBuy || $hasTestDrive;
         }
 
         return view('client.show', [
@@ -77,6 +100,7 @@ class CarController extends Controller
             'avgRating' => $avgRating,
             'reviewCount' => $reviewCount,
             'userReview' => $userReview,
+            'canReview' => $canReview,
         ]);
     }
 
@@ -87,6 +111,29 @@ class CarController extends Controller
             return back()
                 ->withInput()
                 ->withErrors(['review' => 'Chỉ tài khoản khách hàng mới có thể gửi đánh giá sản phẩm.']);
+        }
+
+        $canReview = OrderDetail::query()
+            ->where('car_id', $car->car_id)
+            ->whereHas('order', function ($query) use ($user) {
+                $query->where('user_id', $user->user_id)
+                    ->whereIn('status', [1, 2]);
+            })
+            ->exists();
+
+        $hasTestDrive = false;
+        if (Schema::hasColumn('support_tickets', 'ticket_type') && Schema::hasColumn('support_tickets', 'car_id')) {
+            $hasTestDrive = Ticket::query()
+                ->where('user_id', $user->user_id)
+                ->where('ticket_type', 'test_drive')
+                ->where('car_id', $car->car_id)
+                ->exists();
+        }
+
+        if (! $canReview && ! $hasTestDrive) {
+            return back()
+                ->withInput()
+                ->withErrors(['review' => 'Bạn cần đặt lịch lái thử hoặc đặt cọc xe này trước khi gửi đánh giá.']);
         }
 
         $data = $request->validate([

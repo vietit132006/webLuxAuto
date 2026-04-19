@@ -453,7 +453,8 @@
                     </button>
                     <a href="tel:0988888888" class="btn-primary-cta">📞 Gọi Hotline tư vấn</a>
 
-                    <a href="{{ route('ticket.create') }}" class="btn-secondary-cta">✉️ Đăng ký lái thử / Hỗ trợ</a>
+                    <a href="{{ route('ticket.create', ['type' => 'test_drive', 'car_id' => $car->car_id]) }}" class="btn-secondary-cta">✉️ Đặt lịch lái thử</a>
+                    <a href="{{ route('ticket.create') }}" class="btn-secondary-cta">🎧 Yêu cầu hỗ trợ</a>
                 </div>
             </div>
         </div>
@@ -511,9 +512,17 @@
                         <textarea name="comment" id="comment" maxlength="2000" placeholder="Chia sẻ trải nghiệm của bạn về xe này…">{{ old('comment', $userReview?->comment ?? '') }}</textarea>
                         @error('comment') <p style="color:#f87171;font-size:0.85rem;margin:0.35rem 0 0;">{{ $message }}</p> @enderror
 
-                        <button type="submit" class="btn-send">{{ $userReview ? 'Cập nhật đánh giá' : 'Gửi đánh giá' }}</button>
-                        @if($userReview)
-                            <p class="hint">Bạn đã đánh giá trước đó — gửi lại để chỉnh sửa.</p>
+                        @if($canReview ?? false)
+                            <button type="submit" class="btn-send">{{ $userReview ? 'Cập nhật đánh giá' : 'Gửi đánh giá' }}</button>
+                            @if($userReview)
+                                <p class="hint">Bạn đã đánh giá trước đó — gửi lại để chỉnh sửa.</p>
+                            @else
+                                <p class="hint">Chỉ khách đã đặt cọc hoặc mua xe mới có thể gửi đánh giá.</p>
+                            @endif
+                        @else
+                                <p class="hint" style="margin-top: 0.85rem; color: #fbbf24;">
+                                Bạn cần đặt lịch lái thử hoặc đặt cọc xe này trước khi gửi đánh giá.
+                            </p>
                         @endif
                     </form>
                 </div>

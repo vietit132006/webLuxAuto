@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminNewsController;
 use App\Http\Controllers\AdminOrderController;
 use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AdminTicketController;
+use App\Http\Controllers\Admin\TestDriveController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CarController;
@@ -152,5 +153,10 @@ Route::middleware('auth')->group(function () {
         // 2. DÀNH CHO ADMIN (Đặt trong nhóm middleware 'role:admin,staff' có prefix 'admin')
         Route::get('/tickets', [AdminTicketController::class, 'index'])->name('tickets.index'); // Quản lý ticket
         Route::post('/tickets/{id}/reply', [AdminTicketController::class, 'reply'])->name('tickets.reply'); // Admin trả lời
+
+        // TEST DRIVE BOOKINGS (đặt lịch lái thử)
+        Route::get('/test-drives', [TestDriveController::class, 'index'])->name('test_drives.index');
+        Route::get('/test-drives/{id}', [TestDriveController::class, 'show'])->name('test_drives.show');
+        Route::post('/test-drives/{id}/status', [TestDriveController::class, 'updateStatus'])->name('test_drives.updateStatus');
     });
 });
