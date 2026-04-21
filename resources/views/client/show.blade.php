@@ -449,12 +449,11 @@
 
                 <div class="pd-actions">
                     <button type="button" class="btn-secondary-cta" id="btn-add-compare" data-car-id="{{ $car->car_id }}" style="cursor: pointer; font-family: inherit;">
-                        ⚖️ Thêm vào so sánh
+                        Thêm vào so sánh
                     </button>
-                    <a href="tel:0988888888" class="btn-primary-cta">📞 Gọi Hotline tư vấn</a>
 
                     <a href="{{ route('ticket.create', ['type' => 'test_drive', 'car_id' => $car->car_id]) }}" class="btn-secondary-cta">✉️ Đặt lịch lái thử</a>
-                    <a href="{{ route('ticket.create') }}" class="btn-secondary-cta">🎧 Yêu cầu hỗ trợ</a>
+                    <a href="{{ route('ticket.create') }}" class="btn-secondary-cta">Yêu cầu hỗ trợ</a>
                 </div>
             </div>
         </div>
