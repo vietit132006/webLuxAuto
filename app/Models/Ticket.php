@@ -36,7 +36,7 @@ class Ticket extends Model
     // Mối quan hệ: Một ticket thuộc về một user
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id', 'user_id');
     }
 
     public function car(): BelongsTo
