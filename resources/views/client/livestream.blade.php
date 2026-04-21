@@ -10,12 +10,12 @@
 
     <div style="background: var(--surface); padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 3rem;">
         <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; background: #000;">
-            <iframe
-                src="https://www.youtube.com/embed/{{ $liveVideoId }}?autoplay=1&mute=0&live=1"
-                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowfullscreen>
-            </iframe>
+<iframe
+    src="https://www.youtube.com/embed/{{ $liveVideoId }}?autoplay=1&mute=1&rel=0"
+    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowfullscreen>
+</iframe>
         </div>
         <p style="margin-top: 1.5rem; font-size: 1.1rem; color: var(--muted); text-align: center;">
             Đang phát sóng trực tiếp: <strong style="color: var(--text);">Siêu ưu đãi các dòng xe lướt hạng sang</strong>. Chốt cọc ngay hôm nay!

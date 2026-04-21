@@ -24,9 +24,12 @@
                 <h3 style="color: var(--accent); margin-top: 0; margin-bottom: 1.5rem;">Cấu hình Video</h3>
 
                 <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 0.5rem;">ID Video YouTube</label>
-                    <input type="text" name="video_id" value="{{ old('video_id', $live->video_id) }}" placeholder="VD: dQw4w9WgXcQ" style="width: 100%; padding: 0.8rem; border-radius: 6px; border: 1px solid var(--border); background: #0a0d12; color: var(--text);">
-                    <small style="color: var(--muted); display: block; margin-top: 5px;">Ví dụ link <code>https://youtube.com/watch?v=<b>ID_NẰM_Ở_ĐÂY</b></code></small>
+                    <label style="display: block; font-weight: bold; margin-bottom: 0.5rem;">ID hoặc Link Video YouTube</label>
+                    <input type="text" id="youtube_input" name="video_id" value="{{ old('video_id', $live->video_id) }}" placeholder="Dán link YouTube hoặc ID vào đây..." style="width: 100%; padding: 0.8rem; border-radius: 6px; border: 1px solid var(--border); background: #0a0d12; color: var(--text);">
+                    <small style="color: var(--muted); display: block; margin-top: 8px; line-height: 1.4;">
+                        💡 <b>Mẹo:</b> Bạn có thể dán <b>toàn bộ đường link</b>, hệ thống sẽ tự động lọc lấy ID.<br>
+                        Ví dụ: <code>https://youtube.com/watch?v=<b>ypYFF1BQrpo</b></code>
+                    </small>
                 </div>
 
                 <div style="background: rgba(239, 68, 68, 0.1); padding: 1rem; border-radius: 8px; border: 1px dashed #ef4444;">
@@ -81,4 +84,23 @@
 <style>
     label:hover { border-color: var(--accent) !important; }
 </style>
+
+<script>
+    // Script tự động trích xuất ID YouTube khi người dùng dán Link
+    document.getElementById('youtube_input').addEventListener('input', function(e) {
+        let url = e.target.value.trim();
+
+        // Regex để bắt ID từ nhiều định dạng link YouTube khác nhau
+        let regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|studio\.youtube\.com\/video\/)([^#\&\?\/]*).*/;
+        let match = url.match(regExp);
+
+        if (match && match[2].length === 11) {
+            // Nếu tìm thấy ID hợp lệ, thay thế nội dung ô input bằng ID đó
+            e.target.value = match[2];
+            e.target.style.borderColor = '#10b981'; // Đổi viền xanh báo hiệu thành công
+        } else {
+            e.target.style.borderColor = 'var(--border)';
+        }
+    });
+</script>
 @endsection

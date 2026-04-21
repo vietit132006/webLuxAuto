@@ -4,9 +4,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Admin Dashboard') — Lux Auto</title>
+
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @endif
+
     <style>
         :root {
             --bg: #0c0f14;
@@ -19,7 +21,9 @@
             --sidebar-width: 260px;
             font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
         }
+
         * { box-sizing: border-box; }
+
         body {
             margin: 0;
             min-height: 100vh;
@@ -27,8 +31,10 @@
             color: var(--text);
             line-height: 1.5;
             display: flex;
+            overflow-x: hidden;
         }
-        a { text-decoration: none; transition: 0.2s; }
+
+        a { text-decoration: none; transition: all 0.2s ease-in-out; }
 
         /* --- SIDEBAR BÊN TRÁI --- */
         .admin-sidebar {
@@ -42,7 +48,9 @@
             display: flex;
             flex-direction: column;
             z-index: 100;
+            transition: transform 0.3s ease;
         }
+
         .sidebar-brand {
             height: 64px;
             display: flex;
@@ -54,15 +62,34 @@
             letter-spacing: 0.05em;
             text-transform: uppercase;
             color: var(--text);
+            flex-shrink: 0; /* Đảm bảo logo không bị bóp méo khi cuộn */
         }
         .sidebar-brand span { color: var(--accent); }
+
         .sidebar-nav {
             padding: 1.5rem 1rem;
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 0.35rem;
             flex: 1;
+            overflow-y: auto; /* QUAN TRỌNG: Cho phép cuộn menu */
         }
+
+        /* Custom thanh cuộn cho Sidebar */
+        .sidebar-nav::-webkit-scrollbar {
+            width: 5px;
+        }
+        .sidebar-nav::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .sidebar-nav::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 10px;
+        }
+        .sidebar-nav::-webkit-scrollbar-thumb:hover {
+            background: var(--muted);
+        }
+
         .sidebar-link {
             display: flex;
             align-items: center;
@@ -70,11 +97,15 @@
             color: var(--muted);
             border-radius: 8px;
             font-weight: 500;
+            font-size: 0.95rem;
+            border-left: 3px solid transparent;
         }
         .sidebar-link:hover {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.04);
             color: var(--text);
+            transform: translateX(3px); /* Hiệu ứng trượt nhẹ */
         }
+
         /* Highlight menu đang được chọn */
         .sidebar-link.active {
             background: rgba(201, 169, 98, 0.1);
@@ -95,7 +126,10 @@
             margin-left: var(--sidebar-width);
             display: flex;
             flex-direction: column;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
         }
+
         .admin-topbar {
             height: 64px;
             border-bottom: 1px solid var(--border);
@@ -109,11 +143,13 @@
             top: 0;
             z-index: 40;
         }
+
         .admin-topbar-info {
             display: flex;
             align-items: center;
             gap: 1.5rem;
         }
+
         .btn-logout {
             padding: 0.4rem 0.9rem;
             border-radius: 6px;
@@ -122,16 +158,33 @@
             font-size: 0.875rem;
         }
         .btn-logout:hover {
+            background: rgba(239, 68, 68, 0.1);
             border-color: #ef4444;
             color: #ef4444;
         }
+
         .admin-main {
             padding: 2rem;
             flex: 1;
         }
 
-        /* Ghi đè class wrap cũ của bạn để full màn hình bên Admin */
         .wrap { max-width: 100%; padding: 0; }
+
+        /* --- RESPONSIVE MOBILE --- */
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                transform: translateX(-100%); /* Ẩn sidebar trên mobile */
+            }
+            .admin-wrapper {
+                margin-left: 0; /* Nội dung full màn hình */
+            }
+            .admin-main {
+                padding: 1rem;
+            }
+            .admin-topbar {
+                padding: 0 1rem;
+            }
+        }
     </style>
     @stack('styles')
 </head>
@@ -169,14 +222,17 @@
             <a href="{{ route('admin.orders.index') }}" class="sidebar-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
                 🛒 Quản lý Đơn hàng
             </a>
+
             <a href="{{ route('admin.tickets.index') }}" class="sidebar-link {{ request()->routeIs('admin.tickets.*') ? 'active' : '' }}">
                 🎧 Quản lý Hỗ trợ
             </a>
+
             <a href="{{ route('admin.test_drives.index') }}" class="sidebar-link {{ request()->routeIs('admin.test_drives.*') ? 'active' : '' }}">
                 🗓️ Đặt lịch lái thử
             </a>
 
-            <div style="margin: 1rem 0 0.35rem; padding: 0 1rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);">Báo cáo</div>
+            <div style="margin: 1.5rem 0 0.25rem; padding: 0 1rem; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--border);">Báo cáo</div>
+
             <a href="{{ route('admin.reports.sales') }}" class="sidebar-link {{ request()->routeIs('admin.reports.sales') ? 'active' : '' }}">📈 Doanh số</a>
             <a href="{{ route('admin.reports.inventory') }}" class="sidebar-link {{ request()->routeIs('admin.reports.inventory') ? 'active' : '' }}">📦 Tồn kho</a>
             <a href="{{ route('admin.reports.inventory_check') }}" class="sidebar-link {{ request()->routeIs('admin.reports.inventory_check') ? 'active' : '' }}">✅ Kiểm tra tồn</a>
@@ -188,6 +244,8 @@
 
     <div class="admin-wrapper">
         <header class="admin-topbar">
+            <div style="flex: 1;"></div>
+
             <div class="admin-topbar-info">
                 <span>Xin chào, <strong style="color: var(--accent);">{{ auth()->user()->name ?? 'Admin' }}</strong></span>
                 <a href="{{ route('profile.index') }}" style="color: var(--text); font-size: 0.9rem;">Hồ sơ của tôi</a>
