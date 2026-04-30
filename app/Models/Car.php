@@ -26,7 +26,10 @@ class Car extends Model
         'fuel',          // Đã đổi từ fuel_type thành fuel
         'transmission',
         'is_featured',
-        'status'         // Đã bổ sung thêm status
+        'status',         // Đã bổ sung thêm status
+        'gallery',         // Đã bổ sung thêm gallery
+        'video_url',       // Đã bổ sung thêm video_url
+        'video_file',      // Đã bổ sung thêm video_file
     ];
 
     protected function casts(): array
@@ -36,6 +39,7 @@ class Car extends Model
             'price' => 'integer',
             'stock' => 'integer',
             'created_at' => 'datetime',
+            'gallery' => 'array',
         ];
     }
 
