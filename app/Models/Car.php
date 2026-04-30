@@ -9,10 +9,9 @@ class Car extends Model
     protected $table = 'cars';
     protected $primaryKey = 'car_id';
 
-    // Tắt tự động timestamps vì bảng của bạn chỉ có created_at (DB tự sinh)
-    public $timestamps = false;
+    // 👉 Nếu DB có created_at thì bật
+    public $timestamps = true;
 
-    // Khai báo các cột được phép lưu dữ liệu
     protected $fillable = [
         'name',
         'brand_id',
@@ -23,25 +22,38 @@ class Car extends Model
         'stock',
         'image',
         'mileage_km',
-        'fuel',          // Đã đổi từ fuel_type thành fuel
+        'fuel',
         'transmission',
         'is_featured',
-        'status',         // Đã bổ sung thêm status
-        'gallery',         // Đã bổ sung thêm gallery
-        'video_url',       // Đã bổ sung thêm video_url
-        'video_file',      // Đã bổ sung thêm video_file
+        'status',
+        'gallery',
+        'video_url',
+        'video_file',
+        'engine',
+        'interior_color',
+        'origin',
+        'body_type',
+        'seats',
+        'doors',
+        'drive_type',
     ];
 
+    // ✅ Laravel 13 chuẩn
     protected function casts(): array
     {
         return [
             'year' => 'integer',
             'price' => 'integer',
             'stock' => 'integer',
-            'created_at' => 'datetime',
             'gallery' => 'array',
+            'seats' => 'integer',
+            'doors' => 'integer',
         ];
     }
+
+    // ========================
+    // RELATIONSHIPS
+    // ========================
 
     public function brand()
     {
@@ -58,8 +70,29 @@ class Car extends Model
         return $this->hasMany(InventoryLog::class, 'car_id', 'car_id');
     }
 
+    // ========================
+    // ACCESSORS (PRO LEVEL)
+    // ========================
+
+    // 👉 Tên hiển thị
     public function getTitleAttribute(): string
     {
-        return $this->brand ? $this->brand->name . ' ' . $this->name : $this->name;
+        return $this->brand
+            ? $this->brand->name . ' ' . $this->name
+            : $this->name;
+    }
+
+    // 👉 Format giá
+    public function getPriceFormattedAttribute(): string
+    {
+        return number_format($this->price, 0, ',', '.') . ' VNĐ';
+    }
+
+    // 👉 URL ảnh chuẩn
+    public function getImageUrlAttribute(): string
+    {
+        return $this->image
+            ? asset('storage/' . $this->image)
+            : 'https://via.placeholder.com/800x500';
     }
 }

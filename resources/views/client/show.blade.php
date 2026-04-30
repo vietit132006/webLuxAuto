@@ -3,635 +3,905 @@
 @section('title', $car->brand->name . ' ' . $car->name)
 
 @section('content')
-<style>
-    /* --- BREADCRUMB --- */
-    .breadcrumb {
-        margin-bottom: 1.5rem;
-        font-size: 0.9rem;
-        color: var(--muted);
-    }
-    .breadcrumb a {
-        color: var(--text);
-        text-decoration: none;
-        transition: color 0.2s;
-    }
-    .breadcrumb a:hover {
-        color: var(--accent);
-    }
+    <style>
+        /* --- BREADCRUMB --- */
+        .breadcrumb {
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
 
-    /* --- LAYOUT CHÍNH --- */
-    .product-detail {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 2.5rem;
-        background: var(--surface);
-        padding: 0;
-        border-radius: 0;
-    }
-    @media (min-width: 992px) {
-        .product-detail { grid-template-columns: 1.4fr 1fr; }
-    }
+        .breadcrumb a {
+            color: var(--text);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
 
-    /* --- BÊN TRÁI: GALLERY HÌNH ẢNH SANG TRỌNG --- */
-    .gallery-container {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-    .pd-image-wrapper {
-        border-radius: 12px;
-        overflow: hidden;
-        background: #0a0d12;
-        position: relative;
-        cursor: zoom-in; /* Con trỏ hình kính lúp gợi ý click để phóng to */
-        aspect-ratio: 16 / 10;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid var(--border);
-    }
-    .pd-image-wrapper img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-        transition: transform 0.3s ease;
-    }
-    .pd-image-wrapper:hover img {
-        transform: scale(1.02);
-    }
-    .badge-hot {
-        position: absolute;
-        top: 15px;
-        left: 15px;
-        background: #e63946;
-        color: #fff;
-        padding: 0.4rem 1rem;
-        border-radius: 30px;
-        font-weight: 700;
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        box-shadow: 0 4px 10px rgba(230, 57, 70, 0.4);
-        z-index: 2;
-    }
+        .breadcrumb a:hover {
+            color: var(--accent);
+        }
 
-    /* Danh sách ảnh nhỏ */
-    .pd-thumbnails {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr); /* 5 ảnh 1 hàng, tự co giãn */
-        gap: 12px;
-    }
-    .thumb-item {
-        border-radius: 8px;
-        overflow: hidden;
-        cursor: pointer;
-        border: 2px solid transparent;
-        aspect-ratio: 16 / 10;
-        transition: all 0.2s ease;
-        opacity: 0.5;
-        background: #0a0d12;
-    }
-    .thumb-item img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    .thumb-item:hover {
-        opacity: 0.9;
-    }
-    .thumb-item.active {
-        border-color: var(--accent);
-        opacity: 1;
-        box-shadow: 0 0 10px rgba(201, 169, 98, 0.3);
-    }
+        /* --- LAYOUT CHÍNH --- */
+        .product-detail {
+            display: grid;
+            /* Chia 2 cột: Cột trái (ảnh) chiếm 1.5 phần, cột phải (thông tin) chiếm 1 phần */
+            grid-template-columns: 1.5fr 1fr;
+            gap: 3rem;
+            /* Khoảng cách giữa ảnh và cột thông tin */
+            align-items: flex-start;
+            /* Giữ cột phải đứng yên trên cùng, không bị kéo dãn dọc theo ảnh */
+            width: 100%;
+        }
 
-    /* --- LIGHTBOX (PHÓNG TO ẢNH FULL MÀN HÌNH) --- */
-    .lightbox-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.95);
-        z-index: 9999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.3s ease;
-        backdrop-filter: blur(5px);
-    }
-    .lightbox-overlay.active {
-        opacity: 1;
-        pointer-events: auto;
-    }
-    .lightbox-img {
-        max-width: 90%;
-        max-height: 85vh;
-        object-fit: contain;
-        border-radius: 8px;
-        box-shadow: 0 10px 50px rgba(0,0,0,0.8);
-    }
-    .lightbox-close {
-        position: absolute;
-        top: 20px;
-        right: 30px;
-        color: #fff;
-        font-size: 40px;
-        cursor: pointer;
-        line-height: 1;
-        transition: color 0.2s;
-        z-index: 10000;
-    }
-    .lightbox-close:hover { color: var(--accent); }
-    .lightbox-nav {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        color: rgba(255,255,255,0.5);
-        font-size: 3.5rem;
-        cursor: pointer;
-        padding: 20px;
-        user-select: none;
-        transition: all 0.2s;
-        z-index: 10000;
-    }
-    .lightbox-nav:hover { color: var(--accent); transform: translateY(-50%) scale(1.1); }
-    .lightbox-prev { left: 20px; }
-    .lightbox-next { right: 20px; }
+        /* Ép các cột không được vượt quá kích thước của Grid */
+        .pd-left,
+        .pd-right {
+            min-width: 0;
+            /* Thuộc tính 'thần thánh' chống tràn nội dung trong CSS Grid */
+            width: 100%;
+        }
 
-    /* --- BÊN PHẢI: THÔNG TIN --- */
-    .pd-info { display: flex; flex-direction: column; height: 100%; }
-    .pd-brand { font-size: 1rem; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem; font-weight: 600; }
-    .pd-title { font-size: 2.2rem; font-weight: 800; color: var(--text); margin: 0 0 1rem; line-height: 1.2; }
-    .pd-price { font-size: 2rem; font-weight: 700; color: var(--accent); margin-bottom: 2rem; display: flex; align-items: center; gap: 10px; }
+        @media (min-width: 992px) {
+            .product-detail {
+                grid-template-columns: 1.4fr 1fr;
+            }
+        }
 
-    /* --- LƯỚI THÔNG SỐ (KIỂU CARD NHỎ) --- */
-    .pd-specs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 2rem; }
-    .spec-card { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border); padding: 1rem; border-radius: 12px; display: flex; flex-direction: column; gap: 5px; }
-    .spec-card .label { font-size: 0.85rem; color: var(--muted); }
-    .spec-card .value { font-size: 1.1rem; font-weight: 600; color: var(--text); }
+        /* --- BÊN TRÁI: HÌNH ẢNH --- */
+        .pd-image-wrapper {
+            width: 100%;
+            /* Ép wrapper này nằm gọn trong cột .pd-left */
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            /* Tăng bóng đổ cho đẹp hơn với nền tối */
+            aspect-ratio: 16 / 10;
+            background: #0a0d12;
+            position: relative;
+        }
 
-    /* --- NÚT LIÊN HỆ --- */
-    .pd-actions { display: flex; flex-direction: column; gap: 1rem; margin-top: auto; }
-    .btn-secondary-cta { background: transparent; color: var(--text); border: 2px solid var(--border); text-align: center; padding: 1rem; border-radius: 12px; font-size: 1.1rem; font-weight: 600; text-decoration: none; transition: all 0.3s; }
-    .btn-secondary-cta:hover { border-color: var(--text); }
+        .pd-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
 
-    /* --- MÔ TẢ CHI TIẾT DƯỚI CÙNG --- */
-    .pd-description-box { margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); }
-    .pd-description-box h3 { font-size: 1.5rem; margin-bottom: 1.5rem; color: var(--text); }
-    .pd-desc-content { line-height: 1.8; color: var(--text); font-size: 1.05rem; }
+        /* --- RESPONSIVE: CHO ĐIỆN THOẠI & TABLET --- */
+        @media (max-width: 992px) {
+            .product-detail {
+                grid-template-columns: 1fr;
+                /* Trên màn hình nhỏ, chuyển thành 1 cột từ trên xuống dưới */
+                gap: 2rem;
+            }
+        }
 
-    /* --- CSS Nút Đặt Cọc Lux Auto --- */
-    .deposit-box { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-top: 2rem; text-align: center; }
-    .btn-deposit { width: 100%; background: linear-gradient(135deg, var(--accent) 0%, #b89453 100%); color: #000; border: none; padding: 1.2rem; border-radius: 8px; font-size: 1.25rem; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease; box-shadow: 0 10px 20px rgba(201, 169, 98, 0.2); display: block; text-decoration: none; }
-    .btn-deposit:hover { transform: translateY(-3px); box-shadow: 0 15px 25px rgba(201, 169, 98, 0.4); background: linear-gradient(135deg, #fcebb6 0%, var(--accent) 100%); }
-    .btn-deposit.login-to-book { background: #1f2937; color: var(--text); box-shadow: none; }
-    .btn-deposit.login-to-book:hover { background: #374151; }
-    .deposit-policy { color: var(--muted); font-size: 0.85rem; margin-top: 1rem; line-height: 1.5; }
+        .badge-hot {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: #e63946;
+            color: #fff;
+            padding: 0.4rem 1rem;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            box-shadow: 0 4px 10px rgba(230, 57, 70, 0.4);
+        }
 
-    /* --- ĐÁNH GIÁ --- */
-    .pd-rating-summary { margin: -1rem 0 1.25rem; font-size: 1rem; color: var(--muted); display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
-    .pd-rating-summary .stars-fill { color: #fbbf24; letter-spacing: 1px; font-size: 1.05rem; }
-    .reviews-section { margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--border); scroll-margin-top: 88px; }
-    .reviews-section h3 { font-size: 1.35rem; margin: 0 0 1rem; color: var(--text); }
-    .reviews-summary-bar { background: rgba(251, 191, 36, 0.08); border: 1px solid rgba(251, 191, 36, 0.25); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.75rem 1.5rem; }
-    .reviews-summary-bar .big { font-size: 2rem; font-weight: 800; color: var(--accent); line-height: 1; }
-    .reviews-summary-bar .sub { font-size: 0.9rem; color: var(--muted); }
-    .review-flash { background: #d1fae5; color: #065f46; padding: 0.85rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-weight: 600; border: 1px solid #34d399; }
-    .review-form { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1.75rem; }
-    .review-form label { display: block; font-weight: 600; margin-bottom: 0.4rem; font-size: 0.9rem; }
-    .review-form select, .review-form textarea { width: 100%; max-width: 420px; padding: 0.55rem 0.75rem; border-radius: 8px; border: 1px solid var(--border); background: #0a0d12; color: var(--text); font-family: inherit; }
-    .review-form textarea { min-height: 100px; resize: vertical; max-width: 100%; }
-    .review-form .btn-send { margin-top: 0.85rem; padding: 0.65rem 1.35rem; border-radius: 8px; border: none; background: var(--accent); color: #0c0f14; font-weight: 700; cursor: pointer; font-family: inherit; }
-    .review-form .hint { font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem; }
-    .reviews-list { display: flex; flex-direction: column; gap: 1rem; }
-    .review-item { background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.15rem; }
-    .review-item__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
-    .review-item__name { font-weight: 700; color: var(--text); }
-    .review-item__date { font-size: 0.8rem; color: var(--muted); }
-    .review-item__stars { color: #fbbf24; letter-spacing: 2px; font-size: 0.95rem; }
-    .review-item__text { color: var(--text); line-height: 1.6; font-size: 0.95rem; margin: 0; }
-    .reviews-empty { color: var(--muted); padding: 1rem 0; font-size: 0.95rem; }
-    .pagination-wrap { margin-top: 1.25rem; display: flex; justify-content: center; }
-</style>
+        /* --- BÊN PHẢI: THÔNG TIN --- */
+        .pd-info {
+            display: flex;
+            flex-direction: column;
+        }
 
-<div class="wrap">
-    <div class="breadcrumb">
-        <a href="{{ route('home') }}">Trang chủ</a> &nbsp; / &nbsp;
-        <a href="{{ route('cars.index') }}">Danh sách xe</a> &nbsp; / &nbsp;
-        <span style="color: var(--accent)">{{ $car->brand->name ?? 'Hãng khác' }} {{ $car->name }}</span>
-    </div>
+        .pd-brand {
+            font-size: 1rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
 
-    <div class="product-detail">
-        <div class="pd-left">
-            @php
-                // Logic gộp ảnh đại diện và ảnh gallery thành 1 mảng
-                $allImages = [];
-                if ($car->image) {
-                    $allImages[] = asset('storage/' . $car->image);
-                }
-                if (!empty($car->gallery) && is_array($car->gallery)) {
-                    foreach ($car->gallery as $path) {
-                        $allImages[] = asset('storage/' . $path);
-                    }
-                }
-            @endphp
+        .pd-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--text);
+            margin: 0 0 1rem;
+            line-height: 1.2;
+        }
 
-            <div class="gallery-container">
-                <div class="pd-image-wrapper" id="main-image-container">
-                    @if($car->is_featured)
+        .pd-price {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+            /* Giả sử màu accent của bạn là màu vàng kim/cam */
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* --- LƯỚI THÔNG SỐ KIỂU DANH SÁCH CHIA CỘT --- */
+        .pd-specs-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            column-gap: 50px;
+            row-gap: 5px;
+            margin-bottom: 2rem;
+            padding: 20px;
+            border-radius: 16px;
+        }
+
+        .spec-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            /* Đường kẻ mảnh, tinh tế */
+            transition: all 0.3s ease;
+        }
+
+        .spec-card:hover {
+            border-bottom-color: var(--primary-color);
+            /* Hiệu ứng khi di chuột qua */
+        }
+
+        /* Loại bỏ gạch ngang ở dòng cuối cùng nếu muốn sạch sẽ */
+        .spec-card:last-child {
+            /* border-bottom: none; */
+        }
+
+        .spec-card .label {
+            font-size: 0.9rem;
+            color: #999;
+            /* Màu chữ nhãn nhạt hơn */
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            /* Khoảng cách giữa icon và chữ */
+        }
+
+        .spec-card .label i {
+            color: var(--primary-color);
+            /* Icon có màu nổi bật (ví dụ màu vàng hoặc cam) */
+            width: 20px;
+            text-align: center;
+        }
+
+        .spec-card .value {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #ffffff;
+            /* Màu chữ đậm hơn cho giá trị */
+            text-align: right;
+        }
+
+        /* Responsive cho điện thoại: Chuyển về 1 cột */
+        @media (max-width: 768px) {
+            .pd-specs-grid {
+                grid-template-columns: 1fr;
+                column-gap: 0;
+            }
+        }
+
+        /* --- NÚT LIÊN HỆ --- */
+        .pd-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: auto;
+        }
+
+        .btn-primary-cta {
+            background: var(--accent);
+            color: #0c0f14;
+            text-align: center;
+            padding: 1rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-decoration: none;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(201, 169, 98, 0.3);
+            /* Chỉnh màu shadow theo var(--accent) của bạn */
+        }
+
+        .btn-primary-cta:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(201, 169, 98, 0.4);
+        }
+
+        .btn-secondary-cta {
+            background: transparent;
+            color: var(--text);
+            border: 2px solid var(--border);
+            text-align: center;
+            padding: 1rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary-cta:hover {
+            border-color: var(--text);
+        }
+
+        /* --- MÔ TẢ CHI TIẾT DƯỚI CÙNG --- */
+        .pd-description-box {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .pd-description-box h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--text);
+        }
+
+        .pd-desc-content {
+            line-height: 1.6;
+            /* Giúp văn bản dễ đọc hơn */
+            color: #ccc;
+            /* Màu chữ phù hợp với nền tối */
+            word-wrap: break-word;
+            /* Ép xuống dòng với từ quá dài */
+            overflow-wrap: break-word;
+            white-space: pre-line;
+            /* Giữ lại các khoảng ngắt dòng tự nhiên */
+            max-width: 100%;
+            /* Không cho phép rộng quá cha nó */
+            display: block;
+            /* Đảm bảo nó là khối chuẩn */
+        }
+
+        .pd-description-box {
+            width: 100%;
+            /* Đảm bảo box bao ngoài không tràn */
+            overflow: hidden;
+            /* Cắt bỏ phần thừa nếu có */
+            margin-top: 20px;
+        }
+
+        /* --- CSS Nút Đặt Cọc Lux Auto --- */
+        .deposit-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .btn-deposit {
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent) 0%, #b89453 100%);
+            color: #000;
+            border: none;
+            padding: 1.2rem;
+            border-radius: 8px;
+            font-size: 1.25rem;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(201, 169, 98, 0.2);
+            display: block;
+            text-decoration: none;
+        }
+
+        .btn-deposit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(201, 169, 98, 0.4);
+            background: linear-gradient(135deg, #fcebb6 0%, var(--accent) 100%);
+        }
+
+        .btn-deposit.login-to-book {
+            background: #1f2937;
+            color: var(--text);
+            box-shadow: none;
+        }
+
+        .btn-deposit.login-to-book:hover {
+            background: #374151;
+        }
+
+        .deposit-policy {
+            color: var(--muted);
+            font-size: 0.85rem;
+            margin-top: 1rem;
+            line-height: 1.5;
+        }
+
+        /* --- ĐÁNH GIÁ --- */
+        .pd-rating-summary {
+            margin: -1rem 0 1.25rem;
+            font-size: 1rem;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            flex-wrap: wrap;
+        }
+
+        .pd-rating-summary .stars-fill {
+            color: #fbbf24;
+            letter-spacing: 1px;
+            font-size: 1.05rem;
+        }
+
+        .reviews-section {
+            margin-top: 2.5rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            scroll-margin-top: 88px;
+        }
+
+        .reviews-section h3 {
+            font-size: 1.35rem;
+            margin: 0 0 1rem;
+            color: var(--text);
+        }
+
+        .reviews-summary-bar {
+            background: rgba(251, 191, 36, 0.08);
+            border: 1px solid rgba(251, 191, 36, 0.25);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 0.75rem 1.5rem;
+        }
+
+        .reviews-summary-bar .big {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent);
+            line-height: 1;
+        }
+
+        .reviews-summary-bar .sub {
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+
+        .review-flash {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 0.85rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            border: 1px solid #34d399;
+        }
+
+        .review-form {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .review-form label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            font-size: 0.9rem;
+        }
+
+        .review-form select,
+        .review-form textarea {
+            width: 100%;
+            max-width: 420px;
+            padding: 0.55rem 0.75rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: #0a0d12;
+            color: var(--text);
+            font-family: inherit;
+        }
+
+        .review-form textarea {
+            min-height: 100px;
+            resize: vertical;
+            max-width: 100%;
+        }
+
+        .review-form .btn-send {
+            margin-top: 0.85rem;
+            padding: 0.65rem 1.35rem;
+            border-radius: 8px;
+            border: none;
+            background: var(--accent);
+            color: #0c0f14;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .review-form .hint {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-top: 0.5rem;
+        }
+
+        .reviews-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .review-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.15rem;
+        }
+
+        .review-item__head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.5rem;
+        }
+
+        .review-item__name {
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .review-item__date {
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .review-item__stars {
+            color: #fbbf24;
+            letter-spacing: 2px;
+            font-size: 0.95rem;
+        }
+
+        .review-item__text {
+            color: var(--text);
+            line-height: 1.6;
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        .reviews-empty {
+            color: var(--muted);
+            padding: 1rem 0;
+            font-size: 0.95rem;
+        }
+
+        .pagination-wrap {
+            margin-top: 1.25rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .pd-header-banner {
+            background: #f8fafc;
+            /* Màu nền xám trắng cực nhẹ */
+            border: 1px solid #e2e8f0;
+            border-radius: 2px;
+            padding: 0px 25px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .pd-header-content {
+            display: flex;
+            justify-content: space-between;
+            /* Đẩy tên xe sang trái, trạng thái sang phải */
+            align-items: center;
+        }
+
+        .pd-header-left .pd-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1a202c;
+            margin: 0;
+        }
+
+        .status-badge {
+            padding: 6px 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Responsive: Trên điện thoại thì xếp chồng lên nhau */
+        @media (max-width: 768px) {
+            .pd-header-content {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+
+    <div class="wrap">
+        <div class="breadcrumb">
+            <a href="{{ route('home') }}">Trang chủ</a> &nbsp; / &nbsp;
+            <a href="{{ route('cars.index') }}">Danh sách xe</a> &nbsp; / &nbsp;
+            <span style="color: var(--accent)">{{ $car->brand->name ?? 'Hãng khác' }} {{ $car->name }}</span>
+        </div>
+        <div class="pd-header-banner">
+            <div class="pd-header-content">
+                <div class="pd-header-left">
+                    <h1 class="pd-title">
+                        <!-- Tên hãng xe -->
+                        <span class="pd-brand-name">{{ $car->brand->name ?? 'Hãng' }}</span>
+
+                        <!-- Dấu phân cách -->
+                        <span class="pd-separator">|</span>
+
+                        <!-- Tên xe -->
+                        <span class="pd-model-name">{{ $car->name }}</span>
+
+                        <!-- Giá tiền -->
+                        <span class="pd-price-tag">- {{ number_format($car->price, 0, ',', '.') }} VNĐ</span>
+                    </h1>
+                </div>
+
+                <div class="pd-header-right">
+                    @if (isset($car->status))
+                        <span class="status-badge"
+                            style="background: {{ $car->status == 1 ? 'var(--accent)' : '#4b5563' }}; color: {{ $car->status == 1 ? '#000' : '#fff' }};">
+                            <i>{{ $car->status == 1 ? '✨' : '🔄' }}</i>
+                            {{ $car->status == 1 ? 'Mới 100%' : 'Xe lướt (Cũ)' }}
+                        </span>
+                    @endif
+                </div>
+            </div>
+        </div>
+        <div class="product-detail">
+            <div class="pd-left">
+                <div class="pd-image-wrapper">
+                    @if ($car->is_featured)
                         <div class="badge-hot">Xe nổi bật</div>
                     @endif
 
-                    @if (count($allImages) > 0)
-                        <img id="main-image" src="{{ $allImages[0] }}" alt="{{ $car->name }}">
+                    @if ($car->image)
+                        <img src="{{ asset('storage/' . $car->image) }}" alt="{{ $car->name }}">
                     @else
-                        <img id="main-image" src="https://via.placeholder.com/800x500?text=Chua+co+hinh+anh" alt="Chưa có hình">
+                        <img src="https://via.placeholder.com/800x500?text=Chua+co+hinh+anh" alt="Chưa có hình">
                     @endif
                 </div>
 
-                @if (count($allImages) > 1)
-                    <div class="pd-thumbnails">
-                        @foreach ($allImages as $index => $imgUrl)
-                            <div class="thumb-item {{ $index === 0 ? 'active' : '' }}" onclick="changeMainImage(this, '{{ $imgUrl }}', {{ $index }})">
-                                <img src="{{ $imgUrl }}" alt="{{ $car->name }} thumbnail {{ $index }}">
-                            </div>
-                        @endforeach
+                @if ($car->description)
+                    <div class="pd-description-box">
+                        <h3 style="color: #fff; margin-bottom: 15px;">Thông tin chi tiết</h3>
+                        <div class="pd-desc-content">
+                            {{-- Sử dụng e() và nl2br là đúng, nhưng hãy chắc chắn nó nằm trong div có width 100% --}}
+                            {!! nl2br(e($car->description)) !!}
+                        </div>
                     </div>
                 @endif
-            </div>
-        </div>
+                @if ($car->video_file || $car->video_url)
+                    <div class="pd-video-box" style="margin-top: 2rem;">
+                        <h3 style="font-size: 1.3rem; margin-bottom: 1rem; color: var(--text);">Video Trải Nghiệm & Đánh Giá
+                        </h3>
+                        <div
+                            style="position: relative; width: 100%; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.2); background: #000;">
 
-        <div class="pd-right">
-            <div class="pd-info">
-                <div class="pd-brand">{{ $car->brand->name ?? 'Hãng xe' }}</div>
-                <h1 class="pd-title">{{ $car->name }}</h1>
-
-                @if(isset($car->status))
-                    <div style="margin-top: 0.5rem; margin-bottom: 1.5rem;">
-                        <span style="display: inline-block; background: {{ $car->status == 1 ? 'var(--accent)' : '#4b5563' }}; color: {{ $car->status == 1 ? '#000' : '#fff' }}; padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.9rem; font-weight: bold;">
-                            <i style="margin-right: 5px;">{{ $car->status == 1 ? '✨' : '🔄' }}</i>
-                            {{ $car->status == 1 ? 'Mới 100%' : 'Xe lướt (Cũ)' }}
-                        </span>
-                    </div>
-                @endif
-
-                @if(($reviewCount ?? 0) > 0)
-                    <div class="pd-rating-summary">
-                        <span class="stars-fill" aria-hidden="true">{{ str_repeat('★', (int) round($avgRating ?? 0)) }}{{ str_repeat('☆', max(0, 5 - (int) round($avgRating ?? 0))) }}</span>
-                        <strong style="color: var(--text);">{{ number_format((float) ($avgRating ?? 0), 1) }}/5</strong>
-                        <span>— {{ $reviewCount }} đánh giá</span>
-                        <a href="#danh-gia" style="font-size: 0.85rem; font-weight: 600;">Xem chi tiết ↓</a>
-                    </div>
-                @endif
-
-                <div class="pd-price">
-                    {{ number_format($car->price, 0, ',', '.') }} VNĐ
-                </div>
-
-                @if($errors->any())
-                    <div style="background: #fee2e2; border: 1px solid #ef4444; color: #b91c1c; padding: 1rem; border-radius: 8px; margin-top: 1rem; margin-bottom: 1rem;">
-                        <strong style="display: block; margin-bottom: 0.5rem;">⚠️ Chú ý:</strong>
-                        <ul style="margin: 0; padding-left: 1.5rem;">
-                            @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
-                <div class="pd-specs-grid">
-                    <div class="spec-card">
-                        <span class="label">Năm sản xuất</span>
-                        <span class="value">{{ $car->year ?? 'Cập nhật sau' }}</span>
-                    </div>
-                    <div class="spec-card">
-                        <span class="label">Đã đi (Odo)</span>
-                        <span class="value">
-                            @if($car->mileage_km)
-                                {{ number_format($car->mileage_km, 0, ',', '.') }} km
-                            @else
-                                {{ (isset($car->status) && $car->status == 1) ? 'Xe mới 100%' : 'Chưa cập nhật' }}
+                            @if ($car->video_file)
+                                <video controls style="width: 100%; height: auto; display: block;"
+                                    poster="{{ asset('storage/' . $car->image) }}">
+                                    <source src="{{ asset('storage/' . $car->video_file) }}" type="video/mp4">
+                                </video>
+                            @elseif($car->video_url)
+                                @php
+                                    $youtubeId = '';
+                                    preg_match(
+                                        '%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/\s]{11})%i',
+                                        $car->video_url,
+                                        $match,
+                                    );
+                                    if (isset($match[1])) {
+                                        $youtubeId = $match[1];
+                                    }
+                                @endphp
+                                @if ($youtubeId)
+                                    <div style="padding-bottom: 56.25%; height: 0; position: relative;">
+                                        <iframe
+                                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"
+                                            src="https://www.youtube.com/embed/{{ $youtubeId }}"
+                                            allowfullscreen></iframe>
+                                    </div>
+                                @endif
                             @endif
-                        </span>
-                    </div>
-                    <div class="spec-card">
-                        <span class="label">Nhiên liệu</span>
-                        <span class="value">{{ $car->fuel ?? 'Cập nhật sau' }}</span>
-                    </div>
-                    <div class="spec-card">
-                        <span class="label">Hộp số</span>
-                        <span class="value">{{ $car->transmission ?? 'Cập nhật sau' }}</span>
-                    </div>
-                    @if($car->color)
-                    <div class="spec-card">
-                        <span class="label">Màu ngoại thất</span>
-                        <span class="value">{{ $car->color }}</span>
-                    </div>
-                    @endif
-                </div>
 
-                <div class="deposit-box">
-                    @auth
-                        <form action="{{ route('order.deposit', $car->car_id) }}" method="POST" onsubmit="return confirm('Bạn xác nhận muốn đặt cọc 20.000.000 VNĐ để giữ chiếc {{ $car->name }} này chứ?');">
-                            @csrf
-                            <button type="submit" class="btn-deposit">
-                                ĐẶT CỌC NGAY
-                                <span style="display:block; font-weight:500; font-size:0.9rem; margin-top:5px; color: rgba(0,0,0,0.7);">
-                                    Phí giữ xe: 20.000.000 VNĐ
-                                </span>
-                            </button>
-                        </form>
-                    @else
-                        <a href="{{ route('login') }}" class="btn-deposit login-to-book">
-                            ĐĂNG NHẬP ĐỂ ĐẶT CỌC
-                            <span style="display:block; font-weight:500; font-size:0.9rem; margin-top:5px; color: var(--muted);">
-                                Vui lòng đăng nhập tài khoản của bạn
-                            </span>
-                        </a>
-                    @endauth
-                    <div class="deposit-policy">
-                        🛡️ Xe sẽ được giữ chân trong 24h kể từ khi thanh toán tiền cọc thành công. Lux Auto cam kết hoàn tiền 100% nếu xe không đúng mô tả.
+                        </div>
                     </div>
-                </div>
-
-                <div class="pd-actions" style="margin-top: 2rem;">
-                    <button type="button" class="btn-secondary-cta" id="btn-add-compare" data-car-id="{{ $car->car_id }}" style="cursor: pointer; font-family: inherit;">
-                        Thêm vào so sánh
-                    </button>
-                    <a href="{{ route('ticket.create', ['type' => 'test_drive', 'car_id' => $car->car_id]) }}" class="btn-secondary-cta">✉️ Đặt lịch lái thử</a>
-                    <a href="{{ route('ticket.create') }}" class="btn-secondary-cta">Yêu cầu hỗ trợ</a>
-                </div>
+                @endif
             </div>
-        </div>
-    </div>
 
-    @if ($car->description)
-        <div class="pd-description-box">
-            <h3>Thông tin chi tiết</h3>
-            <div class="pd-desc-content">
-                {!! nl2br(e($car->description)) !!}
-            </div>
-        </div>
-    @endif
-@if ($car->video_file || $car->video_url)
-        <div class="pd-video-box" style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border);">
-            <h3 style="font-size: 1.5rem; margin-bottom: 1.5rem; color: var(--text);">Video Trải Nghiệm & Đánh Giá</h3>
+            <div class="pd-right">
+                <div class="pd-info">
 
-            <div style="position: relative; width: 100%; max-width: 900px; margin: 0 auto; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); background: #000;">
-
-                {{-- Ưu tiên 1: Chạy file Video MP4 upload lên server --}}
-                @if($car->video_file)
-                    <video controls style="width: 100%; height: auto; display: block;" poster="{{ asset('storage/' . $car->image) }}">
-                        <source src="{{ asset('storage/' . $car->video_file) }}" type="video/mp4">
-                        Trình duyệt của bạn không hỗ trợ thẻ video HTML5.
-                    </video>
-
-                {{-- Ưu tiên 2: Nếu không có file mp4 thì chạy link YouTube --}}
-                @elseif($car->video_url)
-                    @php
-                        $youtubeId = '';
-                        preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/\s]{11})%i', $car->video_url, $match);
-                        if (isset($match[1])) {
-                            $youtubeId = $match[1];
-                        }
-                    @endphp
-                    @if($youtubeId)
-                        <div style="padding-bottom: 56.25%; height: 0; position: relative;">
-                            <iframe
-                                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"
-                                src="https://www.youtube.com/embed/{{ $youtubeId }}"
-                                title="YouTube video player"
-                                frameborder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                allowfullscreen>
-                            </iframe>
+                    @if (($reviewCount ?? 0) > 0)
+                        <div class="pd-rating-summary">
+                            <span class="stars-fill"
+                                aria-hidden="true">{{ str_repeat('★', (int) round($avgRating ?? 0)) }}{{ str_repeat('☆', max(0, 5 - (int) round($avgRating ?? 0))) }}</span>
+                            <strong
+                                style="color: var(--text);">{{ number_format((float) ($avgRating ?? 0), 1) }}/5</strong>
+                            <span>— {{ $reviewCount }} đánh giá</span>
+                            <a href="#danh-gia" style="font-size: 0.85rem; font-weight: 600;">Xem chi tiết ↓</a>
                         </div>
                     @endif
-                @endif
+                    @if ($errors->any())
+                        <div
+                            style="background: #fee2e2; border: 1px solid #ef4444; color: #b91c1c; padding: 1rem; border-radius: 8px; margin-top: 1rem; margin-bottom: 1rem;">
+                            <strong style="display: block; margin-bottom: 0.5rem;">⚠️ Chú ý:</strong>
+                            <ul style="margin: 0; padding-left: 1.5rem;">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                    <div class="pd-specs-grid">
+                        <!-- Cột 1 -->
+                        <div class="spec-card">
+                            <span class="label">Năm sản xuất</span>
+                            <span class="value">{{ $car->year ?? 'Cập nhật sau' }}</span>
+                        </div>
 
-            </div>
-        </div>
-    @endif
+                        <div class="spec-card">
+                            <span class="label">Tình trạng</span>
+                            <span class="value">
+                                {{ isset($car->status) && $car->status == 1 ? 'Xe mới 100%' : 'Xe đã dùng' }}
+                            </span>
+                        </div>
 
-    <section id="danh-gia" class="reviews-section">
-        <h3>Đánh giá từ khách hàng</h3>
+                        <div class="spec-card">
+                            <span class="label">Số Km đã đi</span>
+                            <span class="value">
+                                @if ($car->mileage_km)
+                                    {{ number_format($car->mileage_km, 0, ',', '.') }} km
+                                @else
+                                    {{ isset($car->status) && $car->status == 1 ? '0 km' : 'Chưa cập nhật' }}
+                                @endif
+                            </span>
+                        </div>
 
-        @if(($reviewCount ?? 0) > 0)
-            <div class="reviews-summary-bar">
-                <span class="big">{{ number_format((float) ($avgRating ?? 0), 1) }}</span>
-                <div>
-                    <div style="color: #fbbf24; letter-spacing: 3px; font-size: 1.1rem;">
-                        @for($s = 1; $s <= 5; $s++)
-                            {{ $s <= round($avgRating ?? 0) ? '★' : '☆' }}
-                        @endfor
+                        <div class="spec-card">
+                            <span class="label">Xuất xứ</span>
+                            <span class="value">{{ $car->origin ?? 'Cập nhật sau' }}</span>
+                        </div>
+
+                        <div class="spec-card">
+                            <span class="label">Kiểu dáng</span>
+                            <span class="value">{{ $car->body_type ?? 'Cập nhật sau' }}</span>
+                        </div>
+
+                        <div class="spec-card">
+                            <span class="label">Hộp số</span>
+                            <span class="value">{{ $car->transmission ?? 'Cập nhật sau' }}</span>
+                        </div>
+
+                        <!-- Cột 2 -->
+                        <div class="spec-card">
+                            <span class="label">Động cơ</span>
+                            <span class="value">{{ $car->engine ?? 'Cập nhật sau' }}</span>
+                        </div>
+
+                        <div class="spec-card">
+                            <span class="label">Nhiên liệu</span>
+                            <span class="value">{{ $car->fuel ?? 'Cập nhật sau' }}</span>
+                        </div>
+
+                        <div class="spec-card">
+                            <span class="label">Màu ngoại thất</span>
+                            <span class="value">{{ $car->color ?? 'Cập nhật sau' }}</span>
+                        </div>
+
+                        <div class="spec-card">
+                            <span class="label">Màu nội thất</span>
+                            <span class="value">{{ $car->interior_color ?? 'Cập nhật sau' }}</span>
+                        </div>
+
+                        <div class="spec-card">
+                            <span class="label">Số chỗ ngồi</span>
+                            <span class="value">{{ $car->seats ? $car->seats . ' chỗ' : 'Cập nhật sau' }}</span>
+                        </div>
+
+                        <div class="spec-card">
+                            <span class="label">Dẫn động</span>
+                            <span class="value">{{ $car->drive_type ?? 'Cập nhật sau' }}</span>
+                        </div>
                     </div>
-                    <div class="sub">{{ $reviewCount }} lượt đánh giá</div>
+                    <div class="deposit-box">
+                        @auth
+                            <form action="{{ route('order.deposit', $car->car_id) }}" method="POST"
+                                onsubmit="return confirm('Bạn xác nhận muốn đặt cọc 20.000.000 VNĐ để giữ chiếc {{ $car->name }} này chứ?');">
+                                @csrf
+                                <button type="submit" class="btn-deposit">
+                                    ĐẶT CỌC NGAY
+                                    <span
+                                        style="display:block; font-weight:500; font-size:0.9rem; margin-top:5px; color: rgba(0,0,0,0.7);">
+                                        Phí giữ xe: 20.000.000 VNĐ
+                                    </span>
+                                </button>
+                            </form>
+                        @else
+                            <a href="{{ route('login') }}" class="btn-deposit login-to-book">
+                                ĐĂNG NHẬP ĐỂ ĐẶT CỌC
+                                <span
+                                    style="display:block; font-weight:500; font-size:0.9rem; margin-top:5px; color: var(--muted);">
+                                    Vui lòng đăng nhập tài khoản của bạn
+                                </span>
+                            </a>
+                        @endauth
+
+                        <div class="deposit-policy">
+                            🛡️ Xe sẽ được giữ chân trong 24h kể từ khi thanh toán tiền cọc thành công. Lux Auto cam kết
+                            hoàn tiền 100% nếu xe không đúng mô tả.
+                        </div>
+                    </div>
+                    <div class="pd-actions">
+                        <button type="button" class="btn-secondary-cta" id="btn-add-compare"
+                            data-car-id="{{ $car->car_id }}" style="cursor: pointer; font-family: inherit;">
+                            Thêm vào so sánh
+                        </button>
+
+                        <a href="{{ route('ticket.create', ['type' => 'test_drive', 'car_id' => $car->car_id]) }}"
+                            class="btn-secondary-cta">✉️ Đặt lịch lái thử</a>
+                        <a href="{{ route('ticket.create') }}" class="btn-secondary-cta">Yêu cầu hỗ trợ</a>
+                    </div>
                 </div>
             </div>
-        @else
-            <p class="reviews-empty">Chưa có đánh giá nào cho xe này. Hãy là người đầu tiên chia sẻ trải nghiệm.</p>
-        @endif
+        </div>
 
-        @if(session('review_success'))
-            <div class="review-flash" role="status">✓ {{ session('review_success') }}</div>
-        @endif
 
-        @auth
-            @if(auth()->user()->role === 'customer')
-                <div class="review-form">
-                    <form action="{{ route('cars.reviews.store', $car->car_id) }}" method="post">
-                        @csrf
-                        @error('review')
-                            <p style="color:#f87171;font-size:0.9rem;margin:0 0 0.75rem;font-weight:600;">{{ $message }}</p>
-                        @enderror
-                        <label for="rating">Điểm đánh giá</label>
-                        <select name="rating" id="rating" required>
-                            @for($r = 5; $r >= 1; $r--)
-                                <option value="{{ $r }}" @selected(old('rating', $userReview?->rating ?? 5) == $r)>{{ $r }} sao</option>
+        <section id="danh-gia" class="reviews-section">
+            <h3>Đánh giá từ khách hàng</h3>
+
+            @if (($reviewCount ?? 0) > 0)
+                <div class="reviews-summary-bar">
+                    <span class="big">{{ number_format((float) ($avgRating ?? 0), 1) }}</span>
+                    <div>
+                        <div style="color: #fbbf24; letter-spacing: 3px; font-size: 1.1rem;">
+                            @for ($s = 1; $s <= 5; $s++)
+                                {{ $s <= round($avgRating ?? 0) ? '★' : '☆' }}
                             @endfor
-                        </select>
-                        @error('rating') <p style="color:#f87171;font-size:0.85rem;margin:0.35rem 0 0;">{{ $message }}</p> @enderror
-
-                        <label for="comment" style="margin-top: 1rem;">Nhận xét (tuỳ chọn)</label>
-                        <textarea name="comment" id="comment" maxlength="2000" placeholder="Chia sẻ trải nghiệm của bạn về xe này…">{{ old('comment', $userReview?->comment ?? '') }}</textarea>
-                        @error('comment') <p style="color:#f87171;font-size:0.85rem;margin:0.35rem 0 0;">{{ $message }}</p> @enderror
-
-                        @if($canReview ?? false)
-                            <button type="submit" class="btn-send">{{ $userReview ? 'Cập nhật đánh giá' : 'Gửi đánh giá' }}</button>
-                            @if($userReview)
-                                <p class="hint">Bạn đã đánh giá trước đó — gửi lại để chỉnh sửa.</p>
-                            @else
-                                <p class="hint">Chỉ khách đã đặt cọc hoặc mua xe mới có thể gửi đánh giá.</p>
-                            @endif
-                        @else
-                                <p class="hint" style="margin-top: 0.85rem; color: #fbbf24;">
-                                Bạn cần đặt lịch lái thử hoặc đặt cọc xe này trước khi gửi đánh giá.
-                            </p>
-                        @endif
-                    </form>
+                        </div>
+                        <div class="sub">{{ $reviewCount }} lượt đánh giá</div>
+                    </div>
                 </div>
             @else
-                <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 1.25rem;">Tài khoản nhân viên chỉ xem đánh giá của khách.</p>
+                <p class="reviews-empty">Chưa có đánh giá nào cho xe này. Hãy là người đầu tiên chia sẻ trải nghiệm.</p>
             @endif
-        @else
-            <p style="margin-bottom: 1.25rem;">
-                <a href="{{ route('login') }}" style="font-weight: 600;">Đăng nhập</a>
-                để gửi đánh giá cho sản phẩm này.
-            </p>
-        @endauth
 
-        <div class="reviews-list">
-            @forelse($reviews ?? [] as $review)
-                <article class="review-item">
-                    <div class="review-item__head">
-                        <span class="review-item__name">{{ $review->user->name ?? 'Khách hàng' }}</span>
-                        <span class="review-item__date">{{ $review->created_at?->format('d/m/Y H:i') }}</span>
+            @if (session('review_success'))
+                <div class="review-flash" role="status">✓ {{ session('review_success') }}</div>
+            @endif
+
+            @auth
+                @if (auth()->user()->role === 'customer')
+                    <div class="review-form">
+                        <form action="{{ route('cars.reviews.store', $car->car_id) }}" method="post">
+                            @csrf
+                            @error('review')
+                                <p style="color:#f87171;font-size:0.9rem;margin:0 0 0.75rem;font-weight:600;">{{ $message }}
+                                </p>
+                            @enderror
+                            <label for="rating">Điểm đánh giá</label>
+                            <select name="rating" id="rating" required>
+                                @for ($r = 5; $r >= 1; $r--)
+                                    <option value="{{ $r }}" @selected(old('rating', $userReview?->rating ?? 5) == $r)>{{ $r }} sao
+                                    </option>
+                                @endfor
+                            </select>
+                            @error('rating')
+                                <p style="color:#f87171;font-size:0.85rem;margin:0.35rem 0 0;">{{ $message }}</p>
+                            @enderror
+
+                            <label for="comment" style="margin-top: 1rem;">Nhận xét (tuỳ chọn)</label>
+                            <textarea name="comment" id="comment" maxlength="2000" placeholder="Chia sẻ trải nghiệm của bạn về xe này…">{{ old('comment', $userReview?->comment ?? '') }}</textarea>
+                            @error('comment')
+                                <p style="color:#f87171;font-size:0.85rem;margin:0.35rem 0 0;">{{ $message }}</p>
+                            @enderror
+
+                            @if ($canReview ?? false)
+                                <button type="submit"
+                                    class="btn-send">{{ $userReview ? 'Cập nhật đánh giá' : 'Gửi đánh giá' }}</button>
+                                @if ($userReview)
+                                    <p class="hint">Bạn đã đánh giá trước đó — gửi lại để chỉnh sửa.</p>
+                                @else
+                                    <p class="hint">Chỉ khách đã đặt cọc hoặc mua xe mới có thể gửi đánh giá.</p>
+                                @endif
+                            @else
+                                <p class="hint" style="margin-top: 0.85rem; color: #fbbf24;">
+                                    Bạn cần đặt lịch lái thử hoặc đặt cọc xe này trước khi gửi đánh giá.
+                                </p>
+                            @endif
+                        </form>
                     </div>
-                    <div class="review-item__stars" aria-label="{{ $review->rating }} trên 5 sao">
-                        @for($s = 1; $s <= 5; $s++)
-                            {{ $s <= (int) $review->rating ? '★' : '☆' }}
-                        @endfor
-                    </div>
-                    @if($review->comment)
-                        <p class="review-item__text">{{ $review->comment }}</p>
-                    @else
-                        <p class="review-item__text" style="color: var(--muted); font-style: italic;">(Không có nhận xét)</p>
-                    @endif
-                </article>
-            @empty
-            @endforelse
-        </div>
+                @else
+                    <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 1.25rem;">Tài khoản nhân viên chỉ xem đánh
+                        giá của khách.</p>
+                @endif
+            @else
+                <p style="margin-bottom: 1.25rem;">
+                    <a href="{{ route('login') }}" style="font-weight: 600;">Đăng nhập</a>
+                    để gửi đánh giá cho sản phẩm này.
+                </p>
+            @endauth
 
-        @if(isset($reviews) && $reviews->hasPages())
-            <div class="pagination-wrap">{{ $reviews->links('pagination.lux') }}</div>
-        @endif
-    </section>
-</div>
+            <div class="reviews-list">
+                @forelse($reviews ?? [] as $review)
+                    <article class="review-item">
+                        <div class="review-item__head">
+                            <span class="review-item__name">{{ $review->user->name ?? 'Khách hàng' }}</span>
+                            <span class="review-item__date">{{ $review->created_at?->format('d/m/Y H:i') }}</span>
+                        </div>
+                        <div class="review-item__stars" aria-label="{{ $review->rating }} trên 5 sao">
+                            @for ($s = 1; $s <= 5; $s++)
+                                {{ $s <= (int) $review->rating ? '★' : '☆' }}
+                            @endfor
+                        </div>
+                        @if ($review->comment)
+                            <p class="review-item__text">{{ $review->comment }}</p>
+                        @else
+                            <p class="review-item__text" style="color: var(--muted); font-style: italic;">(Không có nhận
+                                xét)</p>
+                        @endif
+                    </article>
+                @empty
+                @endforelse
+            </div>
 
-<div class="lightbox-overlay" id="lightbox">
-    <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
-    <span class="lightbox-nav lightbox-prev" onclick="prevImage()">&#10094;</span>
-    <img class="lightbox-img" id="lightbox-img" src="">
-    <span class="lightbox-nav lightbox-next" onclick="nextImage()">&#10095;</span>
-</div>
-
-@push('scripts')
-<script>
-// --- LOGIC CHO GALLERY & LIGHTBOX ---
-(function() {
-    // Chỉ khởi chạy nếu có mảng ảnh
-    var imagesArray = @json($allImages ?? []);
-    if(imagesArray.length === 0) return;
-
-    var currentImageIndex = 0;
-    var mainImage = document.getElementById('main-image');
-    var lightbox = document.getElementById('lightbox');
-    var lightboxImg = document.getElementById('lightbox-img');
-
-    // Hàm gọi khi click vào ảnh nhỏ (Thumbnail)
-    window.changeMainImage = function(thumbElement, imgUrl, index) {
-        mainImage.src = imgUrl;
-        currentImageIndex = index;
-
-        // Xoá viền active của tất cả các ảnh nhỏ
-        var thumbs = document.querySelectorAll('.thumb-item');
-        thumbs.forEach(function(th) { th.classList.remove('active'); });
-
-        // Đóng khung viền ảnh nhỏ vừa click
-        thumbElement.classList.add('active');
-    };
-
-    // Hàm gọi khi click vào ảnh chính để mở Lightbox
-    var mainImageContainer = document.getElementById('main-image-container');
-    if(mainImageContainer) {
-        mainImageContainer.addEventListener('click', function() {
-            lightboxImg.src = imagesArray[currentImageIndex];
-            lightbox.classList.add('active');
-        });
-    }
-
-    // Đóng Lightbox
-    window.closeLightbox = function() {
-        lightbox.classList.remove('active');
-    };
-
-    // Hàm cập nhật cả Lightbox và Ảnh chính cùng lúc khi bấm Next/Prev
-    function syncMainAndLightbox() {
-        var newUrl = imagesArray[currentImageIndex];
-
-        // Đổi ảnh trong Lightbox
-        lightboxImg.src = newUrl;
-
-        // Đổi ảnh chính bên ngoài
-        mainImage.src = newUrl;
-
-        // Cập nhật lại khung viền (active) cho dãy thumbnail bên ngoài
-        var thumbs = document.querySelectorAll('.thumb-item');
-        thumbs.forEach(function(th, idx) {
-            if(idx === currentImageIndex) {
-                th.classList.add('active');
-            } else {
-                th.classList.remove('active');
-            }
-        });
-    }
-
-    // Lùi 1 ảnh
-    window.prevImage = function(event) {
-        if(event) event.stopPropagation(); // Tránh sự kiện click lan ra ngoài làm đóng lightbox
-        currentImageIndex = (currentImageIndex - 1 + imagesArray.length) % imagesArray.length;
-        syncMainAndLightbox();
-    };
-
-    // Tới 1 ảnh
-    window.nextImage = function(event) {
-        if(event) event.stopPropagation();
-        currentImageIndex = (currentImageIndex + 1) % imagesArray.length;
-        syncMainAndLightbox();
-    };
-
-    // Đóng Lightbox khi nhấn ra ngoài bức ảnh
-    lightbox.addEventListener('click', function(e) {
-        if(e.target === this) {
-            closeLightbox();
-        }
-    });
-
-    // Thêm phím tắt bàn phím (Mũi tên trái/phải, nút Esc)
-    document.addEventListener('keydown', function(e) {
-        if(!lightbox.classList.contains('active')) return;
-        if(e.key === 'ArrowLeft') prevImage();
-        if(e.key === 'ArrowRight') nextImage();
-        if(e.key === 'Escape') closeLightbox();
-    });
-})();
-
-// --- LOGIC NÚT SO SÁNH (Giữ nguyên của bạn) ---
-(function () {
-    var KEY = 'lux_compare_ids';
-    var btn = document.getElementById('btn-add-compare');
-    if (!btn) return;
-    btn.addEventListener('click', function () {
-        var id = parseInt(btn.getAttribute('data-car-id'), 10);
-        if (!id) return;
-        var raw = localStorage.getItem(KEY) || '';
-        var arr = raw ? raw.split(',').map(function (x) { return parseInt(x, 10); }).filter(Boolean) : [];
-        if (arr.indexOf(id) !== -1) {
-            alert('Xe này đã có trong danh sách so sánh.');
-            return;
-        }
-        if (arr.length >= 4) {
-            alert('Chỉ có thể so sánh tối đa 4 xe.');
-            return;
-        }
-        arr.push(id);
-        localStorage.setItem(KEY, arr.join(','));
-        window.location.href = @json(route('compare.index')) + '?ids=' + encodeURIComponent(arr.join(','));
-    });
-})();
-</script>
-@endpush
+            @if (isset($reviews) && $reviews->hasPages())
+                <div class="pagination-wrap">{{ $reviews->links('pagination.lux') }}</div>
+            @endif
+        </section>
+    </div>
+    @push('scripts')
+        <script>
+            (function() {
+                var KEY = 'lux_compare_ids';
+                var btn = document.getElementById('btn-add-compare');
+                if (!btn) return;
+                btn.addEventListener('click', function() {
+                    var id = parseInt(btn.getAttribute('data-car-id'), 10);
+                    if (!id) return;
+                    var raw = localStorage.getItem(KEY) || '';
+                    var arr = raw ? raw.split(',').map(function(x) {
+                        return parseInt(x, 10);
+                    }).filter(Boolean) : [];
+                    if (arr.indexOf(id) !== -1) {
+                        alert('Xe này đã có trong danh sách so sánh.');
+                        return;
+                    }
+                    if (arr.length >= 4) {
+                        alert('Chỉ có thể so sánh tối đa 4 xe.');
+                        return;
+                    }
+                    arr.push(id);
+                    localStorage.setItem(KEY, arr.join(','));
+                    window.location.href = @json(route('compare.index')) + '?ids=' + encodeURIComponent(arr.join(
+                        ','));
+                });
+            })();
+        </script>
+    @endpush
 @endsection
