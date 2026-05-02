@@ -3,224 +3,315 @@
 @section('title', $car->title)
 
 @section('content')
-<style>
-    .vehicle-detail {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 2rem;
-        background: var(--surface);
-        padding: 2rem;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    }
-    @media (min-width: 900px) {
-        .vehicle-detail { grid-template-columns: 1.2fr 1fr; }
-    }
-    .vd-img {
-        aspect-ratio: 16 / 10;
-        background: #f1f5f9;
-        border-radius: 12px;
-        overflow: hidden;
-        border: 1px solid var(--border);
-    }
-    .vd-img img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-    }
-    .vd-head {
-        margin: 0 0 0.5rem;
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: var(--text);
-    }
-    .vd-price {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #e63946; /* Màu đỏ cho giá nổi bật */
-        margin: 0 0 1.5rem;
-    }
-    .vd-specs {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-        padding: 1.5rem;
-        background: #f8fafc;
-        border-radius: 8px;
-        border: 1px solid var(--border);
-        font-size: 0.95rem;
-        color: var(--text);
-        margin-bottom: 1.5rem;
-    }
-    .vd-specs div {
-        display: flex;
-        flex-direction: column;
-        gap: 0.2rem;
-    }
-    .vd-specs span.label {
-        color: #64748b;
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    .vd-desc {
-        line-height: 1.6;
-        color: var(--text);
-        padding-top: 1.5rem;
-        border-top: 1px solid var(--border);
-    }
-    .vd-actions {
-        display: flex;
-        gap: 1rem;
-        margin-top: 2rem;
-    }
-    .vd-actions a {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0.7rem 1.2rem;
-        border-radius: 8px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.2s;
-    }
-    .btn-back {
-        border: 1px solid var(--border);
-        color: var(--text);
-        background: #fff;
-    }
-    .btn-back:hover {
-        background: #f1f5f9;
-    }
-    .btn-edit {
-        background: var(--accent); /* Nút sửa nổi bật */
-        color: #0c0f14;
-        border: none;
-    }
-    .btn-edit:hover {
-        opacity: 0.9;
-    }
-    .badge-featured {
-        display: inline-block;
-        background: #fbbf24;
-        color: #000;
-        font-size: 0.75rem;
-        padding: 0.2rem 0.6rem;
-        border-radius: 20px;
-        font-weight: bold;
-        vertical-align: middle;
-        margin-left: 10px;
-    }
-</style>
 
-<div class="wrap">
-    <div class="vehicle-detail">
-        <div class="vd-left">
-            <div class="vd-img">
-                @if ($car->image)
-                    <img src="{{ asset('storage/' . $car->image) }}" alt="{{ $car->title }}">
-                @else
-                    <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #94a3b8;">
-                        Chưa có hình ảnh
+    <style>
+        .wrap {
+            max-width: 1200px;
+            margin: auto;
+            color: #e5e7eb;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .title {
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        .price {
+            font-size: 22px;
+            color: #ef4444;
+            font-weight: bold;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .badge-new {
+            background: #16a34a;
+        }
+
+        .badge-old {
+            background: #f59e0b;
+            color: #000;
+        }
+
+        /* ẢNH CHÍNH */
+        .main-img {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        /* GALLERY */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .gallery img {
+            width: 100%;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        /* MODAL ZOOM */
+        .modal-img {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+
+        .modal-img img {
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        /* SPEC */
+        .specs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .spec {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .label {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .value {
+            font-weight: 600;
+            color: #fff;
+        }
+
+        /* VIDEO */
+        video,
+        iframe {
+            width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+        }
+
+        /* ACTION */
+        .actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .btn-edit {
+            background: #facc15;
+            color: #000;
+        }
+
+        .btn-delete {
+            background: #ef4444;
+            color: #fff;
+        }
+    </style>
+
+    <div class="wrap">
+
+        <div class="grid">
+
+            {{-- LEFT --}}
+            <div>
+
+                {{-- ẢNH --}}
+                <div class="section">
+                    @if ($car->image)
+                        <img src="{{ asset('storage/' . $car->image) }}" class="main-img" onclick="zoom(this.src)">
+                    @endif
+
+                    {{-- GALLERY --}}
+                    @if ($car->gallery)
+                        <div class="gallery">
+                            @foreach ($car->gallery as $img)
+                                <img src="{{ asset('storage/' . $img) }}" onclick="zoom(this.src)">
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+
+                {{-- VIDEO --}}
+                @if ($car->video_file || $car->video_url)
+                    <div class="section">
+                        <h3>Video</h3>
+
+                        @if ($car->video_file)
+                            <video controls>
+                                <source src="{{ asset('storage/' . $car->video_file) }}">
+                            </video>
+                        @elseif($car->video_url)
+                            @php
+                                preg_match('/v=([^&]+)/', $car->video_url, $m);
+                                $id = $m[1] ?? null;
+                            @endphp
+
+                            @if ($id)
+                                <iframe src="https://www.youtube.com/embed/{{ $id }}"></iframe>
+                            @endif
+                        @endif
                     </div>
                 @endif
-            </div>
-        </div>
 
-        <div class="vd-right">
-            <h1 class="vd-head">
-                {{ $car->title }}
-                @if($car->is_featured)
-                    <span class="badge-featured">⭐ Nổi bật</span>
+            </div>
+
+            {{-- RIGHT --}}
+            <div>
+
+                <div class="section">
+                    <div class="title">{{ $car->title }}</div>
+
+                    <div class="price">
+                        {{ number_format($car->price) }} VNĐ
+                    </div>
+
+                    <div>
+                        @if ($car->status == 1)
+                            <span class="badge badge-new">Xe mới</span>
+                        @else
+                            <span class="badge badge-old">Xe cũ</span>
+                        @endif
+                    </div>
+                </div>
+
+                {{-- SPECS --}}
+                <div class="section specs">
+
+                    <div class="spec">
+                        <div class="label">Hãng</div>
+                        <div class="value">{{ $car->brand->name ?? '---' }}</div>
+                    </div>
+                    <div class="spec">
+                        <div class="label">Năm</div>
+                        <div class="value">{{ $car->year ?? '---' }}</div>
+                    </div>
+                    <div class="spec">
+                        <div class="label">Km</div>
+                        <div class="value">{{ $car->mileage_km ?? '---' }}</div>
+                    </div>
+                    <div class="spec">
+                        <div class="label">Nhiên liệu</div>
+                        <div class="value">{{ $car->fuel ?? '---' }}</div>
+                    </div>
+                    <div class="spec">
+                        <div class="label">Hộp số</div>
+                        <div class="value">{{ $car->transmission ?? '---' }}</div>
+                    </div>
+                    <div class="spec">
+                        <div class="label">Màu</div>
+                        <div class="value">{{ $car->color ?? '---' }}</div>
+                    </div>
+                    <div class="spec">
+                        <div class="label">Nội thất</div>
+                        <div class="value">{{ $car->interior_color ?? '---' }}</div>
+                    </div>
+                    <div class="spec">
+                        <div class="label">Động cơ</div>
+                        <div class="value">{{ $car->engine ?? '---' }}</div>
+                    </div>
+                    <div class="spec">
+                        <div class="label">Xuất xứ</div>
+                        <div class="value">{{ $car->origin ?? '---' }}</div>
+                    </div>
+                    <div class="spec">
+                        <div class="label">Kiểu dáng</div>
+                        <div class="value">{{ $car->body_type ?? '---' }}</div>
+                    </div>
+                    <div class="spec">
+                        <div class="label">Dẫn động</div>
+                        <div class="value">{{ $car->drive_type ?? '---' }}</div>
+                    </div>
+                    <div class="spec">
+                        <div class="label">Số chỗ</div>
+                        <div class="value">{{ $car->seats ?? '---' }}</div>
+                    </div>
+                    <div class="spec">
+                        <div class="label">Số cửa</div>
+                        <div class="value">{{ $car->doors ?? '---' }}</div>
+                    </div>
+
+                </div>
+
+                {{-- DESCRIPTION --}}
+                @if ($car->description)
+                    <div class="section">
+                        <h3>Mô tả</h3>
+                        <p>{!! nl2br(e($car->description)) !!}</p>
+                    </div>
                 @endif
-            </h1>
 
-            <p class="vd-price">{{ number_format($car->price, 0, ',', '.') }} VNĐ</p>
+                {{-- ACTION --}}
+                <div class="actions">
+                    <a href="{{ route('admin.cars.edit', $car->car_id) }}" class="btn btn-edit">Sửa</a>
 
-           <div class="vd-specs">
-                <div>
-                    <span class="label" style="color: #64748b; font-size: 0.85rem; text-transform: uppercase;">Mã ID</span>
-                    <strong style="color: #0f172a; font-size: 1.05rem;">#{{ $car->car_id }}</strong>
+                    <form action="{{ route('admin.cars.destroy', $car->car_id) }}" method="POST"
+                        onsubmit="return confirm('Xóa xe này?')">
+                        @csrf
+                        @method('DELETE')
+                        <button class="btn btn-delete">Xóa</button>
+                    </form>
                 </div>
 
-                <div>
-                    <span class="label" style="color: #64748b; font-size: 0.85rem; text-transform: uppercase;">Hãng xe</span>
-                    <strong style="color: #0f172a; font-size: 1.05rem;">{{ $car->brand->name ?? 'N/A' }}</strong>
-                </div>
-
-                <div>
-                    <span class="label" style="color: #64748b; font-size: 0.85rem; text-transform: uppercase;">Dòng xe</span>
-                    <strong style="color: #0f172a; font-size: 1.05rem;">{{ $car->name }}</strong>
-                </div>
-
-                <div>
-                    <span class="label" style="color: #64748b; font-size: 0.85rem; text-transform: uppercase;">Năm sản xuất</span>
-                    <strong style="color: #0f172a; font-size: 1.05rem;">{{ $car->year ?? 'Chưa cập nhật' }}</strong>
-                </div>
-
-                <div>
-                    <span class="label" style="color: #64748b; font-size: 0.85rem; text-transform: uppercase;">Tình trạng</span>
-                    <strong style="font-size: 1.05rem;">
-                        @if(isset($car->status))
-                            <span style="color: {{ $car->status == 1 ? '#059669' : '#ea580c' }}; font-weight: 800;">
-                                {{ $car->status == 1 ? 'Mới 100%' : 'Xe lướt (Cũ)' }}
-                            </span>
-                        @else
-                            <span style="color: #0f172a;">Chưa cập nhật</span>
-                        @endif
-                    </strong>
-                </div>
-
-                <div>
-                    <span class="label" style="color: #64748b; font-size: 0.85rem; text-transform: uppercase;">Số Km đã đi</span>
-                    <strong style="color: #0f172a; font-size: 1.05rem;">
-                        @if($car->mileage_km)
-                            {{ number_format($car->mileage_km, 0, ',', '.') }} km
-                        @else
-                            {{ (isset($car->status) && $car->status == 1) ? 'Xe mới 100%' : 'Chưa cập nhật' }}
-                        @endif
-                    </strong>
-                </div>
-
-                <div>
-                    <span class="label" style="color: #64748b; font-size: 0.85rem; text-transform: uppercase;">Tồn kho</span>
-                    <strong style="color: #0f172a; font-size: 1.05rem;">{{ $car->stock }} chiếc</strong>
-                </div>
-
-                <div>
-                    <span class="label" style="color: #64748b; font-size: 0.85rem; text-transform: uppercase;">Nhiên liệu</span>
-                    <strong style="color: #0f172a; font-size: 1.05rem;">{{ $car->fuel ?? 'Chưa cập nhật' }}</strong>
-                </div>
-
-                <div>
-                    <span class="label" style="color: #64748b; font-size: 0.85rem; text-transform: uppercase;">Hộp số</span>
-                    <strong style="color: #0f172a; font-size: 1.05rem;">{{ $car->transmission ?? 'Chưa cập nhật' }}</strong>
-                </div>
-
-                <div>
-                    <span class="label" style="color: #64748b; font-size: 0.85rem; text-transform: uppercase;">Màu sắc</span>
-                    <strong style="color: #0f172a; font-size: 1.05rem;">{{ $car->color ?? 'Chưa cập nhật' }}</strong>
-                </div>
-
-                <div style="grid-column: span 2;">
-                    <span class="label" style="color: #64748b; font-size: 0.85rem; text-transform: uppercase;">Ngày đăng</span>
-                    <strong style="color: #0f172a; font-size: 1.05rem;">{{ $car->created_at ? $car->created_at->format('d/m/Y H:i') : 'N/A' }}</strong>
-                </div>
             </div>
 
-            @if ($car->description)
-                <div class="vd-desc">
-                    <strong>Mô tả chi tiết:</strong><br>
-                    {!! nl2br(e($car->description)) !!} </div>
-            @endif
-
-            <div class="vd-actions">
-                <a href="{{ route('admin.cars.index') }}" class="btn-back" style="color: #000000">← Quay lại danh sách</a>
-
-                <a href="{{ route('admin.cars.edit', $car->car_id) }}" class="btn-edit" style="color: #e63946">Sửa thông tin</a>
-            </div>
         </div>
+
     </div>
-</div>
+
+    {{-- MODAL --}}
+    <div id="imgModal" class="modal-img" onclick="this.style.display='none'">
+        <img id="modalImg">
+    </div>
+
+    <script>
+        function zoom(src) {
+            document.getElementById('imgModal').style.display = 'flex';
+            document.getElementById('modalImg').src = src;
+        }
+    </script>
+
 @endsection

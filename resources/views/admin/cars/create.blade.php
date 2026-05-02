@@ -287,7 +287,15 @@
             </a>
             <h1 class="lux-page-title">Thêm xe mới</h1>
         </div>
-
+        @if ($errors->any())
+            <div style="background:red;color:white;padding:10px;">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
         <form method="POST" action="{{ route('admin.cars.store') }}" enctype="multipart/form-data">
             @csrf
 
@@ -399,7 +407,11 @@
                         <input type="number" id="seats" name="seats" class="lux-input"
                             value="{{ old('seats') }}" min="1" max="50" placeholder="VD: 5">
                     </div>
-
+                    <div class="form-group">
+                        <label for="doors">Số cửa</label>
+                        <input type="number" id="doors" name="doors" class="lux-input"
+                            value="{{ old('doors') }}" min="2" max="6" placeholder="VD: 4">
+                    </div>
                     <div class="form-group">
                         <select name="drive_type" class="lux-select">
                             <option value="">-- Chọn dẫn động --</option>

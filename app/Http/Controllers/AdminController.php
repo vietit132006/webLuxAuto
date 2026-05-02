@@ -55,6 +55,7 @@ class AdminController extends Controller
     // 4. Lưu xe
     public function store(Request $request)
     {
+        // dd($request->all(), $request->file());
         $request->validate([
             'brand_id' => 'required|exists:brands,brand_id',
             'name' => 'required|string|max:150',
@@ -74,9 +75,13 @@ class AdminController extends Controller
             'interior_color' => 'nullable|string|max:50',
             'seats' => 'nullable|integer|min:1|max:50',
             'drive_type' => 'nullable|string|max:50',
+            'doors' => 'nullable|integer|min:2|max:6',
 
-            'image' => 'required|image|max:2048',
-            'gallery.*' => 'image|max:2048',
+            // 'image' => 'required|image|max:2048',
+            // 'image' => 'required|file|max:2048',
+            'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
+            // 'gallery.*' => 'image|max:2048',
+            'gallery.*' => 'image|mimes:jpeg,png,jpg,webp|max:2048',
 
             'video_file' => 'nullable|mimes:mp4,mov,avi|max:20480',
             'video_url' => 'nullable|url',
@@ -146,8 +151,8 @@ class AdminController extends Controller
             'status' => 'required|in:0,1',
             'stock' => 'required|integer|min:0',
 
-            'image' => 'nullable|image|max:2048',
-            'gallery.*' => 'image|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'gallery.*' => 'image|mimes:jpeg,png,jpg,webp|max:2048',
 
             'video_file' => 'nullable|mimes:mp4,mov,avi|max:20480',
             'video_url' => 'nullable|url',
