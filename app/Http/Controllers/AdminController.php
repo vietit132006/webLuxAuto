@@ -15,7 +15,6 @@ class AdminController extends Controller
     {
         $totalCars = Car::count();
         $totalBrands = Brand::count();
-        $totalStock = Car::sum('stock') ?? 0;
 
         $recentCars = Car::with('brand')
             ->orderBy('car_id', 'desc')
@@ -25,7 +24,6 @@ class AdminController extends Controller
         return view('admin.cars.dashboard', compact(
             'totalCars',
             'totalBrands',
-            'totalStock',
             'recentCars'
         ));
     }

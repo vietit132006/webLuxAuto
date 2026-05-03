@@ -296,288 +296,123 @@
                 </ul>
             </div>
         @endif
-        <form method="POST" action="{{ route('admin.cars.store') }}" enctype="multipart/form-data">
+        <form action="{{ route('admin.cars.store') }}" method="POST" enctype="multipart/form-data" class="container mt-4">
             @csrf
 
-            <div class="lux-card">
-                <h3 class="lux-card-title">
-                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Thông tin nhận diện
-                </h3>
-
-                <div class="form-row" style="grid-template-columns: 1fr 2fr;">
-                    <div class="form-group">
-                        <label for="brand_id">Hãng sản xuất <span class="required">*</span></label>
-                        <select id="brand_id" name="brand_id" class="lux-select" required>
-                            <option value="">-- Chọn hãng --</option>
-                            @foreach ($brands as $brand)
-                                <option value="{{ $brand->brand_id }}"
-                                    {{ old('brand_id') == $brand->brand_id ? 'selected' : '' }}>
-                                    {{ $brand->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('brand_id')
-                            <div style="color: #ef4444; font-size: 0.85rem; margin-top: 5px;">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="form-group">
-                        <label for="name">Tên dòng xe / Phiên bản <span class="required">*</span></label>
-                        <input type="text" id="name" name="name" class="lux-input" value="{{ old('name') }}"
-                            required placeholder="VD: Porsche 911 GT3 RS" maxlength="150">
-                        @error('name')
-                            <div style="color: #ef4444; font-size: 0.85rem; margin-top: 5px;">{{ $message }}</div>
-                        @enderror
-                    </div>
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Thêm Xe Cũ Vào Kho</h4>
                 </div>
-            </div>
-
-            <div class="lux-card">
-                <h3 class="lux-card-title">
-                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Định giá & Phân phối
-                </h3>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="price">Giá bán đề xuất <span class="required">*</span></label>
-                        <div class="price-input-wrapper">
-                            <input type="number" id="price" name="price" class="lux-input price-input"
-                                value="{{ old('price') }}" required min="0" max="999000000000" step="1000000"
-                                oninput="formatPriceRealtime()">
+                <div class="card-body">
+                    <div class="row">
+                        <!-- PHẦN 1: CHỌN MẪU XE (CAR MODEL) -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">Hãng & Mẫu Xe <span
+                                    class="text-danger">*</span></label>
+                            <select name="car_model_id" id="car_model_id"
+                                class="form-select @error('car_model_id') is-invalid @enderror" required>
+                                <option value="">-- Chọn Mẫu Xe Có Sẵn --</option>
+                                @foreach ($carModels as $model)
+                                    <option value="{{ $model->id }}">
+                                        {{ $model->brand->name }} - {{ $model->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('car_model_id')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <small class="text-muted">Chưa có mẫu xe? <a href="#" data-bs-toggle="modal"
+                                    data-bs-target="#addModelModal">Thêm mẫu mới ngay</a></small>
                         </div>
-                        <div class="price-preview" id="price-display">
-                            <svg style="width:14px; height:14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span id="price-text">0 VNĐ</span>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">Tên Phiên Bản Cụ Thể</label>
+                            <input type="text" name="name" class="form-control"
+                                placeholder="Ví dụ: Carrera S, Premium, G..." value="{{ old('name') }}">
+                            <small class="text-muted">Để phân biệt các biến thể cùng một dòng xe.</small>
                         </div>
-                        @error('price')
-                            <div style="color: #ef4444; font-size: 0.85rem; margin-top: 5px;">{{ $message }}</div>
-                        @enderror
-                    </div>
 
-                    <div class="form-group">
-                        <label for="status">Tình trạng xe <span class="required">*</span></label>
-                        <select id="status" name="status" class="lux-select" required>
-                            <option value="1" {{ old('status', 1) == 1 ? 'selected' : '' }}>Xe Mới 100%</option>
-                            <option value="0" {{ old('status') == '0' ? 'selected' : '' }}>Xe Lướt (Đã qua sử dụng)
-                            </option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="origin">Xuất xứ</label>
-                        <input type="text" id="origin" name="origin" class="lux-input" value="{{ old('origin') }}"
-                            placeholder="VD: Đức / Nhật / Mỹ" maxlength="100">
-                    </div>
-
-                    <div class="form-group">
-                        <select name="body_type" class="lux-select">
-                            <option value="">-- Kiểu dáng --</option>
-                            <option>Sedan</option>
-                            <option>SUV</option>
-                            <option>Coupe</option>
-                            <option>Hatchback</option>
-                            <option>Pickup</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="engine">Động cơ</label>
-                        <input type="text" id="engine" name="engine" class="lux-input"
-                            value="{{ old('engine') }}" placeholder="VD: V8 4.0L Twin Turbo" maxlength="100">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="interior_color">Màu nội thất</label>
-                        <input type="text" id="interior_color" name="interior_color" class="lux-input"
-                            value="{{ old('interior_color') }}" placeholder="VD: Đen / Kem / Đỏ" maxlength="50">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="seats">Số chỗ ngồi</label>
-                        <input type="number" id="seats" name="seats" class="lux-input"
-                            value="{{ old('seats') }}" min="1" max="50" placeholder="VD: 5">
-                    </div>
-                    <div class="form-group">
-                        <label for="doors">Số cửa</label>
-                        <input type="number" id="doors" name="doors" class="lux-input"
-                            value="{{ old('doors') }}" min="2" max="6" placeholder="VD: 4">
-                    </div>
-                    <div class="form-group">
-                        <select name="drive_type" class="lux-select">
-                            <option value="">-- Chọn dẫn động --</option>
-                            <option value="FWD">FWD - Cầu trước</option>
-                            <option value="RWD">RWD - Cầu sau</option>
-                            <option value="AWD">AWD - 2 cầu</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="stock">Số lượng nhập kho <span class="required">*</span></label>
-                        <input type="number" id="stock" name="stock" class="lux-input"
-                            value="{{ old('stock', 1) }}" required min="0" max="9999">
-                        @error('stock')
-                            <div style="color: #ef4444; font-size: 0.85rem; margin-top: 5px;">{{ $message }}</div>
-                        @enderror
-                    </div>
-                </div>
-            </div>
-
-            <div class="lux-card">
-                <h3 class="lux-card-title">
-                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    Thông số kỹ thuật
-                </h3>
-
-                <div class="form-row" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
-                    <div class="form-group">
-                        <label for="year">Năm sản xuất <span class="required">*</span></label>
-                        <input type="number" id="year" name="year" class="lux-input"
-                            value="{{ old('year') }}" required min="1900" max="{{ date('Y') + 2 }}">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="color">Màu ngoại thất</label>
-                        <input type="text" id="color" name="color" class="lux-input"
-                            value="{{ old('color') }}" placeholder="VD: Đen nhám" maxlength="50">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="fuel">Nhiên liệu</label>
-                        <input type="text" id="fuel" name="fuel" class="lux-input"
-                            value="{{ old('fuel') }}" placeholder="VD: Xăng V8" maxlength="50">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="transmission">Hộp số</label>
-                        <input type="text" id="transmission" name="transmission" class="lux-input"
-                            value="{{ old('transmission') }}" placeholder="VD: 8 cấp Tự động" maxlength="50">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="mileage_km">Odo (Số Km đã đi)</label>
-                        <input type="number" id="mileage_km" name="mileage_km" class="lux-input"
-                            value="{{ old('mileage_km') }}" placeholder="VD: 0" min="0" max="5000000">
-                    </div>
-                </div>
-            </div>
-
-            <div class="lux-card">
-                <h3 class="lux-card-title">
-                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    Hình ảnh & Mô tả
-                </h3>
-
-                <div class="form-row" style="grid-template-columns: 1fr 2fr;">
-                    <div class="form-group">
-                        <label style="margin-bottom: 1rem;">Ảnh đại diện (Thumbnail chính) <span
-                                class="required">*</span></label>
-                        <div class="img-upload-zone">
-                            <div id="img-placeholder" class="img-placeholder">
-                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                                </svg>
-                                <span>Chưa chọn ảnh đại diện</span>
-                            </div>
-                            <img id="instant-preview" src="#" alt="Preview" class="img-preview-box">
-                            <input type="file" id="image" name="image" accept="image/*" class="lux-input"
-                                style="padding: 0.5rem; cursor: pointer;" onchange="previewNewImage(event)">
-                            @error('image')
-                                <div style="color: #ef4444; font-size: 0.85rem; margin-top: 5px;">{{ $message }}</div>
+                        <!-- PHẦN 2: THÔNG TIN ĐỊNH DANH (VIN & BIỂN SỐ) -->
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label font-weight-bold">Số VIN (Số khung) <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" name="vin" class="form-control @error('vin') is-invalid @enderror"
+                                required value="{{ old('vin') }}" placeholder="Nhập 17 ký tự số khung">
+                            @error('vin')
+                                <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                    </div>
 
-                    <div class="form-group" style="display: flex; flex-direction: column;">
-                        <label for="description">Bài viết mô tả chi tiết</label>
-                        <textarea id="description" name="description" class="lux-textarea" rows="8"
-                            placeholder="Viết giới thiệu về những điểm nổi bật của chiếc xe này...">{{ old('description') }}</textarea>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label font-weight-bold">Biển Số Xe</label>
+                            <input type="text" name="license_plate" class="form-control"
+                                value="{{ old('license_plate') }}" placeholder="Ví dụ: 30A-123.45">
+                        </div>
 
-                        <label class="featured-toggle" style="margin-top: auto;">
-                            <input type="checkbox" name="is_featured" value="1"
-                                {{ old('is_featured') ? 'checked' : '' }}>
-                            <span>★ Đánh dấu là "Xe Nổi Bật" (Ưu tiên hiển thị trên Trang chủ)</span>
-                        </label>
-                    </div>
-                </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label font-weight-bold">Năm Sản Xuất <span
+                                    class="text-danger">*</span></label>
+                            <input type="number" name="year" class="form-control" required
+                                value="{{ old('year', date('Y')) }}">
+                        </div>
 
-                <div class="form-row">
-                    <div class="form-group" style="width: 100%;">
-                        <label style="margin-bottom: 1rem;">Album ảnh chi tiết (Gallery)</label>
-                        <div class="img-upload-zone" style="min-height: 150px;">
-                            <input type="file" id="gallery" name="gallery[]" accept="image/*" multiple
-                                class="lux-input" style="padding: 0.5rem; cursor: pointer;"
-                                onchange="previewGallery(event)">
-                            <p style="font-size: 0.8rem; color: var(--muted); margin-top: 8px;">Bạn có thể chọn nhiều ảnh
-                                cùng lúc (Giữ phím Ctrl hoặc Shift khi chọn)</p>
+                        <!-- PHẦN 3: TÌNH TRẠNG THỰC TẾ -->
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label font-weight-bold">Số Odo (km) <span
+                                    class="text-danger">*</span></label>
+                            <input type="number" name="mileage_km" class="form-control" required
+                                value="{{ old('mileage_km') }}" placeholder="Ví dụ: 15000">
+                        </div>
 
-                            <div id="gallery-preview-container" class="gallery-preview-container"></div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label font-weight-bold">Giá Bán (VNĐ) <span
+                                    class="text-danger">*</span></label>
+                            <input type="number" name="price" class="form-control" required value="{{ old('price') }}"
+                                placeholder="Ví dụ: 1200000000">
+                        </div>
 
-                            @error('gallery')
-                                <div style="color: #ef4444; font-size: 0.85rem; margin-top: 5px;">{{ $message }}</div>
-                            @enderror
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label font-weight-bold">Số Đời Chủ</label>
+                            <input type="number" name="owner_count" class="form-control"
+                                value="{{ old('owner_count', 1) }}">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Màu Ngoại Thất</label>
+                            <input type="text" name="color" class="form-control" placeholder="Trắng, Đen, Đỏ...">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Màu Nội Thất</label>
+                            <input type="text" name="interior_color" class="form-control"
+                                placeholder="Kem, Nâu, Đen...">
+                        </div>
+
+                        <!-- PHẦN 4: HÌNH ẢNH & VIDEO -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">Ảnh Đại Diện (Bìa) <span
+                                    class="text-danger">*</span></label>
+                            <input type="file" name="image" class="form-control" required accept="image/*">
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold">Album Ảnh Chi Tiết (Gallery)</label>
+                            <input type="file" name="gallery[]" class="form-control" multiple accept="image/*">
+                            <small class="text-muted">Có thể chọn nhiều ảnh cùng lúc.</small>
+                        </div>
+
+                        <div class="col-12 mb-3">
+                            <label class="form-label font-weight-bold">Mô Tả Tình Trạng Xe</label>
+                            <textarea name="description" class="form-control" rows="4"
+                                placeholder="Mô tả kỹ về tình trạng xe, lịch sử bảo dưỡng..."></textarea>
                         </div>
                     </div>
                 </div>
 
-                <div class="form-row" style="border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 1.5rem;">
-                    <div class="form-group">
-                        <label for="video_url">Video Review (Link YouTube) <span
-                                style="font-weight:normal; color:var(--muted);">(Tuỳ chọn)</span></label>
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <svg style="width: 24px; height: 24px; color: #ef4444;" fill="currentColor"
-                                viewBox="0 0 24 24">
-                                <path
-                                    d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
-                            </svg>
-                            <input type="url" id="video_url" name="video_url" class="lux-input"
-                                value="{{ old('video_url') }}" placeholder="VD: https://www.youtube.com/watch?v=...">
-                        </div>
-                        @error('video_url')
-                            <div style="color: #ef4444; font-size: 0.85rem; margin-top: 5px;">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="form-group">
-                        <label for="video_file">Hoặc Tải lên File Video (MP4) <span
-                                style="font-weight:normal; color:var(--muted);">(Tuỳ chọn)</span></label>
-                        <input type="file" id="video_file" name="video_file" accept="video/mp4,video/x-m4v,video/*"
-                            class="lux-input" style="padding: 0.5rem; cursor: pointer;">
-                        @error('video_file')
-                            <div style="color: #ef4444; font-size: 0.85rem; margin-top: 5px;">{{ $message }}</div>
-                        @enderror
-                    </div>
+                <div class="card-footer text-end">
+                    <button type="reset" class="btn btn-secondary">Nhập Lại</button>
+                    <button type="submit" class="btn btn-success px-5">Đăng Bán Xe</button>
                 </div>
-            </div>
-
-            <div class="form-actions">
-                <button type="submit" class="btn-submit">
-                    <svg style="width:20px; height:20px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                    Thêm Xe Vào Kho
-                </button>
-                <a href="{{ route('admin.cars.index') }}" class="btn-back">
-                    Hủy bỏ
-                </a>
             </div>
         </form>
     </div>

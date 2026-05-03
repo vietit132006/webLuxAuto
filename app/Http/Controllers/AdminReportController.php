@@ -72,7 +72,6 @@ class AdminReportController extends Controller
             ->orderBy('name')
             ->paginate(25);
 
-        $totalUnits = (int) Car::sum('stock');
         $lowStock = Car::where('stock', '>', 0)->where('stock', '<=', 2)->count();
         $outOfStock = Car::where('stock', '<=', 0)->count();
 

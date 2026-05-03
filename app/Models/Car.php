@@ -8,46 +8,34 @@ class Car extends Model
 {
     protected $table = 'cars';
     protected $primaryKey = 'car_id';
-
-    // 👉 Nếu DB có created_at thì bật
     public $timestamps = true;
 
     protected $fillable = [
+        'car_model_id',
+        'vin',
+        'license_plate',
         'name',
-        'brand_id',
         'price',
         'year',
         'color',
+        'interior_color',
         'description',
-        'stock',
         'image',
         'mileage_km',
-        'fuel',
-        'transmission',
         'is_featured',
         'status',
-        'gallery',
         'video_url',
         'video_file',
-        'engine',
-        'interior_color',
-        'origin',
-        'body_type',
-        'seats',
-        'doors',
-        'drive_type',
+        'owner_count',
     ];
 
-    // ✅ Laravel 13 chuẩn
     protected function casts(): array
     {
         return [
             'year' => 'integer',
             'price' => 'integer',
-            'stock' => 'integer',
-            'gallery' => 'array',
-            'seats' => 'integer',
-            'doors' => 'integer',
+            'mileage_km' => 'integer',
+            'is_featured' => 'boolean', // Nên cast cái này về boolean
         ];
     }
 
@@ -55,9 +43,16 @@ class Car extends Model
     // RELATIONSHIPS
     // ========================
 
-    public function brand()
+    // Kết nối tới bảng thông số chung (CarModel)
+    public function modelInfo()
     {
-        return $this->belongsTo(Brand::class, 'brand_id', 'brand_id');
+        return $this->belongsTo(CarModel::class, 'car_model_id', 'id');
+    }
+
+    // Kết nối tới Album ảnh (CarImage)
+    public function images()
+    {
+        return $this->hasMany(CarImage::class, 'car_id', 'car_id');
     }
 
     public function reviews()
@@ -65,34 +60,25 @@ class Car extends Model
         return $this->hasMany(Review::class, 'car_id', 'car_id');
     }
 
-    public function inventoryLogs()
-    {
-        return $this->hasMany(InventoryLog::class, 'car_id', 'car_id');
-    }
-
     // ========================
-    // ACCESSORS (PRO LEVEL)
+    // ACCESSORS
     // ========================
 
-    // 👉 Tên hiển thị
+    // Lấy tên đầy đủ: Hãng + Tên dòng + Phiên bản
     public function getTitleAttribute(): string
     {
-        return $this->brand
-            ? $this->brand->name . ' ' . $this->name
+        // Load sẵn modelInfo và brand để tránh lỗi N+1 query
+        if (!$this->relationLoaded('modelInfo')) {
+            $this->load('modelInfo.brand');
+        }
+
+        return $this->modelInfo
+            ? ($this->modelInfo->brand->name . ' ' . $this->modelInfo->name . ' ' . $this->name)
             : $this->name;
     }
 
-    // 👉 Format giá
     public function getPriceFormattedAttribute(): string
     {
         return number_format($this->price, 0, ',', '.') . ' VNĐ';
-    }
-
-    // 👉 URL ảnh chuẩn
-    public function getImageUrlAttribute(): string
-    {
-        return $this->image
-            ? asset('storage/' . $this->image)
-            : 'https://via.placeholder.com/800x500';
     }
 }
