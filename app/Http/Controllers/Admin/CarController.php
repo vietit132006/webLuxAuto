@@ -265,15 +265,24 @@ class CarController extends Controller
             'car_id' => $car->getAttribute('car_id'),
         ];
 
+        $request->merge([
+            'license_plate' => $request->filled('license_plate')
+                ? trim((string) $request->license_plate)
+                : null,
+        ]);
+
+        $currentYear = (int) date('Y');
+        $maxVideoKb = 20480; // 20MB
+
         $rules = [
             'car_model_id'   => 'required|exists:car_models,id',
             'name'           => 'required|string|max:255',
             'vin'            => 'required|string|max:17|unique:cars,vin,' . $car->getAttribute('car_id') . ',car_id',
-            'license_plate'  => 'nullable|string|max:20',
+            'license_plate'  => 'nullable|string|max:20|unique:cars,license_plate,' . $car->getAttribute('car_id') . ',car_id',
             'price'          => 'required|numeric|min:0',
-            'year'           => 'required|integer|min:1900|max:' . (date('Y') + 1),
-            'mileage_km'     => 'required|numeric|min:0',
-            'owner_count'    => 'nullable|integer|min:1',
+            'year'           => 'required|integer|min:1000|max:' . $currentYear,
+            'mileage_km'     => 'required|integer|min:0',
+            'owner_count'    => 'nullable|integer|min:0|max:10',
             'color'          => 'nullable|string|max:50',
             'interior_color' => 'nullable|string|max:50',
             'status'         => 'nullable|in:1,2,3',
@@ -281,32 +290,61 @@ class CarController extends Controller
             'image'          => 'nullable|file|mimetypes:image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif|max:5120',
             'gallery'        => 'nullable|array|max:10',
             'gallery.*'      => 'file|mimetypes:image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif|max:5120',
-            'video_file'     => 'nullable|file|mimes:mp4,mov,ogg,qt|max:20480',
+            'video_file'     => 'nullable|file|mimes:mp4,mov,ogg,qt,m4v,avi|max:' . $maxVideoKb,
             'video_url'      => 'nullable|url',
-            'description'    => 'nullable|string|min:10',
+            'description'    => 'nullable|string|max:10000',
         ];
 
-        $messages = [
-            'car_model_id.required' => 'Vui lòng chọn dòng xe (Model).',
-            'car_model_id.exists'   => 'Dòng xe đã chọn không tồn tại.',
-            'name.required'         => 'Bạn chưa nhập tên hiển thị cho xe.',
-            'vin.required'          => 'Số khung (VIN) là bắt buộc.',
-            'vin.unique'            => 'Số khung này đã tồn tại trên hệ thống.',
-            'price.required'        => 'Vui lòng nhập giá bán.',
-            'price.numeric'         => 'Giá bán phải là một con số.',
-            'year.required'         => 'Vui lòng nhập năm sản xuất.',
-            'year.max'              => 'Năm sản xuất không hợp lệ.',
-            'mileage_km.required'   => 'Vui lòng nhập số km đã đi.',
-            'image.mimetypes'       => 'File tải lên phải là hình ảnh (jpg, jpeg, png, webp, avif, heic, heif).',
-            'image.max'             => 'Ảnh đại diện không được vượt quá 5MB.',
-            'gallery.*.mimetypes'   => 'Các file trong album phải là hình ảnh (jpg, jpeg, png, webp, avif, heic, heif).',
-            'gallery.max'           => 'Bạn chỉ được tải lên tối đa 10 ảnh trong album.',
-            'video_file.mimes'      => 'Video phải có định dạng mp4, mov hoặc ogg.',
-            'video_url.url'         => 'Đường dẫn Youtube không đúng định dạng.',
-            'description.min'       => 'Mô tả nên chi tiết một chút (ít nhất 10 ký tự).',
-        ];
+        $messages = $this->carFormValidationMessages($maxVideoKb);
+        $attributes = $this->carFormValidationAttributes();
 
-        $validated = $request->validate($rules, $messages);
+        $validator = Validator::make($request->all(), $rules, $messages, $attributes);
+
+        $validator->after(function ($validator) use ($request) {
+            $description = $request->input('description');
+            if ($description !== null && $description !== '' && mb_strlen(trim($description)) < 10) {
+                $validator->errors()->add(
+                    'description',
+                    'Mô tả nên có ít nhất 10 ký tự hoặc để trống.'
+                );
+            }
+
+            $mileage = $request->input('mileage_km');
+            if ($mileage === null || $mileage === '') {
+                return;
+            }
+
+            $mileage = (int) $mileage;
+            $ownerCount = $request->input('owner_count');
+            if ($ownerCount === null || $ownerCount === '') {
+                $ownerCount = $mileage === 0 ? 0 : 1;
+            }
+            $ownerCount = (int) $ownerCount;
+
+            if ($mileage === 0) {
+                if ($ownerCount < 0 || $ownerCount > 10) {
+                    $validator->errors()->add(
+                        'owner_count',
+                        'Xe mới (0 km): số đời chủ được phép từ 0 đến 10.'
+                    );
+                }
+            } elseif ($ownerCount < 1 || $ownerCount > 10) {
+                $validator->errors()->add(
+                    'owner_count',
+                    'Xe đã qua sử dụng: số đời chủ phải từ 1 đến 10.'
+                );
+            }
+        });
+
+        if ($validator->fails()) {
+            return redirect()
+                ->route('admin.cars.edit', $car->getAttribute('car_id'))
+                ->withErrors($validator)
+                ->withInput()
+                ->with('error', 'Không thể cập nhật xe. Vui lòng kiểm tra lại các trường được đánh dấu.');
+        }
+
+        $validated = $validator->validated();
         $uiLog['validated'] = true;
 
         try {
@@ -337,7 +375,8 @@ class CarController extends Controller
                     'price' => $validated['price'],
                     'year' => $validated['year'],
                     'mileage_km' => $validated['mileage_km'],
-                    'owner_count' => $validated['owner_count'] ?? null,
+                    'owner_count' => $validated['owner_count']
+                        ?? ($validated['mileage_km'] == 0 ? 0 : 1),
                     'color' => $validated['color'] ?? null,
                     'interior_color' => $validated['interior_color'] ?? null,
                     'status' => $validated['status'] ?? $car->status,

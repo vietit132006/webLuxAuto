@@ -314,7 +314,8 @@
             <h1 class="lux-page-title">Thêm xe mới</h1>
         </div>
         @if (session('success'))
-            <div style="background:#10b981;color:#062d21;padding:10px;border-radius:10px;margin-bottom:12px;font-weight:700;">
+            <div
+                style="background:#10b981;color:#062d21;padding:10px;border-radius:10px;margin-bottom:12px;font-weight:700;">
                 {{ session('success') }}
             </div>
         @endif
@@ -327,8 +328,10 @@
             <div class="lux-card" style="padding: 1rem;">
                 <h3 class="lux-card-title" style="margin-bottom: 0.75rem;">UI Debug Log</h3>
                 <details>
-                    <summary style="cursor:pointer;font-weight:700;color:var(--accent);">Mở log lần submit gần nhất</summary>
-                    <pre style="margin-top:10px;white-space:pre-wrap;word-break:break-word;background:rgba(0,0,0,0.25);padding:12px;border-radius:10px;border:1px solid var(--border);color:var(--text);">{{ json_encode(session('ui_log'), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                    <summary style="cursor:pointer;font-weight:700;color:var(--accent);">Mở log lần submit gần nhất
+                    </summary>
+                    <pre
+                        style="margin-top:10px;white-space:pre-wrap;word-break:break-word;background:rgba(0,0,0,0.25);padding:12px;border-radius:10px;border:1px solid var(--border);color:var(--text);">{{ json_encode(session('ui_log'), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
                 </details>
             </div>
         @endif
@@ -362,14 +365,18 @@
                                 </option>
                             @endforeach
                         </select>
-                        @error('car_model_id')<div class="field-error">{{ $message }}</div>@enderror
+                        @error('car_model_id')
+                            <div class="field-error">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="form-group">
                         <label>Tên hiển thị <span class="required">*</span></label>
                         <input type="text" name="name" class="lux-input" placeholder="Ví dụ: VinFast Lux A2.0 Plus"
                             value="{{ old('name') }}" required>
-                        @error('name')<div class="field-error">{{ $message }}</div>@enderror
+                        @error('name')
+                            <div class="field-error">{{ $message }}</div>
+                        @enderror
                     </div>
                 </div>
 
@@ -378,13 +385,17 @@
                         <label>Số VIN (Số khung) <span class="required">*</span></label>
                         <input type="text" name="vin" class="lux-input" value="{{ old('vin') }}" maxlength="17"
                             required>
-                        @error('vin')<div class="field-error">{{ $message }}</div>@enderror
+                        @error('vin')
+                            <div class="field-error">{{ $message }}</div>
+                        @enderror
                     </div>
                     <div class="form-group">
                         <label>Biển số xe</label>
                         <input type="text" name="license_plate" class="lux-input" placeholder="Nếu có"
                             value="{{ old('license_plate') }}" maxlength="20">
-                        @error('license_plate')<div class="field-error">{{ $message }}</div>@enderror
+                        @error('license_plate')
+                            <div class="field-error">{{ $message }}</div>
+                        @enderror
                     </div>
                 </div>
 
@@ -394,15 +405,19 @@
                         <input type="number" name="price" class="lux-input price-input" value="{{ old('price') }}"
                             min="0" step="1000" required>
                         <p class="field-hint">Giá không được âm.</p>
-                        @error('price')<div class="field-error">{{ $message }}</div>@enderror
+                        @error('price')
+                            <div class="field-error">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="form-group">
                         <label>Năm sản xuất <span class="required">*</span></label>
-                        <input type="number" name="year" class="lux-input" value="{{ old('year') }}"
-                            min="1000" max="{{ date('Y') }}" required>
+                        <input type="number" name="year" class="lux-input" value="{{ old('year') }}" min="1000"
+                            max="{{ date('Y') }}" required>
                         <p class="field-hint">Từ năm 1000 đến {{ date('Y') }}.</p>
-                        @error('year')<div class="field-error">{{ $message }}</div>@enderror
+                        @error('year')
+                            <div class="field-error">{{ $message }}</div>
+                        @enderror
                     </div>
                 </div>
             </div>
@@ -426,7 +441,9 @@
                         <input type="number" name="owner_count" id="owner_count" class="lux-input"
                             value="{{ old('owner_count', '1') }}" min="0" max="10">
                         <p class="field-hint" id="owner-count-hint">Xe 0 km: 0–10 đời chủ. Xe đã đi: 1–10 đời chủ.</p>
-                        @error('owner_count')<div class="field-error">{{ $message }}</div>@enderror
+                        @error('owner_count')
+                            <div class="field-error">{{ $message }}</div>
+                        @enderror
                     </div>
                 </div>
             </div>
@@ -441,24 +458,32 @@
                         <input type="number" name="mileage_km" id="mileage_km" class="lux-input"
                             value="{{ old('mileage_km') }}" min="0" required>
                         <p class="field-hint">Số km không được âm (xe mới nhập 0).</p>
-                        @error('mileage_km')<div class="field-error">{{ $message }}</div>@enderror
+                        @error('mileage_km')
+                            <div class="field-error">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="form-group">
                         <label>Trạng thái bán hàng</label>
                         <select name="status" class="lux-select">
-                            <option value="1" {{ (string) old('status', '1') === '1' ? 'selected' : '' }}>1: Sẵn sàng</option>
+                            <option value="1" {{ (string) old('status', '1') === '1' ? 'selected' : '' }}>1: Sẵn sàng
+                            </option>
                             <option value="2" {{ (string) old('status') === '2' ? 'selected' : '' }}>2: Cọc</option>
-                            <option value="3" {{ (string) old('status') === '3' ? 'selected' : '' }}>3: Đã bán</option>
+                            <option value="3" {{ (string) old('status') === '3' ? 'selected' : '' }}>3: Đã bán
+                            </option>
                         </select>
-                        @error('status')<div class="field-error">{{ $message }}</div>@enderror
+                        @error('status')
+                            <div class="field-error">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="form-group">
                         <label>Độ nổi bật</label>
                         <select name="is_featured" class="lux-select">
-                            <option value="0" {{ (string) old('is_featured', '0') === '0' ? 'selected' : '' }}>Bình thường</option>
-                            <option value="1" {{ (string) old('is_featured', '0') === '1' ? 'selected' : '' }}>Nổi bật (Hiện trang chủ)</option>
+                            <option value="0" {{ (string) old('is_featured', '0') === '0' ? 'selected' : '' }}>Bình
+                                thường</option>
+                            <option value="1" {{ (string) old('is_featured', '0') === '1' ? 'selected' : '' }}>Nổi
+                                bật (Hiện trang chủ)</option>
                         </select>
                     </div>
                 </div>
@@ -470,11 +495,13 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Ảnh đại diện (Chính)</label>
-                        <input type="file" name="image" class="lux-input"
+                        <label>Ảnh đại diện (Chính) <span class="required">*</span></label>
+                        <input type="file" name="image" class="lux-input" required
                             accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif"
                             onchange="previewNewImage(event)">
-                        @error('image')<div class="field-error">{{ $message }}</div>@enderror
+                        @error('image')
+                            <div class="field-error">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="form-group">
@@ -483,8 +510,12 @@
                             accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif"
                             onchange="previewGallery(event)">
                         <p class="field-hint">Tối đa 10 ảnh, mỗi ảnh không quá 5MB.</p>
-                        @error('gallery')<div class="field-error">{{ $message }}</div>@enderror
-                        @error('gallery.*')<div class="field-error">{{ $message }}</div>@enderror
+                        @error('gallery')
+                            <div class="field-error">{{ $message }}</div>
+                        @enderror
+                        @error('gallery.*')
+                            <div class="field-error">{{ $message }}</div>
+                        @enderror
                     </div>
                 </div>
 
@@ -496,14 +527,18 @@
                             accept="video/mp4,video/x-m4v,video/*">
                         <p class="field-hint">Dung lượng tối đa 20MB (mp4, mov, m4v, avi).</p>
                         <div id="video-file-error" class="field-error" style="display:none;"></div>
-                        @error('video_file')<div class="field-error">{{ $message }}</div>@enderror
+                        @error('video_file')
+                            <div class="field-error">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="form-group">
                         <label>Youtube URL</label>
                         <input type="text" name="video_url" class="lux-input" placeholder="https://youtube.com/..."
                             value="{{ old('video_url') }}">
-                        @error('video_url')<div class="field-error">{{ $message }}</div>@enderror
+                        @error('video_url')
+                            <div class="field-error">{{ $message }}</div>
+                        @enderror
                     </div>
                 </div>
 
@@ -516,7 +551,9 @@
                 <div class="form-group">
                     <textarea name="description" class="lux-textarea" rows="4"
                         placeholder="Nhập mô tả về tình trạng xe, option thêm...">{{ old('description') }}</textarea>
-                    @error('description')<div class="field-error">{{ $message }}</div>@enderror
+                    @error('description')
+                        <div class="field-error">{{ $message }}</div>
+                    @enderror
                 </div>
             </div>
 
@@ -531,6 +568,41 @@
     <script>
         const MAX_GALLERY = 10;
         const MAX_VIDEO_BYTES = 20 * 1024 * 1024; // 20MB
+
+        const REQUIRED_FIELD_MESSAGES = {
+            car_model_id: 'Vui lòng chọn dòng xe (Model).',
+            name: 'Vui lòng nhập tên hiển thị.',
+            vin: 'Vui lòng nhập số VIN (số khung).',
+            price: 'Vui lòng nhập giá bán.',
+            year: 'Vui lòng nhập năm sản xuất.',
+            mileage_km: 'Vui lòng nhập số km đã đi.',
+            image: 'Vui lòng chọn ảnh đại diện cho xe.'
+        };
+
+        function setupVietnameseRequiredMessages(form) {
+            if (!form) return;
+
+            Object.entries(REQUIRED_FIELD_MESSAGES).forEach(([name, message]) => {
+                const field = form.querySelector(`[name="${name}"]`);
+                if (!field) return;
+
+                field.addEventListener('invalid', function() {
+                    if (field.validity.valueMissing) {
+                        field.setCustomValidity(message);
+                    } else {
+                        field.setCustomValidity('');
+                    }
+                });
+
+                field.addEventListener('input', function() {
+                    field.setCustomValidity('');
+                });
+
+                field.addEventListener('change', function() {
+                    field.setCustomValidity('');
+                });
+            });
+        }
 
         function updateOwnerCountHint() {
             const mileage = parseInt(document.getElementById('mileage_km')?.value || '0', 10);
@@ -618,6 +690,8 @@
             }
 
             if (form) {
+                setupVietnameseRequiredMessages(form);
+
                 form.addEventListener('submit', function(e) {
                     const galleryInput = document.getElementById('gallery-input');
                     if (galleryInput?.files?.length > MAX_GALLERY) {
