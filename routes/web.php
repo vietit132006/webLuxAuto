@@ -94,6 +94,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/xe', [CarController::class, 'index'])->name('cars.index');
         Route::get('/xe/create', [CarController::class, 'create'])->name('cars.create');
         Route::post('/xe', [CarController::class, 'store'])->name('cars.store');
+        Route::get('/car-models/{id}/specs', [CarController::class, 'getModelSpecs'])->name('cars.modelSpecs');
 
         // Xem chi tiết xe
         Route::get('/xe/{car}', [CarController::class, 'show'])->name('cars.show');

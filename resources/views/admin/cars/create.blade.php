@@ -287,6 +287,25 @@
             </a>
             <h1 class="lux-page-title">Thêm xe mới</h1>
         </div>
+        @if (session('success'))
+            <div style="background:#10b981;color:#062d21;padding:10px;border-radius:10px;margin-bottom:12px;font-weight:700;">
+                {{ session('success') }}
+            </div>
+        @endif
+        @if (session('error'))
+            <div style="background:#ef4444;color:#fff;padding:10px;border-radius:10px;margin-bottom:12px;font-weight:700;">
+                {{ session('error') }}
+            </div>
+        @endif
+        @if (session()->has('ui_log'))
+            <div class="lux-card" style="padding: 1rem;">
+                <h3 class="lux-card-title" style="margin-bottom: 0.75rem;">UI Debug Log</h3>
+                <details>
+                    <summary style="cursor:pointer;font-weight:700;color:var(--accent);">Mở log lần submit gần nhất</summary>
+                    <pre style="margin-top:10px;white-space:pre-wrap;word-break:break-word;background:rgba(0,0,0,0.25);padding:12px;border-radius:10px;border:1px solid var(--border);color:var(--text);">{{ json_encode(session('ui_log'), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                </details>
+            </div>
+        @endif
         @if ($errors->any())
             <div style="background:red;color:white;padding:10px;">
                 <ul>
@@ -296,123 +315,154 @@
                 </ul>
             </div>
         @endif
-        <form action="{{ route('admin.cars.store') }}" method="POST" enctype="multipart/form-data" class="container mt-4">
+        <form action="{{ route('admin.cars.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
 
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Thêm Xe Cũ Vào Kho</h4>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <!-- PHẦN 1: CHỌN MẪU XE (CAR MODEL) -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-bold">Hãng & Mẫu Xe <span
-                                    class="text-danger">*</span></label>
-                            <select name="car_model_id" id="car_model_id"
-                                class="form-select @error('car_model_id') is-invalid @enderror" required>
-                                <option value="">-- Chọn Mẫu Xe Có Sẵn --</option>
-                                @foreach ($carModels as $model)
-                                    <option value="{{ $model->id }}">
-                                        {{ $model->brand->name }} - {{ $model->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('car_model_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <small class="text-muted">Chưa có mẫu xe? <a href="#" data-bs-toggle="modal"
-                                    data-bs-target="#addModelModal">Thêm mẫu mới ngay</a></small>
-                        </div>
+            {{-- THÔNG TIN CƠ BẢN --}}
+            <div class="lux-card">
+                <h3 class="lux-card-title"> Thông tin cơ bản</h3>
 
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-bold">Tên Phiên Bản Cụ Thể</label>
-                            <input type="text" name="name" class="form-control"
-                                placeholder="Ví dụ: Carrera S, Premium, G..." value="{{ old('name') }}">
-                            <small class="text-muted">Để phân biệt các biến thể cùng một dòng xe.</small>
-                        </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Dòng xe (Model) <span class="required">*</span></label>
+                        <select name="car_model_id" class="lux-select" required>
+                            <option value="">-- Chọn dòng xe --</option>
+                            @foreach ($carModels as $model)
+                                {{-- Giả sử bạn truyền $carModels từ Controller --}}
+                                <option value="{{ $model->id }}">{{ $model->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                        <!-- PHẦN 2: THÔNG TIN ĐỊNH DANH (VIN & BIỂN SỐ) -->
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label font-weight-bold">Số VIN (Số khung) <span
-                                    class="text-danger">*</span></label>
-                            <input type="text" name="vin" class="form-control @error('vin') is-invalid @enderror"
-                                required value="{{ old('vin') }}" placeholder="Nhập 17 ký tự số khung">
-                            @error('vin')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label font-weight-bold">Biển Số Xe</label>
-                            <input type="text" name="license_plate" class="form-control"
-                                value="{{ old('license_plate') }}" placeholder="Ví dụ: 30A-123.45">
-                        </div>
-
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label font-weight-bold">Năm Sản Xuất <span
-                                    class="text-danger">*</span></label>
-                            <input type="number" name="year" class="form-control" required
-                                value="{{ old('year', date('Y')) }}">
-                        </div>
-
-                        <!-- PHẦN 3: TÌNH TRẠNG THỰC TẾ -->
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label font-weight-bold">Số Odo (km) <span
-                                    class="text-danger">*</span></label>
-                            <input type="number" name="mileage_km" class="form-control" required
-                                value="{{ old('mileage_km') }}" placeholder="Ví dụ: 15000">
-                        </div>
-
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label font-weight-bold">Giá Bán (VNĐ) <span
-                                    class="text-danger">*</span></label>
-                            <input type="number" name="price" class="form-control" required value="{{ old('price') }}"
-                                placeholder="Ví dụ: 1200000000">
-                        </div>
-
-                        <div class="col-md-4 mb-3">
-                            <label class="form-label font-weight-bold">Số Đời Chủ</label>
-                            <input type="number" name="owner_count" class="form-control"
-                                value="{{ old('owner_count', 1) }}">
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Màu Ngoại Thất</label>
-                            <input type="text" name="color" class="form-control" placeholder="Trắng, Đen, Đỏ...">
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Màu Nội Thất</label>
-                            <input type="text" name="interior_color" class="form-control"
-                                placeholder="Kem, Nâu, Đen...">
-                        </div>
-
-                        <!-- PHẦN 4: HÌNH ẢNH & VIDEO -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-bold">Ảnh Đại Diện (Bìa) <span
-                                    class="text-danger">*</span></label>
-                            <input type="file" name="image" class="form-control" required accept="image/*">
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label font-weight-bold">Album Ảnh Chi Tiết (Gallery)</label>
-                            <input type="file" name="gallery[]" class="form-control" multiple accept="image/*">
-                            <small class="text-muted">Có thể chọn nhiều ảnh cùng lúc.</small>
-                        </div>
-
-                        <div class="col-12 mb-3">
-                            <label class="form-label font-weight-bold">Mô Tả Tình Trạng Xe</label>
-                            <textarea name="description" class="form-control" rows="4"
-                                placeholder="Mô tả kỹ về tình trạng xe, lịch sử bảo dưỡng..."></textarea>
-                        </div>
+                    <div class="form-group">
+                        <label>Tên hiển thị <span class="required">*</span></label>
+                        <input type="text" name="name" class="lux-input" placeholder="Ví dụ: VinFast Lux A2.0 Plus"
+                            required>
                     </div>
                 </div>
 
-                <div class="card-footer text-end">
-                    <button type="reset" class="btn btn-secondary">Nhập Lại</button>
-                    <button type="submit" class="btn btn-success px-5">Đăng Bán Xe</button>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Số VIN (Số khung) <span class="required">*</span></label>
+                        <input type="text" name="vin" class="lux-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Biển số xe</label>
+                        <input type="text" name="license_plate" class="lux-input" placeholder="Nếu có">
+                    </div>
                 </div>
+
+                <div class="form-row">
+                    <div class="form-group price-input-wrapper">
+                        <label>Giá (VNĐ) <span class="required">*</span></label>
+                        <input type="number" name="price" class="lux-input price-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Năm sản xuất <span class="required">*</span></label>
+                        <input type="number" name="year" class="lux-input" required>
+                    </div>
+                </div>
+            </div>
+
+            {{-- THÔNG SỐ & NGOẠI THẤT --}}
+            <div class="lux-card">
+                <h3 class="lux-card-title"> Màu sắc & Đặc điểm</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Màu ngoại thất</label>
+                        <input type="text" name="color" class="lux-input" placeholder="Ví dụ: Đen">
+                    </div>
+                    <div class="form-group">
+                        <label>Màu nội thất</label>
+                        <input type="text" name="interior_color" class="lux-input" placeholder="Ví dụ: Kem">
+                    </div>
+                    <div class="form-group">
+                        <label>Số đời chủ</label>
+                        <input type="number" name="owner_count" class="lux-input" value="1">
+                    </div>
+                </div>
+            </div>
+
+            {{-- TÌNH TRẠNG --}}
+            <div class="lux-card">
+                <h3 class="lux-card-title">Tình trạng xe</h3>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Số km đã đi <span class="required">*</span></label>
+                        <input type="number" name="mileage_km" class="lux-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Trạng thái bán hàng</label>
+                        <select name="status" class="lux-select">
+                            <option value="1">1: Sẵn sàng</option>
+                            <option value="2">2: Cọc</option>
+                            <option value="3">3: Đã bán</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Độ nổi bật</label>
+                        <select name="is_featured" class="lux-select">
+                            <option value="0">Bình thường</option>
+                            <option value="1">Nổi bật (Hiện trang chủ)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            {{-- HÌNH ẢNH --}}
+            <div class="lux-card">
+                <h3 class="lux-card-title">Hình ảnh & Video</h3>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Ảnh đại diện (Chính)</label>
+                        <input type="file" name="image" class="lux-input"
+                            accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif"
+                            onchange="previewNewImage(event)">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Album ảnh (Gallery)</label>
+                        <input type="file" name="gallery[]" multiple class="lux-input"
+                            accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif"
+                            onchange="previewGallery(event)">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Video upload</label>
+                        {{-- Thêm accept="video/*" để chỉ hiển thị các định dạng video --}}
+                        <input type="file" name="video_file" class="lux-input"
+                            accept="video/mp4,video/x-m4v,video/*">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Youtube URL</label>
+                        <input type="text" name="video_url" class="lux-input" placeholder="https://youtube.com/...">
+                    </div>
+                </div>
+
+                <div id="gallery-preview-container" class="gallery-preview-container"></div>
+            </div>
+
+            {{-- MÔ TẢ --}}
+            <div class="lux-card">
+                <h3 class="lux-card-title">Mô tả chi tiết</h3>
+                <div class="form-group">
+                    <textarea name="description" class="lux-textarea" rows="4"
+                        placeholder="Nhập mô tả về tình trạng xe, option thêm..."></textarea>
+                </div>
+            </div>
+
+            {{-- BUTTON --}}
+            <div class="form-actions">
+                <a href="{{ route('admin.cars.index') }}" class="btn-back">← Quay lại</a>
+                <button type="submit" class="btn-submit">💾 Lưu xe vào hệ thống</button>
             </div>
         </form>
     </div>
@@ -457,6 +507,7 @@
             container.innerHTML = ''; // Xóa ảnh cũ nếu chọn lại
 
             const files = event.target.files;
+
             if (files) {
                 Array.from(files).forEach(file => {
                     const reader = new FileReader();

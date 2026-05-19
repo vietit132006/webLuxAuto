@@ -81,4 +81,22 @@ class Car extends Model
     {
         return number_format($this->price, 0, ',', '.') . ' VNĐ';
     }
+
+    public function carModel()
+    {
+        return $this->belongsTo(CarModel::class, 'car_model_id', 'id');
+    }
+
+    // Mối quan hệ: Thông qua Dòng xe để lấy Hãng xe (Brand)
+    public function brand()
+    {
+        return $this->hasOneThrough(
+            Brand::class,      // Bảng đích muốn lấy
+            CarModel::class,   // Bảng trung gian
+            'id',              // Khóa ngoại ở bảng CarModel
+            'brand_id',        // Khóa ngoại ở bảng Brands
+            'car_model_id',    // Khóa ngoại ở bảng Cars
+            'brand_id'         // Khóa ở bảng CarModel
+        );
+    }
 }
