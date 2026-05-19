@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class CarController extends Controller
 {
@@ -44,7 +45,7 @@ class CarController extends Controller
         $model = CarModel::with('brand')->find($id);
         return response()->json($model);
     }
-    // Xử lý lưu xe cũ
+    // Xử lý lưu xe
     public function store(Request $request)
     {
         $uiLog = [
@@ -52,61 +53,86 @@ class CarController extends Controller
             'action' => 'admin.cars.store',
         ];
 
-        // 1. Định nghĩa các quy tắc Validate
+        $request->merge([
+            'license_plate' => $request->filled('license_plate')
+                ? trim((string) $request->license_plate)
+                : null,
+        ]);
+
+        $currentYear = (int) date('Y');
+        $maxVideoKb = 20480; // 20MB
+
         $rules = [
-            // Nhóm thông tin cơ bản
             'car_model_id'   => 'required|exists:car_models,id',
             'name'           => 'required|string|max:255',
-            'vin'            => 'required|string|max:17|unique:cars,vin', // VIN thường tối đa 17 ký tự
-            'license_plate'  => 'nullable|string|max:20',
+            'vin'            => 'required|string|max:17|unique:cars,vin',
+            'license_plate'  => 'nullable|string|max:20|unique:cars,license_plate',
             'price'          => 'required|numeric|min:0',
-            'year'           => 'required|integer|min:1900|max:' . (date('Y') + 1),
-
-            // Nhóm tình trạng
-            'mileage_km'     => 'required|numeric|min:0',
-            'owner_count'    => 'nullable|integer|min:1',
+            'year'           => 'required|integer|min:1000|max:' . $currentYear,
+            'mileage_km'     => 'required|integer|min:0',
+            'owner_count'    => 'nullable|integer|min:0|max:10',
             'color'          => 'nullable|string|max:50',
             'interior_color' => 'nullable|string|max:50',
             'status'         => 'nullable|in:1,2,3',
             'is_featured'    => 'nullable|boolean',
-
-            // Nhóm hình ảnh & Video
-            // Lưu ý: rule `image` thường không hỗ trợ tốt HEIC/HEIF trên nhiều server,
-            // nên dùng `file|mimetypes` để chấp nhận thêm các định dạng ảnh phổ biến.
             'image'          => 'required|file|mimetypes:image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif|max:5120',
-            'gallery'        => 'nullable|array|max:10', // Giới hạn tối đa 10 ảnh gallery để tránh quá tải
+            'gallery'        => 'nullable|array|max:10',
             'gallery.*'      => 'file|mimetypes:image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif|max:5120',
-            'video_file'     => 'nullable|file|mimes:mp4,mov,ogg,qt|max:20480', // Max 20MB cho video
+            'video_file'     => 'nullable|file|mimes:mp4,mov,ogg,qt,m4v,avi|max:' . $maxVideoKb,
             'video_url'      => 'nullable|url',
-
-            // Mô tả
-            'description'    => 'nullable|string|min:10',
+            'description'    => 'nullable|string|max:10000',
         ];
 
-        // 2. Định nghĩa tin nhắn báo lỗi tiếng Việt (Chuẩn UX)
-        $messages = [
-            'car_model_id.required' => 'Vui lòng chọn dòng xe (Model).',
-            'car_model_id.exists'   => 'Dòng xe đã chọn không tồn tại.',
-            'name.required'         => 'Bạn chưa nhập tên hiển thị cho xe.',
-            'vin.required'          => 'Số khung (VIN) là bắt buộc.',
-            'vin.unique'            => 'Số khung này đã tồn tại trên hệ thống.',
-            'price.required'        => 'Vui lòng nhập giá bán.',
-            'price.numeric'         => 'Giá bán phải là một con số.',
-            'year.required'         => 'Vui lòng nhập năm sản xuất.',
-            'year.max'              => 'Năm sản xuất không hợp lệ.',
-            'mileage_km.required'   => 'Vui lòng nhập số km đã đi.',
-            'image.required'        => 'Xe phải có ít nhất một ảnh đại diện.',
-            'image.mimetypes'       => 'File tải lên phải là hình ảnh (jpg, jpeg, png, webp, avif, heic, heif).',
-            'image.max'             => 'Ảnh đại diện không được vượt quá 5MB.',
-            'gallery.*.mimetypes'   => 'Các file trong album phải là hình ảnh (jpg, jpeg, png, webp, avif, heic, heif).',
-            'gallery.max'           => 'Bạn chỉ được tải lên tối đa 10 ảnh trong album.',
-            'video_file.mimes'      => 'Video phải có định dạng mp4, mov hoặc ogg.',
-            'video_url.url'         => 'Đường dẫn Youtube không đúng định dạng.',
-            'description.min'       => 'Mô tả nên chi tiết một chút (ít nhất 10 ký tự).',
-        ];
+        $messages = $this->carFormValidationMessages($maxVideoKb);
+        $attributes = $this->carFormValidationAttributes();
 
-        // Thực hiện Validate
-        $validated = $request->validate($rules, $messages);
+        $validator = Validator::make($request->all(), $rules, $messages, $attributes);
+
+        $validator->after(function ($validator) use ($request) {
+            $description = $request->input('description');
+            if ($description !== null && $description !== '' && mb_strlen(trim($description)) < 10) {
+                $validator->errors()->add(
+                    'description',
+                    'Mô tả nên có ít nhất 10 ký tự hoặc để trống.'
+                );
+            }
+
+            $mileage = $request->input('mileage_km');
+            if ($mileage === null || $mileage === '') {
+                return;
+            }
+
+            $mileage = (int) $mileage;
+            $ownerCount = $request->input('owner_count');
+            if ($ownerCount === null || $ownerCount === '') {
+                $ownerCount = $mileage === 0 ? 0 : 1;
+            }
+            $ownerCount = (int) $ownerCount;
+
+            if ($mileage === 0) {
+                if ($ownerCount < 0 || $ownerCount > 10) {
+                    $validator->errors()->add(
+                        'owner_count',
+                        'Xe mới (0 km): số đời chủ được phép từ 0 đến 10.'
+                    );
+                }
+            } elseif ($ownerCount < 1 || $ownerCount > 10) {
+                $validator->errors()->add(
+                    'owner_count',
+                    'Xe đã qua sử dụng: số đời chủ phải từ 1 đến 10.'
+                );
+            }
+        });
+
+        if ($validator->fails()) {
+            return redirect()
+                ->route('admin.cars.create')
+                ->withErrors($validator)
+                ->withInput()
+                ->with('error', 'Không thể thêm xe. Vui lòng kiểm tra lại các trường được đánh dấu.');
+        }
+
+        $validated = $validator->validated();
         $uiLog['validated'] = true;
         $uiLog['input'] = collect($validated)->except(['description'])->toArray();
         $uiLog['files'] = [
@@ -141,7 +167,8 @@ class CarController extends Controller
                     'price' => $validated['price'],
                     'year' => $validated['year'],
                     'mileage_km' => $validated['mileage_km'],
-                    'owner_count' => $validated['owner_count'] ?? null,
+                    'owner_count' => $validated['owner_count']
+                        ?? ($validated['mileage_km'] == 0 ? 0 : 1),
                     'color' => $validated['color'] ?? null,
                     'interior_color' => $validated['interior_color'] ?? null,
                     'status' => $validated['status'] ?? 1,
@@ -204,7 +231,8 @@ class CarController extends Controller
                 }
             }
 
-            return back()
+            return redirect()
+                ->route('admin.cars.create')
                 ->withInput()
                 ->with('error', 'Lỗi hệ thống: ' . $e->getMessage())
                 ->with('ui_log', $uiLog);
@@ -409,5 +437,89 @@ class CarController extends Controller
 
             return back()->with('error', 'Không thể xóa xe: ' . $e->getMessage());
         }
+    }
+
+    private function carFormValidationAttributes(): array
+    {
+        return [
+            'car_model_id'   => 'dòng xe',
+            'name'           => 'tên hiển thị',
+            'vin'            => 'số khung (VIN)',
+            'license_plate'  => 'biển số xe',
+            'price'          => 'giá bán',
+            'year'           => 'năm sản xuất',
+            'mileage_km'     => 'số km đã đi',
+            'owner_count'    => 'số đời chủ',
+            'color'          => 'màu ngoại thất',
+            'interior_color' => 'màu nội thất',
+            'status'         => 'trạng thái bán hàng',
+            'is_featured'    => 'độ nổi bật',
+            'image'          => 'ảnh đại diện',
+            'gallery'        => 'album ảnh',
+            'gallery.*'      => 'ảnh trong album',
+            'video_file'     => 'file video',
+            'video_url'      => 'đường dẫn Youtube',
+            'description'    => 'mô tả',
+        ];
+    }
+
+    private function carFormValidationMessages(int $maxVideoKb): array
+    {
+        $maxVideoMb = (int) round($maxVideoKb / 1024);
+
+        return [
+            'required' => 'Vui lòng nhập :attribute.',
+            'string'   => ':attribute phải là chuỗi ký tự.',
+            'integer'  => ':attribute phải là số nguyên.',
+            'numeric'  => ':attribute phải là số.',
+            'max.string' => ':attribute không được vượt quá :max ký tự.',
+            'max.array'  => ':attribute chỉ được tối đa :max mục.',
+            'max.file'   => ':attribute không được vượt quá :max kilobyte.',
+            'min.numeric' => ':attribute không được nhỏ hơn :min.',
+            'min.integer' => ':attribute không được nhỏ hơn :min.',
+            'max.numeric' => ':attribute không được lớn hơn :max.',
+            'max.integer' => ':attribute không được lớn hơn :max.',
+            'in'       => ':attribute không hợp lệ.',
+            'url'      => ':attribute phải là đường dẫn hợp lệ.',
+            'boolean'  => ':attribute không hợp lệ.',
+            'exists'   => ':attribute đã chọn không tồn tại.',
+            'unique'   => ':attribute đã tồn tại trên hệ thống, vui lòng kiểm tra lại.',
+            'file'     => ':attribute phải là tệp tin hợp lệ.',
+            'mimes'    => ':attribute phải có định dạng: :values.',
+            'mimetypes' => ':attribute phải là file ảnh (jpg, png, webp, avif, heic, heif).',
+
+            'car_model_id.required' => 'Vui lòng chọn dòng xe (Model).',
+            'car_model_id.exists'   => 'Dòng xe đã chọn không tồn tại.',
+            'name.required'         => 'Bạn chưa nhập tên hiển thị cho xe.',
+            'name.max'              => 'Tên hiển thị không được vượt quá 255 ký tự.',
+            'vin.required'          => 'Số khung (VIN) là bắt buộc.',
+            'vin.max'               => 'Số khung (VIN) tối đa 17 ký tự.',
+            'vin.unique'            => 'Số khung này đã được đăng ký cho xe khác, vui lòng kiểm tra lại.',
+            'license_plate.unique'  => 'Biển số xe này đã được đăng ký cho xe khác, vui lòng kiểm tra lại.',
+            'license_plate.max'     => 'Biển số xe không được vượt quá 20 ký tự.',
+            'price.required'        => 'Vui lòng nhập giá bán.',
+            'price.numeric'         => 'Giá bán phải là một con số.',
+            'price.min'             => 'Giá xe không được là số âm.',
+            'year.required'         => 'Vui lòng nhập năm sản xuất.',
+            'year.integer'          => 'Năm sản xuất phải là số nguyên.',
+            'year.min'              => 'Năm sản xuất phải từ năm 1000 trở lên.',
+            'year.max'              => 'Năm sản xuất không được vượt quá năm hiện tại.',
+            'mileage_km.required'   => 'Vui lòng nhập số km đã đi.',
+            'mileage_km.integer'    => 'Số km phải là số nguyên.',
+            'mileage_km.min'        => 'Số km không được âm.',
+            'owner_count.integer'   => 'Số đời chủ phải là số nguyên.',
+            'owner_count.min'       => 'Số đời chủ không hợp lệ.',
+            'owner_count.max'       => 'Số đời chủ tối đa là 10.',
+            'image.required'        => 'Xe phải có ít nhất một ảnh đại diện.',
+            'image.mimetypes'       => 'Ảnh đại diện phải là file jpg, png, webp, avif, heic hoặc heif.',
+            'image.max'             => 'Ảnh đại diện không được vượt quá 5MB.',
+            'gallery.max'           => 'Album ảnh chỉ được tối đa 10 ảnh.',
+            'gallery.*.mimetypes'   => 'Mỗi ảnh trong album phải là jpg, png, webp, avif, heic hoặc heif.',
+            'gallery.*.max'         => 'Mỗi ảnh trong album không được vượt quá 5MB.',
+            'video_file.mimes'      => 'Video phải có định dạng mp4, mov, m4v hoặc avi.',
+            'video_file.max'        => "Video vượt quá dung lượng cho phép (tối đa {$maxVideoMb}MB).",
+            'video_url.url'         => 'Đường dẫn Youtube không đúng định dạng.',
+            'description.min'       => 'Mô tả nên có ít nhất 10 ký tự (hoặc để trống).',
+        ];
     }
 }

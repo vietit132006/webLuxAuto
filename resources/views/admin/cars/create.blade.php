@@ -274,6 +274,32 @@
             background: rgba(255, 255, 255, 0.05);
             color: #fff;
         }
+
+        .field-error {
+            color: #ef4444;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .field-hint {
+            color: var(--muted);
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        .alert-errors {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid #ef4444;
+            color: #fecaca;
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-errors ul {
+            margin: 0;
+            padding-left: 1.2rem;
+        }
     </style>
 
     <div class="wrap lux-form-wrap">
@@ -307,7 +333,8 @@
             </div>
         @endif
         @if ($errors->any())
-            <div style="background:red;color:white;padding:10px;">
+            <div class="alert-errors">
+                <strong>Vui lòng sửa các lỗi sau:</strong>
                 <ul>
                     @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -315,7 +342,7 @@
                 </ul>
             </div>
         @endif
-        <form action="{{ route('admin.cars.store') }}" method="POST" enctype="multipart/form-data">
+        <form id="car-create-form" action="{{ route('admin.cars.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
 
             {{-- THÔNG TIN CƠ BẢN --}}
@@ -329,38 +356,53 @@
                             <option value="">-- Chọn dòng xe --</option>
                             @foreach ($carModels as $model)
                                 {{-- Giả sử bạn truyền $carModels từ Controller --}}
-                                <option value="{{ $model->id }}">{{ $model->name }}</option>
+                                <option value="{{ $model->id }}"
+                                    {{ (string) old('car_model_id') === (string) $model->id ? 'selected' : '' }}>
+                                    {{ $model->brand?->name ? $model->brand->name . ' - ' : '' }}{{ $model->name }}
+                                </option>
                             @endforeach
                         </select>
+                        @error('car_model_id')<div class="field-error">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="form-group">
                         <label>Tên hiển thị <span class="required">*</span></label>
                         <input type="text" name="name" class="lux-input" placeholder="Ví dụ: VinFast Lux A2.0 Plus"
-                            required>
+                            value="{{ old('name') }}" required>
+                        @error('name')<div class="field-error">{{ $message }}</div>@enderror
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group">
                         <label>Số VIN (Số khung) <span class="required">*</span></label>
-                        <input type="text" name="vin" class="lux-input" required>
+                        <input type="text" name="vin" class="lux-input" value="{{ old('vin') }}" maxlength="17"
+                            required>
+                        @error('vin')<div class="field-error">{{ $message }}</div>@enderror
                     </div>
                     <div class="form-group">
                         <label>Biển số xe</label>
-                        <input type="text" name="license_plate" class="lux-input" placeholder="Nếu có">
+                        <input type="text" name="license_plate" class="lux-input" placeholder="Nếu có"
+                            value="{{ old('license_plate') }}" maxlength="20">
+                        @error('license_plate')<div class="field-error">{{ $message }}</div>@enderror
                     </div>
                 </div>
 
                 <div class="form-row">
                     <div class="form-group price-input-wrapper">
                         <label>Giá (VNĐ) <span class="required">*</span></label>
-                        <input type="number" name="price" class="lux-input price-input" required>
+                        <input type="number" name="price" class="lux-input price-input" value="{{ old('price') }}"
+                            min="0" step="1000" required>
+                        <p class="field-hint">Giá không được âm.</p>
+                        @error('price')<div class="field-error">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="form-group">
                         <label>Năm sản xuất <span class="required">*</span></label>
-                        <input type="number" name="year" class="lux-input" required>
+                        <input type="number" name="year" class="lux-input" value="{{ old('year') }}"
+                            min="1000" max="{{ date('Y') }}" required>
+                        <p class="field-hint">Từ năm 1000 đến {{ date('Y') }}.</p>
+                        @error('year')<div class="field-error">{{ $message }}</div>@enderror
                     </div>
                 </div>
             </div>
@@ -371,15 +413,20 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Màu ngoại thất</label>
-                        <input type="text" name="color" class="lux-input" placeholder="Ví dụ: Đen">
+                        <input type="text" name="color" class="lux-input" placeholder="Ví dụ: Đen"
+                            value="{{ old('color') }}">
                     </div>
                     <div class="form-group">
                         <label>Màu nội thất</label>
-                        <input type="text" name="interior_color" class="lux-input" placeholder="Ví dụ: Kem">
+                        <input type="text" name="interior_color" class="lux-input" placeholder="Ví dụ: Kem"
+                            value="{{ old('interior_color') }}">
                     </div>
                     <div class="form-group">
                         <label>Số đời chủ</label>
-                        <input type="number" name="owner_count" class="lux-input" value="1">
+                        <input type="number" name="owner_count" id="owner_count" class="lux-input"
+                            value="{{ old('owner_count', '1') }}" min="0" max="10">
+                        <p class="field-hint" id="owner-count-hint">Xe 0 km: 0–10 đời chủ. Xe đã đi: 1–10 đời chủ.</p>
+                        @error('owner_count')<div class="field-error">{{ $message }}</div>@enderror
                     </div>
                 </div>
             </div>
@@ -391,23 +438,27 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>Số km đã đi <span class="required">*</span></label>
-                        <input type="number" name="mileage_km" class="lux-input" required>
+                        <input type="number" name="mileage_km" id="mileage_km" class="lux-input"
+                            value="{{ old('mileage_km') }}" min="0" required>
+                        <p class="field-hint">Số km không được âm (xe mới nhập 0).</p>
+                        @error('mileage_km')<div class="field-error">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="form-group">
                         <label>Trạng thái bán hàng</label>
                         <select name="status" class="lux-select">
-                            <option value="1">1: Sẵn sàng</option>
-                            <option value="2">2: Cọc</option>
-                            <option value="3">3: Đã bán</option>
+                            <option value="1" {{ (string) old('status', '1') === '1' ? 'selected' : '' }}>1: Sẵn sàng</option>
+                            <option value="2" {{ (string) old('status') === '2' ? 'selected' : '' }}>2: Cọc</option>
+                            <option value="3" {{ (string) old('status') === '3' ? 'selected' : '' }}>3: Đã bán</option>
                         </select>
+                        @error('status')<div class="field-error">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="form-group">
                         <label>Độ nổi bật</label>
                         <select name="is_featured" class="lux-select">
-                            <option value="0">Bình thường</option>
-                            <option value="1">Nổi bật (Hiện trang chủ)</option>
+                            <option value="0" {{ (string) old('is_featured', '0') === '0' ? 'selected' : '' }}>Bình thường</option>
+                            <option value="1" {{ (string) old('is_featured', '0') === '1' ? 'selected' : '' }}>Nổi bật (Hiện trang chủ)</option>
                         </select>
                     </div>
                 </div>
@@ -423,13 +474,17 @@
                         <input type="file" name="image" class="lux-input"
                             accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif"
                             onchange="previewNewImage(event)">
+                        @error('image')<div class="field-error">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="form-group">
                         <label>Album ảnh (Gallery)</label>
-                        <input type="file" name="gallery[]" multiple class="lux-input"
+                        <input type="file" name="gallery[]" id="gallery-input" multiple class="lux-input"
                             accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif"
                             onchange="previewGallery(event)">
+                        <p class="field-hint">Tối đa 10 ảnh, mỗi ảnh không quá 5MB.</p>
+                        @error('gallery')<div class="field-error">{{ $message }}</div>@enderror
+                        @error('gallery.*')<div class="field-error">{{ $message }}</div>@enderror
                     </div>
                 </div>
 
@@ -437,13 +492,18 @@
                     <div class="form-group">
                         <label>Video upload</label>
                         {{-- Thêm accept="video/*" để chỉ hiển thị các định dạng video --}}
-                        <input type="file" name="video_file" class="lux-input"
+                        <input type="file" name="video_file" id="video_file" class="lux-input"
                             accept="video/mp4,video/x-m4v,video/*">
+                        <p class="field-hint">Dung lượng tối đa 20MB (mp4, mov, m4v, avi).</p>
+                        <div id="video-file-error" class="field-error" style="display:none;"></div>
+                        @error('video_file')<div class="field-error">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="form-group">
                         <label>Youtube URL</label>
-                        <input type="text" name="video_url" class="lux-input" placeholder="https://youtube.com/...">
+                        <input type="text" name="video_url" class="lux-input" placeholder="https://youtube.com/..."
+                            value="{{ old('video_url') }}">
+                        @error('video_url')<div class="field-error">{{ $message }}</div>@enderror
                     </div>
                 </div>
 
@@ -455,7 +515,8 @@
                 <h3 class="lux-card-title">Mô tả chi tiết</h3>
                 <div class="form-group">
                     <textarea name="description" class="lux-textarea" rows="4"
-                        placeholder="Nhập mô tả về tình trạng xe, option thêm..."></textarea>
+                        placeholder="Nhập mô tả về tình trạng xe, option thêm...">{{ old('description') }}</textarea>
+                    @error('description')<div class="field-error">{{ $message }}</div>@enderror
                 </div>
             </div>
 
@@ -468,62 +529,107 @@
     </div>
 
     <script>
-        // 1. Format Giá tiền trực tiếp khi gõ
-        function formatPriceRealtime() {
-            const input = document.getElementById('price');
-            const display = document.getElementById('price-text');
+        const MAX_GALLERY = 10;
+        const MAX_VIDEO_BYTES = 20 * 1024 * 1024; // 20MB
 
-            if (input.value) {
-                const formatted = parseInt(input.value).toLocaleString('vi-VN');
-                display.innerText = formatted + ' VNĐ';
+        function updateOwnerCountHint() {
+            const mileage = parseInt(document.getElementById('mileage_km')?.value || '0', 10);
+            const hint = document.getElementById('owner-count-hint');
+            const ownerInput = document.getElementById('owner_count');
+            if (!hint || !ownerInput) return;
+
+            if (mileage === 0) {
+                hint.textContent = 'Xe mới (0 km): số đời chủ từ 0 đến 10.';
+                ownerInput.min = 0;
             } else {
-                display.innerText = '0 VNĐ';
+                hint.textContent = 'Xe đã qua sử dụng: số đời chủ từ 1 đến 10.';
+                ownerInput.min = 1;
+                if (ownerInput.value !== '' && parseInt(ownerInput.value, 10) < 1) {
+                    ownerInput.value = 1;
+                }
             }
         }
 
-        // 2. Load ảnh đại diện
         function previewNewImage(event) {
             const file = event.target.files[0];
-            const preview = document.getElementById('instant-preview');
-            const placeholder = document.getElementById('img-placeholder');
-
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    preview.src = e.target.result;
-                    preview.style.display = 'block';
-                    placeholder.style.display = 'none';
-                }
-                reader.readAsDataURL(file);
-            } else {
-                preview.style.display = 'none';
-                placeholder.style.display = 'flex';
-            }
+            if (!file) return;
+            // Preview optional — không bắt buộc phần tử DOM
         }
 
-        // 3. Load nhiều ảnh (Gallery)
         function previewGallery(event) {
             const container = document.getElementById('gallery-preview-container');
-            container.innerHTML = ''; // Xóa ảnh cũ nếu chọn lại
+            const input = event.target;
+            container.innerHTML = '';
 
-            const files = event.target.files;
+            const files = input.files;
+            if (!files || !files.length) return;
 
-            if (files) {
-                Array.from(files).forEach(file => {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        img.className = 'gallery-item';
-                        container.appendChild(img);
-                    }
-                    reader.readAsDataURL(file);
-                });
+            if (files.length > MAX_GALLERY) {
+                alert('Album ảnh chỉ được tối đa ' + MAX_GALLERY + ' ảnh.');
+                input.value = '';
+                return;
             }
+
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'gallery-item';
+                    container.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
         }
 
-        document.addEventListener("DOMContentLoaded", function() {
-            formatPriceRealtime();
+        function validateVideoFile(input) {
+            const errEl = document.getElementById('video-file-error');
+            if (!errEl) return true;
+
+            errEl.style.display = 'none';
+            errEl.textContent = '';
+
+            const file = input.files[0];
+            if (!file) return true;
+
+            if (file.size > MAX_VIDEO_BYTES) {
+                errEl.textContent = 'Video vượt quá dung lượng cho phép (tối đa 20MB).';
+                errEl.style.display = 'block';
+                input.value = '';
+                return false;
+            }
+            return true;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const mileageInput = document.getElementById('mileage_km');
+            const videoInput = document.getElementById('video_file');
+            const form = document.getElementById('car-create-form');
+
+            if (mileageInput) {
+                mileageInput.addEventListener('input', updateOwnerCountHint);
+                updateOwnerCountHint();
+            }
+
+            if (videoInput) {
+                videoInput.addEventListener('change', function() {
+                    validateVideoFile(videoInput);
+                });
+            }
+
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const galleryInput = document.getElementById('gallery-input');
+                    if (galleryInput?.files?.length > MAX_GALLERY) {
+                        e.preventDefault();
+                        alert('Album ảnh chỉ được tối đa ' + MAX_GALLERY + ' ảnh.');
+                        return;
+                    }
+                    if (videoInput && !validateVideoFile(videoInput)) {
+                        e.preventDefault();
+                    }
+                });
+            }
         });
     </script>
 @endsection
