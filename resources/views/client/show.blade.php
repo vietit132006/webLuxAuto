@@ -24,11 +24,21 @@
         /* --- LAYOUT CHÍNH --- */
         .product-detail {
             display: grid;
-            grid-template-columns: 1fr;
-            gap: 2.5rem;
-            background: var(--surface);
-            padding: 0;
-            border-radius: 0;
+            /* Chia 2 cột: Cột trái (ảnh) chiếm 1.5 phần, cột phải (thông tin) chiếm 1 phần */
+            grid-template-columns: 1.5fr 1fr;
+            gap: 3rem;
+            /* Khoảng cách giữa ảnh và cột thông tin */
+            align-items: flex-start;
+            /* Giữ cột phải đứng yên trên cùng, không bị kéo dãn dọc theo ảnh */
+            width: 100%;
+        }
+
+        /* Ép các cột không được vượt quá kích thước của Grid */
+        .pd-left,
+        .pd-right {
+            min-width: 0;
+            /* Thuộc tính 'thần thánh' chống tràn nội dung trong CSS Grid */
+            width: 100%;
         }
 
         @media (min-width: 992px) {
@@ -39,9 +49,12 @@
 
         /* --- BÊN TRÁI: HÌNH ẢNH --- */
         .pd-image-wrapper {
+            width: 100%;
+            /* Ép wrapper này nằm gọn trong cột .pd-left */
             border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            /* Tăng bóng đổ cho đẹp hơn với nền tối */
             aspect-ratio: 16 / 10;
             background: #0a0d12;
             position: relative;
@@ -52,6 +65,15 @@
             height: 100%;
             object-fit: cover;
             display: block;
+        }
+
+        /* --- RESPONSIVE: CHO ĐIỆN THOẠI & TABLET --- */
+        @media (max-width: 992px) {
+            .product-detail {
+                grid-template-columns: 1fr;
+                /* Trên màn hình nhỏ, chuyển thành 1 cột từ trên xuống dưới */
+                gap: 2rem;
+            }
         }
 
         .badge-hot {
@@ -102,34 +124,68 @@
             gap: 10px;
         }
 
-        /* --- LƯỚI THÔNG SỐ (KIỂU CARD NHỎ) --- */
+        /* --- LƯỚI THÔNG SỐ KIỂU DANH SÁCH CHIA CỘT --- */
         .pd-specs-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
+            column-gap: 50px;
+            row-gap: 5px;
             margin-bottom: 2rem;
+            padding: 20px;
+            border-radius: 16px;
         }
 
         .spec-card {
-            background: rgba(255, 255, 255, 0.03);
-            /* Chỉnh lại màu này nếu site của bạn nền sáng */
-            border: 1px solid var(--border);
-            padding: 1rem;
-            border-radius: 12px;
             display: flex;
-            flex-direction: column;
-            gap: 5px;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            /* Đường kẻ mảnh, tinh tế */
+            transition: all 0.3s ease;
+        }
+
+        .spec-card:hover {
+            border-bottom-color: var(--primary-color);
+            /* Hiệu ứng khi di chuột qua */
+        }
+
+        /* Loại bỏ gạch ngang ở dòng cuối cùng nếu muốn sạch sẽ */
+        .spec-card:last-child {
+            /* border-bottom: none; */
         }
 
         .spec-card .label {
-            font-size: 0.85rem;
-            color: var(--muted);
+            font-size: 0.9rem;
+            color: #999;
+            /* Màu chữ nhãn nhạt hơn */
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            /* Khoảng cách giữa icon và chữ */
+        }
+
+        .spec-card .label i {
+            color: var(--primary-color);
+            /* Icon có màu nổi bật (ví dụ màu vàng hoặc cam) */
+            width: 20px;
+            text-align: center;
         }
 
         .spec-card .value {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--text);
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #ffffff;
+            /* Màu chữ đậm hơn cho giá trị */
+            text-align: right;
+        }
+
+        /* Responsive cho điện thoại: Chuyển về 1 cột */
+        @media (max-width: 768px) {
+            .pd-specs-grid {
+                grid-template-columns: 1fr;
+                column-gap: 0;
+            }
         }
 
         /* --- NÚT LIÊN HỆ --- */
@@ -191,9 +247,27 @@
         }
 
         .pd-desc-content {
-            line-height: 1.8;
-            color: var(--text);
-            font-size: 1.05rem;
+            line-height: 1.6;
+            /* Giúp văn bản dễ đọc hơn */
+            color: #ccc;
+            /* Màu chữ phù hợp với nền tối */
+            word-wrap: break-word;
+            /* Ép xuống dòng với từ quá dài */
+            overflow-wrap: break-word;
+            white-space: pre-line;
+            /* Giữ lại các khoảng ngắt dòng tự nhiên */
+            max-width: 100%;
+            /* Không cho phép rộng quá cha nó */
+            display: block;
+            /* Đảm bảo nó là khối chuẩn */
+        }
+
+        .pd-description-box {
+            width: 100%;
+            /* Đảm bảo box bao ngoài không tràn */
+            overflow: hidden;
+            /* Cắt bỏ phần thừa nếu có */
+            margin-top: 20px;
         }
 
         /* --- CSS Nút Đặt Cọc Lux Auto --- */
@@ -418,6 +492,49 @@
             display: flex;
             justify-content: center;
         }
+
+        .pd-header-banner {
+            background: #f8fafc;
+            /* Màu nền xám trắng cực nhẹ */
+            border: 1px solid #e2e8f0;
+            border-radius: 2px;
+            padding: 0px 25px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .pd-header-content {
+            display: flex;
+            justify-content: space-between;
+            /* Đẩy tên xe sang trái, trạng thái sang phải */
+            align-items: center;
+        }
+
+        .pd-header-left .pd-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1a202c;
+            margin: 0;
+        }
+
+        .status-badge {
+            padding: 6px 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Responsive: Trên điện thoại thì xếp chồng lên nhau */
+        @media (max-width: 768px) {
+            .pd-header-content {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
     </style>
 
     <div class="wrap">
@@ -426,7 +543,35 @@
             <a href="{{ route('cars.index') }}">Danh sách xe</a> &nbsp; / &nbsp;
             <span style="color: var(--accent)">{{ $car->brand->name ?? 'Hãng khác' }} {{ $car->name }}</span>
         </div>
+        <div class="pd-header-banner">
+            <div class="pd-header-content">
+                <div class="pd-header-left">
+                    <h1 class="pd-title">
+                        <!-- Tên hãng xe -->
+                        <span class="pd-brand-name">{{ $car->brand->name ?? 'Hãng' }}</span>
 
+                        <!-- Dấu phân cách -->
+                        <span class="pd-separator">|</span>
+
+                        <!-- Tên xe -->
+                        <span class="pd-model-name">{{ $car->name }}</span>
+
+                        <!-- Giá tiền -->
+                        <span class="pd-price-tag">- {{ number_format($car->price, 0, ',', '.') }} VNĐ</span>
+                    </h1>
+                </div>
+
+                <div class="pd-header-right">
+                    @if (isset($car->status))
+                        <span class="status-badge"
+                            style="background: {{ $car->status == 1 ? 'var(--accent)' : '#4b5563' }}; color: {{ $car->status == 1 ? '#000' : '#fff' }};">
+                            <i>{{ $car->status == 1 ? '✨' : '🔄' }}</i>
+                            {{ $car->status == 1 ? 'Mới 100%' : 'Xe lướt (Cũ)' }}
+                        </span>
+                    @endif
+                </div>
+            </div>
+        </div>
         <div class="product-detail">
             <div class="pd-left">
                 <div class="pd-image-wrapper">
@@ -440,21 +585,58 @@
                         <img src="https://via.placeholder.com/800x500?text=Chua+co+hinh+anh" alt="Chưa có hình">
                     @endif
                 </div>
+
+                @if ($car->description)
+                    <div class="pd-description-box">
+                        <h3 style="color: #fff; margin-bottom: 15px;">Thông tin chi tiết</h3>
+                        <div class="pd-desc-content">
+                            {{-- Sử dụng e() và nl2br là đúng, nhưng hãy chắc chắn nó nằm trong div có width 100% --}}
+                            {!! nl2br(e($car->description)) !!}
+                        </div>
+                    </div>
+                @endif
+                @if ($car->video_file || $car->video_url)
+                    <div class="pd-video-box" style="margin-top: 2rem;">
+                        <h3 style="font-size: 1.3rem; margin-bottom: 1rem; color: var(--text);">Video Trải Nghiệm & Đánh Giá
+                        </h3>
+                        <div
+                            style="position: relative; width: 100%; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.2); background: #000;">
+
+                            @if ($car->video_file)
+                                <video controls style="width: 100%; height: auto; display: block;"
+                                    poster="{{ asset('storage/' . $car->image) }}">
+                                    <source src="{{ asset('storage/' . $car->video_file) }}" type="video/mp4">
+                                </video>
+                            @elseif($car->video_url)
+                                @php
+                                    $youtubeId = '';
+                                    preg_match(
+                                        '%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/\s]{11})%i',
+                                        $car->video_url,
+                                        $match,
+                                    );
+                                    if (isset($match[1])) {
+                                        $youtubeId = $match[1];
+                                    }
+                                @endphp
+                                @if ($youtubeId)
+                                    <div style="padding-bottom: 56.25%; height: 0; position: relative;">
+                                        <iframe
+                                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"
+                                            src="https://www.youtube.com/embed/{{ $youtubeId }}"
+                                            allowfullscreen></iframe>
+                                    </div>
+                                @endif
+                            @endif
+
+                        </div>
+                    </div>
+                @endif
             </div>
 
             <div class="pd-right">
                 <div class="pd-info">
-                    <div class="pd-brand">{{ $car->brand->name ?? 'Hãng xe' }}</div>
-                    <h1 class="pd-title">{{ $car->name }}</h1>
-                    @if (isset($car->status))
-                        <div style="margin-top: 0.5rem; margin-bottom: 1.5rem;">
-                            <span
-                                style="display: inline-block; background: {{ $car->status == 1 ? 'var(--accent)' : '#4b5563' }}; color: {{ $car->status == 1 ? '#000' : '#fff' }}; padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.9rem; font-weight: bold;">
-                                <i style="margin-right: 5px;">{{ $car->status == 1 ? '✨' : '🔄' }}</i>
-                                {{ $car->status == 1 ? 'Mới 100%' : 'Xe lướt (Cũ)' }}
-                            </span>
-                        </div>
-                    @endif
+
                     @if (($reviewCount ?? 0) > 0)
                         <div class="pd-rating-summary">
                             <span class="stars-fill"
@@ -465,10 +647,6 @@
                             <a href="#danh-gia" style="font-size: 0.85rem; font-weight: 600;">Xem chi tiết ↓</a>
                         </div>
                     @endif
-
-                    <div class="pd-price">
-                        {{ number_format($car->price, 0, ',', '.') }} VNĐ
-                    </div>
                     @if ($errors->any())
                         <div
                             style="background: #fee2e2; border: 1px solid #ef4444; color: #b91c1c; padding: 1rem; border-radius: 8px; margin-top: 1rem; margin-bottom: 1rem;">
@@ -480,6 +658,77 @@
                             </ul>
                         </div>
                     @endif
+                    <div class="pd-specs-grid">
+                        <!-- Cột 1 -->
+                        <div class="spec-card">
+                            <span class="label">Năm sản xuất</span>
+                            <span class="value">{{ $car->year ?? 'Cập nhật sau' }}</span>
+                        </div>
+
+                        <div class="spec-card">
+                            <span class="label">Tình trạng</span>
+                            <span class="value">
+                                {{ isset($car->status) && $car->status == 1 ? 'Xe mới 100%' : 'Xe đã dùng' }}
+                            </span>
+                        </div>
+
+                        <div class="spec-card">
+                            <span class="label">Số Km đã đi</span>
+                            <span class="value">
+                                @if ($car->mileage_km)
+                                    {{ number_format($car->mileage_km, 0, ',', '.') }} km
+                                @else
+                                    {{ isset($car->status) && $car->status == 1 ? '0 km' : 'Chưa cập nhật' }}
+                                @endif
+                            </span>
+                        </div>
+
+                        <div class="spec-card">
+                            <span class="label">Xuất xứ</span>
+                            <span class="value">{{ $car->origin ?? 'Cập nhật sau' }}</span>
+                        </div>
+
+                        <div class="spec-card">
+                            <span class="label">Kiểu dáng</span>
+                            <span class="value">{{ $car->body_type ?? 'Cập nhật sau' }}</span>
+                        </div>
+
+                        <div class="spec-card">
+                            <span class="label">Hộp số</span>
+                            <span class="value">{{ $car->transmission ?? 'Cập nhật sau' }}</span>
+                        </div>
+
+                        <!-- Cột 2 -->
+                        <div class="spec-card">
+                            <span class="label">Động cơ</span>
+                            <span class="value">{{ $car->engine ?? 'Cập nhật sau' }}</span>
+                        </div>
+
+                        <div class="spec-card">
+                            <span class="label">Nhiên liệu</span>
+                            <span class="value">{{ $car->fuel ?? 'Cập nhật sau' }}</span>
+                        </div>
+
+                        <div class="spec-card">
+                            <span class="label">Màu ngoại thất</span>
+                            <span class="value">{{ $car->color ?? 'Cập nhật sau' }}</span>
+                        </div>
+
+                        <div class="spec-card">
+                            <span class="label">Màu nội thất</span>
+                            <span class="value">{{ $car->interior_color ?? 'Cập nhật sau' }}</span>
+                        </div>
+
+                        <div class="spec-card">
+                            <span class="label">Số chỗ ngồi</span>
+                            <span class="value">{{ $car->seats ? $car->seats . ' chỗ' : 'Cập nhật sau' }}</span>
+                        </div>
+
+                        <div class="spec-card">
+                            <span class="label">Dẫn động</span>
+                            <span class="value">{{ $car->drive_type ?? 'Cập nhật sau' }}</span>
+                        </div>
+                    </div>
                     <div class="deposit-box">
                         @auth
                             <form action="{{ route('order.deposit', $car->car_id) }}" method="POST"
@@ -508,44 +757,6 @@
                             hoàn tiền 100% nếu xe không đúng mô tả.
                         </div>
                     </div>
-
-                    <div class="pd-specs-grid">
-
-                        <div class="spec-card">
-                            <span class="label">Năm sản xuất</span>
-                            <span class="value">{{ $car->year ?? 'Cập nhật sau' }}</span>
-                        </div>
-
-                        <div class="spec-card">
-                            <span class="label">Đã đi (Odo)</span>
-                            <span class="value">
-                                @if ($car->mileage_km)
-                                    {{ number_format($car->mileage_km, 0, ',', '.') }} km
-                                @else
-                                    {{ isset($car->status) && $car->status == 1 ? 'Xe mới 100%' : 'Chưa cập nhật' }}
-                                @endif
-                            </span>
-                        </div>
-
-                        <div class="spec-card">
-                            <span class="label">Nhiên liệu</span>
-                            <span class="value">{{ $car->fuel ?? 'Cập nhật sau' }}</span>
-                        </div>
-
-                        <div class="spec-card">
-                            <span class="label">Hộp số</span>
-                            <span class="value">{{ $car->transmission ?? 'Cập nhật sau' }}</span>
-                        </div>
-
-                        @if ($car->color)
-                            <div class="spec-card">
-                                <span class="label">Màu ngoại thất</span>
-                                <span class="value">{{ $car->color }}</span>
-                            </div>
-                        @endif
-
-                    </div>
-
                     <div class="pd-actions">
                         <button type="button" class="btn-secondary-cta" id="btn-add-compare"
                             data-car-id="{{ $car->car_id }}" style="cursor: pointer; font-family: inherit;">
@@ -560,14 +771,6 @@
             </div>
         </div>
 
-        @if ($car->description)
-            <div class="pd-description-box">
-                <h3>Thông tin chi tiết</h3>
-                <div class="pd-desc-content">
-                    {!! nl2br(e($car->description)) !!}
-                </div>
-            </div>
-        @endif
 
         <section id="danh-gia" class="reviews-section">
             <h3>Đánh giá từ khách hàng</h3>

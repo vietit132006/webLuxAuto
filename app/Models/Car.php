@@ -8,25 +8,25 @@ class Car extends Model
 {
     protected $table = 'cars';
     protected $primaryKey = 'car_id';
+    public $timestamps = true;
 
-    // Tắt tự động timestamps vì bảng của bạn chỉ có created_at (DB tự sinh)
-    public $timestamps = false;
-
-    // Khai báo các cột được phép lưu dữ liệu
     protected $fillable = [
+        'car_model_id',
+        'vin',
+        'license_plate',
         'name',
-        'brand_id',
         'price',
         'year',
         'color',
+        'interior_color',
         'description',
-        'stock',
         'image',
         'mileage_km',
-        'fuel',          // Đã đổi từ fuel_type thành fuel
-        'transmission',
         'is_featured',
-        'status'         // Đã bổ sung thêm status
+        'status',
+        'video_url',
+        'video_file',
+        'owner_count',
     ];
 
     protected function casts(): array
@@ -34,14 +34,25 @@ class Car extends Model
         return [
             'year' => 'integer',
             'price' => 'integer',
-            'stock' => 'integer',
-            'created_at' => 'datetime',
+            'mileage_km' => 'integer',
+            'is_featured' => 'boolean', // Nên cast cái này về boolean
         ];
     }
 
-    public function brand()
+    // ========================
+    // RELATIONSHIPS
+    // ========================
+
+    // Kết nối tới bảng thông số chung (CarModel)
+    public function modelInfo()
     {
-        return $this->belongsTo(Brand::class, 'brand_id', 'brand_id');
+        return $this->belongsTo(CarModel::class, 'car_model_id', 'id');
+    }
+
+    // Kết nối tới Album ảnh (CarImage)
+    public function images()
+    {
+        return $this->hasMany(CarImage::class, 'car_id', 'car_id');
     }
 
     public function reviews()
@@ -49,13 +60,43 @@ class Car extends Model
         return $this->hasMany(Review::class, 'car_id', 'car_id');
     }
 
-    public function inventoryLogs()
-    {
-        return $this->hasMany(InventoryLog::class, 'car_id', 'car_id');
-    }
+    // ========================
+    // ACCESSORS
+    // ========================
 
+    // Lấy tên đầy đủ: Hãng + Tên dòng + Phiên bản
     public function getTitleAttribute(): string
     {
-        return $this->brand ? $this->brand->name . ' ' . $this->name : $this->name;
+        // Load sẵn modelInfo và brand để tránh lỗi N+1 query
+        if (!$this->relationLoaded('modelInfo')) {
+            $this->load('modelInfo.brand');
+        }
+
+        return $this->modelInfo
+            ? ($this->modelInfo->brand->name . ' ' . $this->modelInfo->name . ' ' . $this->name)
+            : $this->name;
+    }
+
+    public function getPriceFormattedAttribute(): string
+    {
+        return number_format($this->price, 0, ',', '.') . ' VNĐ';
+    }
+
+    public function carModel()
+    {
+        return $this->belongsTo(CarModel::class, 'car_model_id', 'id');
+    }
+
+    // Mối quan hệ: Thông qua Dòng xe để lấy Hãng xe (Brand)
+    public function brand()
+    {
+        return $this->hasOneThrough(
+            Brand::class,      // Bảng đích muốn lấy
+            CarModel::class,   // Bảng trung gian
+            'id',              // Khóa ngoại ở bảng CarModel
+            'brand_id',        // Khóa ngoại ở bảng Brands
+            'car_model_id',    // Khóa ngoại ở bảng Cars
+            'brand_id'         // Khóa ở bảng CarModel
+        );
     }
 }
