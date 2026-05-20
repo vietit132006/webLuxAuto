@@ -7,13 +7,16 @@ use App\Models\Car;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Storage;
+use App\Models\CarModel;
 
 class AdminController extends Controller
 {
     // 1. Dashboard
+    // 1. Dashboard
     public function dashboard()
     {
         $totalCars = Car::count();
+        $totalCarModels = CarModel::count();
         $totalBrands = Brand::count();
 
         $recentCars = Car::with('brand')
@@ -23,6 +26,7 @@ class AdminController extends Controller
 
         return view('admin.cars.dashboard', compact(
             'totalCars',
+            'totalCarModels',
             'totalBrands',
             'recentCars'
         ));
