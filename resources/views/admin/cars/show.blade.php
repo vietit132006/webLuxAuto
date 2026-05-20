@@ -499,6 +499,48 @@
             color: #10b981;
             font-weight: 600;
         }
+
+        /* .vehicle-meta-box {
+                                    background: rgba(255, 255, 255, 0.025);
+                                    border: 1px solid var(--border);
+                                    border-radius: 12px;
+                                    overflow: hidden;
+                                } */
+
+        .meta-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .meta-row:last-child {
+            border-bottom: none;
+        }
+
+        .meta-label {
+            font-size: 12px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .meta-value {
+            font-size: 14px;
+            color: var(--text);
+            font-weight: 700;
+            text-align: right;
+            word-break: break-word;
+        }
+
+        .meta-row:first-child .meta-value {
+            font-family: 'Monaco', 'Consolas', monospace;
+            letter-spacing: 0.8px;
+        }
     </style>
 
     <div class="car-detail-wrap">
@@ -507,6 +549,13 @@
         <div class="detail-header">
             <div class="header-left">
                 <div class="breadcrumb">
+                    <a href="{{ route('admin.cars.index') }}" style="color: var(--muted); transition: 0.2s;"
+                        onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">
+                        <svg style="width: 28px; height: 28px;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
+                        </svg>
+                    </a>
                     <a href="{{ route('admin.cars.index') }}">Quản lý xe</a>
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -627,8 +676,16 @@
                 @if ($car->video_file || $car->video_url)
                     <div class="video-container">
                         <h3
-                            style="color: var(--gold); font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;">
-                            🎬 Video xe
+                            style="color: var(--gold); font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; display:flex; align-items:center; gap:8px;">
+
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                            </svg>
+
+                            Video xe
                         </h3>
                         <div class="video-wrapper">
                             @if ($car->video_file)
@@ -660,26 +717,24 @@
 
                 <!-- VIN & LICENSE -->
                 <div class="info-card">
-                    <div class="vin-section">
-                        <div class="vin-row">
-                            <span class="vin-label">Số VIN (Số khung)</span>
-                            <span class="vin-value">{{ $car->vin ?? '---' }}</span>
+                    <div class="vehicle-meta-box">
+                        <div class="meta-row">
+                            <span class="meta-label">Số VIN</span>
+                            <span class="meta-value">{{ $car->vin ?? '---' }}</span>
                         </div>
-                        <div class="vin-row">
-                            <span class="vin-label">Biển số xe</span>
-                            <span class="vin-value">{{ $car->license_plate ?? 'Chưa có' }}</span>
-                        </div>
-                    </div>
 
-                    @if ($car->owner_count)
-                        <div class="owner-info">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <span>{{ $car->owner_count }} đời chủ</span>
+                        <div class="meta-row">
+                            <span class="meta-label">Biển số</span>
+                            <span class="meta-value">{{ $car->license_plate ?? 'Chưa có' }}</span>
                         </div>
-                    @endif
+
+                        @if ($car->owner_count)
+                            <div class="meta-row">
+                                <span class="meta-label">Đời chủ</span>
+                                <span class="meta-value">{{ $car->owner_count }} đời chủ</span>
+                            </div>
+                        @endif
+                    </div>
                 </div>
 
                 <!-- SPECS -->
@@ -877,7 +932,11 @@
                 }
             };
 
-            fetch(url, { headers: { 'Accept': 'application/json' } })
+            fetch(url, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                })
                 .then(r => r.ok ? r.json() : Promise.reject(r))
                 .then(data => {
                     if (!data) return;

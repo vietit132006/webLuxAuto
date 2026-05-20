@@ -22,6 +22,12 @@
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
         }
 
+        .page-subtitle {
+            margin: 0.35rem 0 0;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
         /* --- NÚT BẤM CHÍNH (PRIMARY BUTTON) --- */
         .lux-btn-primary {
             display: inline-flex;
@@ -53,7 +59,6 @@
 
         .lux-btn-primary:hover svg {
             transform: rotate(90deg);
-            /* Hiệu ứng xoay nhẹ icon dấu + */
         }
 
         .lux-btn-primary:active {
@@ -191,7 +196,7 @@
         /* --- BẢNG ADMIN (TABLE) --- */
         .table-responsive {
             overflow-x: auto;
-            border-radius: 12px;
+            border-radius: 14px;
             border: 1px solid var(--border);
             background: linear-gradient(145deg, var(--surface), #0f141a);
             box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
@@ -201,22 +206,24 @@
             width: 100%;
             border-collapse: collapse;
             text-align: left;
+            min-width: 980px;
         }
 
         .admin-table th,
         .admin-table td {
-            padding: 1rem 1.2rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            padding: 1rem 1.1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
             vertical-align: middle;
         }
 
         .admin-table th {
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.32);
             color: var(--muted);
-            font-size: 0.8rem;
+            font-size: 0.76rem;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-weight: 700;
+            letter-spacing: 0.06em;
+            font-weight: 800;
+            white-space: nowrap;
         }
 
         .admin-table tr:last-child td {
@@ -228,16 +235,126 @@
         }
 
         .admin-table tr:hover {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.035);
+        }
+
+        .car-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 260px;
         }
 
         .table-img {
-            width: 70px;
-            height: 45px;
+            width: 82px;
+            height: 54px;
             object-fit: cover;
-            border-radius: 6px;
+            border-radius: 10px;
             background: #000;
+            border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            flex-shrink: 0;
+        }
+
+        .no-image {
+            width: 82px;
+            height: 54px;
+            border-radius: 10px;
+            border: 1px dashed rgba(255, 255, 255, 0.16);
+            color: var(--muted);
+            background: rgba(0, 0, 0, 0.22);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.72rem;
+            flex-shrink: 0;
+        }
+
+        .car-name {
+            display: block;
+            color: var(--text);
+            font-weight: 800;
+            font-size: 1rem;
+            line-height: 1.25;
+            margin-bottom: 4px;
+        }
+
+        .car-model {
+            display: block;
+            color: var(--muted);
+            font-size: 0.82rem;
+            line-height: 1.35;
+        }
+
+        .info-main {
+            display: block;
+            color: var(--text);
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .info-sub {
+            display: block;
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: 0.82rem;
+            white-space: nowrap;
+        }
+
+        .price-text {
+            color: var(--accent);
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        .status-stack {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            flex-wrap: wrap;
+            min-width: 150px;
+        }
+
+        .lux-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+
+        .badge-available {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.32);
+            color: #34d399;
+        }
+
+        .badge-deposit {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.32);
+            color: #fbbf24;
+        }
+
+        .badge-sold {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.32);
+            color: #f87171;
+        }
+
+        .badge-featured {
+            background: rgba(201, 169, 98, 0.12);
+            border-color: rgba(201, 169, 98, 0.35);
+            color: var(--accent);
+        }
+
+        .badge-normal {
+            background: rgba(148, 163, 184, 0.08);
+            border-color: rgba(148, 163, 184, 0.2);
+            color: var(--muted);
         }
 
         /* --- NÚT HÀNH ĐỘNG (ACTION BUTTONS) --- */
@@ -247,7 +364,6 @@
             gap: 8px;
             justify-content: flex-end;
             flex-wrap: nowrap;
-            /* QUAN TRỌNG: Ép các nút không được rớt xuống dòng */
         }
 
         .lux-btn-action {
@@ -266,9 +382,7 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             font-family: inherit;
             white-space: nowrap;
-            /* QUAN TRỌNG: Ép chữ "Xem", "Sửa", "Xóa" không bị bẻ dòng */
             flex-shrink: 0;
-            /* Đảm bảo nút không bị bóp méo khi màn hình nhỏ */
         }
 
         .lux-btn-action svg {
@@ -336,7 +450,11 @@
 
     <div class="wrap">
         <div class="header-actions">
-            <h1 class="page-title">Quản lý danh sách xe</h1>
+            <div>
+                <h1 class="page-title">Quản lý danh sách xe</h1>
+                <p class="page-subtitle">Theo dõi nhanh thông tin quan trọng. Chi tiết ảnh, video và mô tả xem tại nút Xem.
+                </p>
+            </div>
 
             @if (auth()->check() && in_array(auth()->user()->role, ['admin', 'staff']))
                 <a href="{{ route('admin.cars.create') }}" class="lux-btn-primary">
@@ -376,7 +494,7 @@
                 }
                 setTimeout(() => {
                     closeAlert();
-                }, 3000); // 3 giây tự tắt
+                }, 3000);
             </script>
         @endif
 
@@ -386,8 +504,8 @@
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                 </svg>
-                <input type="search" name="q" value="{{ $search ?? '' }}" placeholder="Tìm theo tên xe…"
-                    autocomplete="off">
+                <input type="search" name="q" value="{{ $search ?? '' }}"
+                    placeholder="Tìm theo tên xe, VIN, biển số..." autocomplete="off">
             </div>
             <button type="submit" class="btn-search">Tìm kiếm</button>
         </form>
@@ -407,40 +525,83 @@
                 <table class="admin-table">
                     <thead>
                         <tr>
-                            <th width="90">Hình ảnh</th>
-                            <th>Tên xe</th>
-                            <th>Năm SX</th>
+                            <th>Xe</th>
+                            <th>VIN / Biển số</th>
+                            <th>Năm / Số km</th>
                             <th>Màu sắc</th>
                             <th>Giá bán</th>
-                            <th>Tồn kho</th>
-                            <th width="240" style="text-align: right;">Hành động</th>
+                            <th>Trạng thái</th>
+                            <th width="230" style="text-align: right;">Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($cars as $car)
+                            @php
+                                $statusClass = match ((int) $car->status) {
+                                    2 => 'badge-deposit',
+                                    3 => 'badge-sold',
+                                    default => 'badge-available',
+                                };
+
+                                $statusText = match ((int) $car->status) {
+                                    2 => 'Đã cọc',
+                                    3 => 'Đã bán',
+                                    default => 'Sẵn sàng',
+                                };
+
+                                $brandName = $car->carModel?->brand?->name ?? null;
+                                $modelName = $car->carModel?->name ?? null;
+                            @endphp
                             <tr>
                                 <td>
-                                    @if ($car->image)
-                                        <img src="{{ asset('storage/' . $car->image) }}" alt="{{ $car->name }}"
-                                            class="table-img">
-                                    @else
-                                        <span
-                                            style="font-size: 0.75rem; color: var(--muted); padding: 0.5rem; border: 1px dashed rgba(255,255,255,0.1); border-radius: 6px; display: inline-block; background: rgba(0,0,0,0.2);">No
-                                            Image</span>
-                                    @endif
+                                    <div class="car-cell">
+                                        @if ($car->image)
+                                            <img src="{{ asset('storage/' . $car->image) }}" alt="{{ $car->name }}"
+                                                class="table-img">
+                                        @else
+                                            <span class="no-image">No Image</span>
+                                        @endif
+
+                                        <div>
+                                            <span class="car-name">{{ $car->name }}</span>
+                                            <span class="car-model">
+                                                {{ $brandName ? $brandName . ' - ' : '' }}{{ $modelName ?? 'Chưa gán dòng xe' }}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </td>
-                                <td style="font-weight: 700; color: var(--text); font-size: 1.05rem;">{{ $car->name }}
-                                </td>
-                                <td style="color: var(--muted);">{{ $car->year }}</td>
-                                <td style="color: var(--muted);">{{ $car->color ?? '-' }}</td>
-                                <td style="font-weight: 700; color: var(--accent); white-space: nowrap;">
-                                    {{ number_format($car->price, 0, ',', '.') }} VNĐ</td>
+
                                 <td>
-                                    <span
-                                        style="background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; border: 1px solid var(--border);">
-                                        {{ $car->stock ?? 0 }}
-                                    </span>
+                                    <span class="info-main">{{ $car->vin ?? 'Chưa nhập VIN' }}</span>
+                                    <span class="info-sub">Biển số: {{ $car->license_plate ?: 'Chưa có' }}</span>
                                 </td>
+
+                                <td>
+                                    <span class="info-main">{{ $car->year }}</span>
+                                    <span class="info-sub">{{ number_format($car->mileage_km ?? 0, 0, ',', '.') }}
+                                        km</span>
+                                </td>
+
+                                <td>
+                                    <span class="info-main">Ngoại thất: {{ $car->color ?: '-' }}</span>
+                                    <span class="info-sub">Nội thất: {{ $car->interior_color ?: '-' }}</span>
+                                </td>
+
+                                <td>
+                                    <span class="price-text">{{ number_format($car->price, 0, ',', '.') }} VNĐ</span>
+                                </td>
+
+                                <td>
+                                    <div class="status-stack">
+                                        <span class="lux-badge {{ $statusClass }}">{{ $statusText }}</span>
+                                        @if ((int) $car->is_featured === 1)
+                                            <span class="lux-badge badge-featured">Nổi bật</span>
+                                        @else
+                                            <span class="lux-badge badge-normal">Thường</span>
+                                        @endif
+                                    </div>
+                                </td>
+
                                 <td>
                                     <div class="lux-action-btns">
                                         <a href="{{ route('admin.cars.show', $car->car_id) }}"
@@ -490,8 +651,7 @@
             </div>
 
             @if ($cars instanceof \Illuminate\Pagination\LengthAwarePaginator && $cars->hasPages())
-                <div class="pagination-wrap" style="margin-top: 2rem; display: flex; justify-content: center;">
-                    {{-- Sử dụng giao diện mặc định --}}
+                <div class="pagination-wrap">
                     {{ $cars->appends(request()->query())->links() }}
                 </div>
             @endif
