@@ -239,6 +239,26 @@
                 </svg>
                 Quản lý kho xe
             </a>
+            <a href="{{ route('admin.brands.index') }}"
+                class="sidebar-link {{ request()->routeIs('admin.brands.*') ? 'active' : '' }}">
+                <svg style="width: 20px; height: 20px; flex-shrink: 0; margin-right: 10px;"
+                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008ZM17.25 15h.008v.008h-.008V15Z" />
+                </svg>
+                Quản lý hãng xe
+            </a>
+            <a href="{{ route('admin.car-models.index') }}"
+                class="sidebar-link {{ request()->routeIs('admin.car-models.*') ? 'active' : '' }}">
+                <svg style="width: 20px; height: 20px; flex-shrink: 0; margin-right: 10px;"
+                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M8.25 6.75h7.5M8.25 12h7.5m-7.5 5.25h4.5M3.75 6.75h.008v.008H3.75V6.75Zm0 5.25h.008v.008H3.75V12Zm0 5.25h.008v.008H3.75v-.008ZM6 3.75h12A2.25 2.25 0 0 1 20.25 6v12A2.25 2.25 0 0 1 18 20.25H6A2.25 2.25 0 0 1 3.75 18V6A2.25 2.25 0 0 1 6 3.75Z" />
+                </svg>
+                Quản lý dòng xe
+            </a>
 
             <a href="{{ route('admin.live.index') }}"
                 class="sidebar-link sidebar-link-live {{ request()->routeIs('admin.live.*') ? 'active' : '' }}">
@@ -249,17 +269,6 @@
                         d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
                 </svg>
                 Quản lý Livestream
-            </a>
-
-            <a href="{{ route('admin.brands.index') }}"
-                class="sidebar-link {{ request()->routeIs('admin.brands.*') ? 'active' : '' }}">
-                <svg style="width: 20px; height: 20px; flex-shrink: 0; margin-right: 10px;"
-                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008ZM17.25 15h.008v.008h-.008V15Z" />
-                </svg>
-                Quản lý hãng xe
             </a>
 
             <a href="{{ route('admin.users.index') }}"

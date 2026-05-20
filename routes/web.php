@@ -21,6 +21,8 @@ use App\Http\Controllers\ResetPasswordController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\CarModelController;
+
 
 // ==========================================
 // 1. NHÓM CHƯA ĐĂNG NHẬP (Khách)
@@ -95,6 +97,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/xe/create', [CarController::class, 'create'])->name('cars.create');
         Route::post('/xe', [CarController::class, 'store'])->name('cars.store');
         Route::get('/car-models/{id}/specs', [CarController::class, 'getModelSpecs'])->name('cars.modelSpecs');
+
+        // QUẢN LÝ MODEL XE
+        Route::resource('/car-models', CarModelController::class);
 
         // Xem chi tiết xe
         Route::get('/xe/{car}', [CarController::class, 'show'])->name('cars.show');
