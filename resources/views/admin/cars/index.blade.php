@@ -421,16 +421,6 @@
             box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
         }
 
-        @media (max-width: 768px) {
-            .lux-btn-action span {
-                display: none;
-            }
-
-            .lux-btn-action {
-                padding: 8px;
-            }
-        }
-
         /* --- PHÂN TRANG & TRỐNG --- */
         .pagination-wrap {
             margin-top: 2rem;
@@ -445,6 +435,170 @@
             border: 1px dashed var(--border);
             border-radius: 12px;
             background: rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- FIX RESPONSIVE KHÔNG BỊ KHUẤT BÊN PHẢI --- */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        .wrap {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        .header-actions,
+        .search-bar,
+        .table-responsive,
+        .pagination-wrap {
+            max-width: 100%;
+        }
+
+        .table-responsive {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .admin-table {
+            width: 100%;
+        }
+
+        /* Tablet */
+        @media (max-width: 1024px) {
+            .admin-table {
+                min-width: 900px;
+            }
+
+            .admin-table th,
+            .admin-table td {
+                padding: 0.85rem 0.9rem;
+            }
+
+            .car-cell {
+                min-width: 220px;
+            }
+
+            .table-img,
+            .no-image {
+                width: 72px;
+                height: 48px;
+            }
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .header-actions {
+                align-items: flex-start;
+            }
+
+            .page-title {
+                font-size: 1.45rem;
+            }
+
+            .page-subtitle {
+                font-size: 0.88rem;
+            }
+
+            .lux-btn-primary {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .search-bar {
+                flex-direction: column;
+            }
+
+            .search-input-wrapper {
+                min-width: 100%;
+                width: 100%;
+            }
+
+            .btn-search {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .table-responsive {
+                border-radius: 12px;
+                overflow-x: auto;
+            }
+
+            .admin-table {
+                min-width: 820px;
+            }
+
+            .admin-table th,
+            .admin-table td {
+                padding: 0.75rem 0.8rem;
+                font-size: 0.85rem;
+            }
+
+            .car-cell {
+                min-width: 210px;
+                gap: 10px;
+            }
+
+            .car-name {
+                font-size: 0.92rem;
+            }
+
+            .car-model,
+            .info-sub {
+                font-size: 0.76rem;
+            }
+
+            .price-text {
+                font-size: 0.86rem;
+            }
+
+            .lux-action-btns {
+                justify-content: flex-start;
+            }
+
+            .lux-btn-action {
+                padding: 8px;
+            }
+
+            .lux-btn-action span {
+                display: none;
+            }
+        }
+
+        /* Màn rất nhỏ */
+        @media (max-width: 480px) {
+            .wrap {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+
+            .page-title {
+                font-size: 1.3rem;
+            }
+
+            .lux-flash-alert {
+                padding: 0.85rem 1rem;
+                gap: 0.75rem;
+            }
+
+            .admin-table {
+                min-width: 760px;
+            }
+
+            .table-img,
+            .no-image {
+                width: 64px;
+                height: 44px;
+            }
+
+            .lux-badge {
+                font-size: 0.72rem;
+                padding: 4px 8px;
+            }
         }
     </style>
 
