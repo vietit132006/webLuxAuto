@@ -468,6 +468,19 @@
             width: 100%;
         }
 
+        @media (min-width: 769px) {
+            .admin-wrapper {
+                flex: 0 0 calc(100vw - var(--sidebar-width));
+                width: calc(100vw - var(--sidebar-width));
+                max-width: calc(100vw - var(--sidebar-width));
+                min-width: 0;
+            }
+
+            .admin-main {
+                min-width: 0;
+            }
+        }
+
         /* Tablet */
         @media (max-width: 1024px) {
             .admin-table {
@@ -567,6 +580,136 @@
             .lux-btn-action span {
                 display: none;
             }
+
+            .table-responsive {
+                overflow: visible;
+                border: none;
+                background: transparent;
+                box-shadow: none;
+            }
+
+            .admin-table {
+                min-width: 0;
+                border-collapse: separate;
+                border-spacing: 0 0.9rem;
+            }
+
+            .admin-table thead {
+                display: none;
+            }
+
+            .admin-table,
+            .admin-table tbody,
+            .admin-table tr,
+            .admin-table td {
+                display: block;
+                width: 100%;
+            }
+
+            .admin-table tr {
+                padding: 0.9rem;
+                border: 1px solid var(--border);
+                border-radius: 14px;
+                background: linear-gradient(145deg, var(--surface), #0f141a);
+                box-shadow: 0 10px 24px -16px rgba(0, 0, 0, 0.8);
+            }
+
+            .admin-table tr+tr {
+                margin-top: 0.9rem;
+            }
+
+            .admin-table tr:hover {
+                background: linear-gradient(145deg, #171e28, #0f141a);
+            }
+
+            .admin-table td {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 1rem;
+                padding: 0.72rem 0;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+                text-align: right;
+            }
+
+            .admin-table td>* {
+                min-width: 0;
+            }
+
+            .admin-table td:first-child {
+                display: block;
+                padding-top: 0;
+                text-align: left;
+            }
+
+            .admin-table td:last-child {
+                display: block;
+                padding-bottom: 0;
+                border-bottom: none;
+            }
+
+            .admin-table td:not(:first-child):not(:last-child)::before {
+                content: attr(data-label);
+                flex: 0 0 92px;
+                color: var(--muted);
+                font-size: 0.74rem;
+                font-weight: 800;
+                letter-spacing: 0.04em;
+                text-align: left;
+                text-transform: uppercase;
+            }
+
+            .car-cell {
+                min-width: 0;
+                align-items: center;
+            }
+
+            .car-cell>div {
+                min-width: 0;
+            }
+
+            .car-name,
+            .car-model,
+            .info-main,
+            .info-sub,
+            .price-text {
+                white-space: normal;
+                overflow-wrap: anywhere;
+            }
+
+            .info-main,
+            .info-sub,
+            .price-text {
+                text-align: right;
+            }
+
+            .status-stack {
+                min-width: 0;
+                justify-content: flex-end;
+            }
+
+            .lux-action-btns {
+                display: flex;
+                align-items: stretch;
+                flex-wrap: wrap;
+                gap: 0.6rem;
+                width: 100%;
+            }
+
+            .lux-action-btns form,
+            .lux-action-btns>.lux-btn-action {
+                flex: 1 1 110px;
+                width: 100%;
+            }
+
+            .lux-btn-action {
+                justify-content: center;
+                padding: 0.65rem 0.55rem;
+            }
+
+            .lux-btn-action span {
+                display: inline;
+            }
         }
 
         /* Màn rất nhỏ */
@@ -583,10 +726,6 @@
             .lux-flash-alert {
                 padding: 0.85rem 1rem;
                 gap: 0.75rem;
-            }
-
-            .admin-table {
-                min-width: 760px;
             }
 
             .table-img,
@@ -621,7 +760,7 @@
         </div>
 
         @if (session('success'))
-            <div id="success-alert" class="lux-flash-alert">
+            <div id="success-alert" class="lux-flash-alert lux-flash-success">
                 <div class="lux-flash-content">
                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -629,27 +768,31 @@
                     </svg>
                     <span>{{ session('success') }}</span>
                 </div>
-                <button type="button" class="btn-close-alert" onclick="closeAlert()" aria-label="Đóng">
+
+                <button type="button" class="btn-close-alert" onclick="closeAlert('success-alert')" aria-label="Đóng">
                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
+        @endif
 
-            <script>
-                function closeAlert() {
-                    const alertBox = document.getElementById('success-alert');
-                    if (alertBox) {
-                        alertBox.classList.add('hide');
-                        setTimeout(() => {
-                            alertBox.remove();
-                        }, 500);
-                    }
-                }
-                setTimeout(() => {
-                    closeAlert();
-                }, 3000);
-            </script>
+        @if (session('error'))
+            <div id="error-alert" class="lux-flash-alert lux-flash-error">
+                <div class="lux-flash-content">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v3m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                    </svg>
+                    <span>{{ session('error') }}</span>
+                </div>
+
+                <button type="button" class="btn-close-alert" onclick="closeAlert('error-alert')" aria-label="Đóng">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
         @endif
 
         <form class="search-bar" method="get" action="{{ route('admin.cars.index') }}">
@@ -725,27 +868,27 @@
                                     </div>
                                 </td>
 
-                                <td>
+                                <td data-label="VIN / Biển số">
                                     <span class="info-main">{{ $car->vin ?? 'Chưa nhập VIN' }}</span>
                                     <span class="info-sub">Biển số: {{ $car->license_plate ?: 'Chưa có' }}</span>
                                 </td>
 
-                                <td>
+                                <td data-label="Năm / Số km">
                                     <span class="info-main">{{ $car->year }}</span>
                                     <span class="info-sub">{{ number_format($car->mileage_km ?? 0, 0, ',', '.') }}
                                         km</span>
                                 </td>
 
-                                <td>
+                                <td data-label="Màu sắc">
                                     <span class="info-main">Ngoại thất: {{ $car->color ?: '-' }}</span>
                                     <span class="info-sub">Nội thất: {{ $car->interior_color ?: '-' }}</span>
                                 </td>
 
-                                <td>
+                                <td data-label="Giá bán">
                                     <span class="price-text">{{ number_format($car->price, 0, ',', '.') }} VNĐ</span>
                                 </td>
 
-                                <td>
+                                <td data-label="Trạng thái">
                                     <div class="status-stack">
                                         <span class="lux-badge {{ $statusClass }}">{{ $statusText }}</span>
                                         @if ((int) $car->is_featured === 1)
