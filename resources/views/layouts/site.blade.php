@@ -73,6 +73,50 @@
             flex-wrap: wrap;
         }
 
+        .site-menu-title {
+            display: none;
+        }
+
+        .site-menu-toggle {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.035);
+            color: var(--text);
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .site-menu-toggle:hover {
+            border-color: rgba(201, 169, 98, 0.45);
+            color: var(--accent);
+            background: rgba(201, 169, 98, 0.08);
+        }
+
+        .site-menu-toggle svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .site-menu-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            border: 0;
+            padding: 0;
+            background: rgba(0, 0, 0, 0.55);
+            cursor: pointer;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+            z-index: 80;
+        }
+
         /* Hiệu ứng gạch chân sang trọng cho Menu */
         nav.links a.nav-link {
             color: var(--text);
@@ -291,6 +335,168 @@
         .f-zalo { background-color: #0068ff; font-weight: bold; font-size: 15px; font-family: Arial, sans-serif; }
         .f-messenger { background: linear-gradient(45deg, #00B2FF, #006AFF); }
         .f-telegram { background-color: #2AABEE; }
+
+        @media (max-width: 768px) {
+            header.site {
+                z-index: 120;
+            }
+
+            body.site-menu-open {
+                overflow: hidden;
+            }
+
+            .nav-inner {
+                min-height: 64px;
+            }
+
+            .site-menu-toggle {
+                display: inline-flex;
+                margin-left: auto;
+            }
+
+            .site-menu-overlay {
+                display: block;
+            }
+
+            body.site-menu-open .site-menu-overlay {
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            body.site-menu-open .floating-contact-wrapper {
+                display: none;
+            }
+
+            nav.links {
+                position: fixed;
+                top: 0;
+                left: 0;
+                z-index: 130;
+                width: min(320px, 84vw);
+                height: 100vh;
+                padding: 1rem;
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.35rem;
+                flex-wrap: nowrap;
+                overflow-y: auto;
+                background: linear-gradient(180deg, #141a22, #0d1118);
+                border-right: 1px solid var(--border);
+                box-shadow: 18px 0 45px -28px rgba(0, 0, 0, 0.85);
+                transform: translateX(-100%);
+                transition: transform 0.28s ease;
+            }
+
+            body.site-menu-open nav.links {
+                transform: translateX(0);
+            }
+
+            .site-menu-title {
+                display: block;
+                padding: 0.85rem 0.85rem 1.1rem;
+                margin-bottom: 0.35rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                color: var(--text);
+                font-size: 1.08rem;
+                font-weight: 850;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+            }
+
+            .site-menu-title span {
+                color: var(--accent);
+            }
+
+            nav.links a.nav-link,
+            nav.links a.nav-cta {
+                width: 100%;
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                padding: 0.72rem 0.85rem;
+                border-radius: 8px;
+                color: var(--text);
+                opacity: 1;
+            }
+
+            nav.links a.nav-link::after {
+                display: none;
+            }
+
+            nav.links a.nav-link:hover,
+            nav.links a.nav-cta:hover {
+                background: rgba(201, 169, 98, 0.1);
+                color: var(--accent);
+                padding-left: 0.85rem;
+            }
+
+            nav.links a.nav-cta {
+                justify-content: center;
+                margin-top: 0.35rem;
+                border-color: rgba(201, 169, 98, 0.45);
+                color: var(--accent);
+            }
+
+            .nav-live {
+                justify-content: flex-start;
+            }
+
+            .nav-dropdown {
+                width: 100%;
+                height: auto;
+                display: block;
+                padding: 0.7rem 0.85rem;
+                border-top: 1px solid rgba(255, 255, 255, 0.08);
+                margin-top: 0.4rem;
+            }
+
+            .nav-dropdown-toggle {
+                padding: 0 0 0.65rem;
+                color: var(--muted);
+            }
+
+            .nav-dropdown-toggle svg {
+                display: none;
+            }
+
+            .nav-dropdown-menu {
+                position: static;
+                min-width: 0;
+                opacity: 1;
+                visibility: visible;
+                transform: none;
+                padding: 0;
+                border: 0;
+                border-radius: 0;
+                background: transparent;
+                box-shadow: none;
+            }
+
+            .nav-dropdown-menu a {
+                min-height: 40px;
+                padding: 0.58rem 0;
+                border-radius: 8px;
+            }
+
+            .nav-dropdown-menu a:hover {
+                padding-left: 0.5rem;
+            }
+
+            .dropdown-divider {
+                margin: 0.45rem 0;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .wrap {
+                padding: 0 1rem;
+            }
+
+            .logo {
+                font-size: 1.08rem;
+            }
+        }
     </style>
     @stack('styles')
 </head>
@@ -300,7 +506,15 @@
     <div class="wrap nav-inner">
         <a href="{{ route('home') }}" class="logo">Lux <span>Auto</span></a>
 
-        <nav class="links">
+        <button type="button" class="site-menu-toggle" id="site-menu-toggle" aria-label="Mở menu"
+            aria-controls="site-menu" aria-expanded="false">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h16M4 17h16" />
+            </svg>
+        </button>
+
+        <nav class="links" id="site-menu">
+            <div class="site-menu-title">Lux <span>Auto</span></div>
             {{-- Menu cho Admin/Staff --}}
             @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'staff']))
                 <a href="{{ route('admin.dashboard') }}" class="nav-link">Dashboard</a>
@@ -354,6 +568,7 @@
         </nav>
     </div>
 </header>
+<button type="button" class="site-menu-overlay" id="site-menu-overlay" aria-label="Đóng menu"></button>
 
 <main class="site-main">
     @yield('content')
@@ -386,6 +601,46 @@
         </a>
     </div>
 </div>
+
+<script>
+    (() => {
+        const body = document.body;
+        const toggleButton = document.getElementById('site-menu-toggle');
+        const overlay = document.getElementById('site-menu-overlay');
+        const menu = document.getElementById('site-menu');
+
+        if (!toggleButton || !overlay || !menu) {
+            return;
+        }
+
+        const setMenuOpen = (isOpen) => {
+            body.classList.toggle('site-menu-open', isOpen);
+            toggleButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        };
+
+        toggleButton.addEventListener('click', () => {
+            setMenuOpen(!body.classList.contains('site-menu-open'));
+        });
+
+        overlay.addEventListener('click', () => setMenuOpen(false));
+
+        menu.querySelectorAll('a').forEach((link) => {
+            link.addEventListener('click', () => setMenuOpen(false));
+        });
+
+        window.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                setMenuOpen(false);
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                setMenuOpen(false);
+            }
+        });
+    })();
+</script>
 
 @stack('scripts')
 </body>

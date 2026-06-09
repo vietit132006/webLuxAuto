@@ -10,11 +10,12 @@ class HomeController extends Controller
     public function __invoke(): View
     {
         $featured = Car::query()
+            ->with(['brand', 'carModel.brand'])
             ->where('is_featured', 1)
             ->latest()
             ->take(6)
             ->get();
-        // dd($featured->toArray());
+
         return view('client.home', [
             'featuredCars' => $featured,
         ]);

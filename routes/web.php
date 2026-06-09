@@ -6,10 +6,11 @@ use App\Http\Controllers\AdminNewsController;
 use App\Http\Controllers\AdminOrderController;
 use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AdminTicketController;
+use App\Http\Controllers\Admin\CarController as AdminCarController;
 use App\Http\Controllers\Admin\TestDriveController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BrandController;
-use App\Http\Controllers\Admin\CarController;
+use App\Http\Controllers\CarController as ClientCarController;
 use App\Http\Controllers\CompareController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PromotionController;
@@ -70,9 +71,9 @@ Route::middleware('auth')->group(function () {
     // ------------------------------------------
     // KHU VỰC KHÁCH HÀNG (Dành cho người mua)
     // ------------------------------------------
-    Route::get('/xe', [CarController::class, 'index'])->name('cars.index');
-    Route::get('/xe/{car}', [CarController::class, 'show'])->name('cars.show_public');
-    Route::post('/xe/{car}/danh-gia', [CarController::class, 'storeReview'])->name('cars.reviews.store');
+    Route::get('/xe', [ClientCarController::class, 'index'])->name('cars.index');
+    Route::get('/xe/{car}', [ClientCarController::class, 'show'])->name('cars.show_public');
+    Route::post('/xe/{car}/danh-gia', [ClientCarController::class, 'storeReview'])->name('cars.reviews.store');
 
     Route::get('/khuyen-mai', [PromotionController::class, 'index'])->name('promotions.index');
     Route::get('/so-sanh-xe', [CompareController::class, 'index'])->name('compare.index');
@@ -93,23 +94,23 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 
         // SỬA TẠI ĐÂY: Trỏ về CarController
-        Route::get('/xe', [CarController::class, 'index'])->name('cars.index');
-        Route::get('/xe/create', [CarController::class, 'create'])->name('cars.create');
-        Route::post('/xe', [CarController::class, 'store'])->name('cars.store');
-        Route::get('/car-models/{id}/specs', [CarController::class, 'getModelSpecs'])->name('cars.modelSpecs');
+        Route::get('/xe', [AdminCarController::class, 'index'])->name('cars.index');
+        Route::get('/xe/create', [AdminCarController::class, 'create'])->name('cars.create');
+        Route::post('/xe', [AdminCarController::class, 'store'])->name('cars.store');
+        Route::get('/car-models/{id}/specs', [AdminCarController::class, 'getModelSpecs'])->name('cars.modelSpecs');
 
         // QUẢN LÝ MODEL XE
         Route::resource('/car-models', CarModelController::class);
 
         // Xem chi tiết xe
-        Route::get('/xe/{car}', [CarController::class, 'show'])->name('cars.show');
+        Route::get('/xe/{car}', [AdminCarController::class, 'show'])->name('cars.show');
 
         // Sửa xe
-        Route::get('/xe/{id}/edit', [CarController::class, 'edit'])->name('cars.edit');
-        Route::put('/xe/{id}', [CarController::class, 'update'])->name('cars.update');
+        Route::get('/xe/{id}/edit', [AdminCarController::class, 'edit'])->name('cars.edit');
+        Route::put('/xe/{id}', [AdminCarController::class, 'update'])->name('cars.update');
 
         // Xóa xe
-        Route::delete('/xe/{id}', [CarController::class, 'destroy'])->name('cars.destroy');
+        Route::delete('/xe/{id}', [AdminCarController::class, 'destroy'])->name('cars.destroy');
 
 
         // Quản lý brands (Dành cho Admin)

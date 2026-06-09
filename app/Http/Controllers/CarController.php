@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Car;
+use App\Models\Brand;
 use App\Models\OrderDetail;
 use App\Models\Review;
 use App\Models\Ticket;
@@ -14,13 +15,13 @@ use Illuminate\View\View;
 class CarController extends Controller
 {
     // Hiển thị danh sách xe cho khách hàng (Trang chủ)
-    public function index(\Illuminate\Http\Request $request)
+    public function index(Request $request)
     {
         // 1. Lấy danh sách các Hãng xe để đổ ra Sidebar lọc
-        $brands = \App\Models\Brand::all();
+        $brands = Brand::all();
 
         // 2. Bắt đầu câu truy vấn (Query Builder)
-        $query = \App\Models\Car::query();
+        $query = Car::query()->with(['brand', 'carModel.brand']);
 
         // Lọc theo Tên xe (Từ khóa)
         $query->when($request->keyword, function ($q, $keyword) {
@@ -29,7 +30,9 @@ class CarController extends Controller
 
         // Lọc theo Hãng xe
         $query->when($request->brand_id, function ($q, $brand_id) {
-            return $q->where('brand_id', $brand_id);
+            return $q->whereHas('carModel', function ($modelQuery) use ($brand_id) {
+                $modelQuery->where('brand_id', $brand_id);
+            });
         });
 
         // Lọc theo Trạng thái (Ví dụ: 1 = Mới 100%, 0 = Xe lướt)
@@ -55,7 +58,7 @@ class CarController extends Controller
     // Hiển thị trang chi tiết xe dành cho Khách hàng
     public function show(Car $car): View
     {
-        $car->load('brand');
+        $car->load(['brand', 'carModel.brand', 'images']);
 
         $reviews = Review::query()
             ->with('user:user_id,name')
