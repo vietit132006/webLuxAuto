@@ -139,11 +139,14 @@
 
         /* --- KHU VỰC NỘI DUNG BÊN PHẢI --- */
         .admin-wrapper {
-            flex: 1;
+            flex: 0 0 calc(100vw - var(--sidebar-width));
+            width: calc(100vw - var(--sidebar-width));
+            max-width: calc(100vw - var(--sidebar-width));
             margin-left: var(--sidebar-width);
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            min-width: 0;
             transition: margin-left 0.3s ease;
         }
 
@@ -159,6 +162,46 @@
             position: sticky;
             top: 0;
             z-index: 40;
+        }
+
+        .mobile-menu-toggle {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.035);
+            color: var(--text);
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .mobile-menu-toggle:hover {
+            border-color: rgba(201, 169, 98, 0.45);
+            color: var(--accent);
+            background: rgba(201, 169, 98, 0.08);
+        }
+
+        .mobile-menu-toggle svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .mobile-menu-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            border: 0;
+            padding: 0;
+            background: rgba(0, 0, 0, 0.55);
+            cursor: pointer;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+            z-index: 90;
         }
 
         .admin-topbar-info {
@@ -184,6 +227,7 @@
         .admin-main {
             padding: 2rem;
             flex: 1;
+            min-width: 0;
         }
 
         .wrap {
@@ -193,10 +237,29 @@
 
         @media (max-width: 768px) {
             .admin-sidebar {
+                width: min(var(--sidebar-width), 82vw);
                 transform: translateX(-100%);
+                z-index: 100;
+                box-shadow: 18px 0 45px -28px rgba(0, 0, 0, 0.85);
+            }
+
+            body.sidebar-open {
+                overflow: hidden;
+            }
+
+            body.sidebar-open .admin-sidebar {
+                transform: translateX(0);
+            }
+
+            body.sidebar-open .mobile-menu-overlay {
+                opacity: 1;
+                pointer-events: auto;
             }
 
             .admin-wrapper {
+                flex: 1 1 auto;
+                width: 100%;
+                max-width: 100%;
                 margin-left: 0;
             }
 
@@ -205,7 +268,46 @@
             }
 
             .admin-topbar {
+                justify-content: space-between;
+                gap: 0.75rem;
                 padding: 0 1rem;
+            }
+
+            .mobile-menu-toggle {
+                display: inline-flex;
+            }
+
+            .mobile-menu-overlay {
+                display: block;
+            }
+
+            .admin-topbar-info {
+                min-width: 0;
+                gap: 0.75rem;
+                margin-left: auto;
+                font-size: 0.88rem;
+            }
+
+            .admin-topbar-info span {
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .admin-topbar-info {
+                gap: 0.55rem;
+                font-size: 0.82rem;
+            }
+
+            .admin-topbar-info>a:not(.btn-logout) {
+                display: none;
+            }
+
+            .btn-logout {
+                padding: 0.38rem 0.65rem;
             }
         }
     </style>
@@ -213,7 +315,7 @@
 </head>
 
 <body>
-    <aside class="admin-sidebar">
+    <aside class="admin-sidebar" id="admin-sidebar">
         <a href="{{ route('home') }}" class="sidebar-brand" target="_blank" title="Mở trang khách hàng">
             Lux <span>Auto</span>
         </a>
@@ -398,9 +500,17 @@
             </a>
         </nav>
     </aside>
+    <button type="button" class="mobile-menu-overlay" id="admin-menu-overlay" aria-label="Đóng menu"></button>
 
     <div class="admin-wrapper">
         <header class="admin-topbar">
+            <button type="button" class="mobile-menu-toggle" id="admin-menu-toggle" aria-label="Mở menu quản trị"
+                aria-controls="admin-sidebar" aria-expanded="false">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h16M4 17h16" />
+                </svg>
+            </button>
+
             <div style="flex: 1;"></div>
 
             <div class="admin-topbar-info">
@@ -416,6 +526,46 @@
             @yield('content')
         </main>
     </div>
+
+    <script>
+        (() => {
+            const body = document.body;
+            const toggleButton = document.getElementById('admin-menu-toggle');
+            const overlay = document.getElementById('admin-menu-overlay');
+            const sidebar = document.getElementById('admin-sidebar');
+
+            if (!toggleButton || !overlay || !sidebar) {
+                return;
+            }
+
+            const setMenuOpen = (isOpen) => {
+                body.classList.toggle('sidebar-open', isOpen);
+                toggleButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            };
+
+            toggleButton.addEventListener('click', () => {
+                setMenuOpen(!body.classList.contains('sidebar-open'));
+            });
+
+            overlay.addEventListener('click', () => setMenuOpen(false));
+
+            sidebar.querySelectorAll('a').forEach((link) => {
+                link.addEventListener('click', () => setMenuOpen(false));
+            });
+
+            window.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    setMenuOpen(false);
+                }
+            });
+
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 768) {
+                    setMenuOpen(false);
+                }
+            });
+        })();
+    </script>
 
     @stack('scripts')
 </body>
