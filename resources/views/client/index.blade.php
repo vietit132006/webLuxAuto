@@ -2,257 +2,1110 @@
 
 @section('title', 'Danh sách xe')
 
-@section('content')
+@push('styles')
 <style>
-    /* CSS CŨ ĐƯỢC GIỮ NGUYÊN */
-    .wrap { max-width: 100%; } /* Đảm bảo thẻ wrap ngoài cùng không bị bóp nhỏ */
-    .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 0 1.5rem; }
-    .page-title { margin: 0; font-size: 1.75rem; font-weight: 700; }
-    .btn-add { background: var(--accent); color: #0c0f14; padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; }
-    .btn-add:hover { filter: brightness(1.05); color: #0c0f14; }
-    .search-bar { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.75rem; padding: 0 1.5rem; }
-    .search-bar input[type="search"] { flex: 1; min-width: 200px; padding: 0.6rem 0.9rem; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 1rem; }
-    .search-bar input:focus { outline: none; border-color: var(--accent-dim); box-shadow: 0 0 0 3px rgba(201, 169, 98, 0.15); }
-    .search-bar button { padding: 0.6rem 1.2rem; border-radius: 8px; border: none; background: var(--accent); color: #0c0f14; font-weight: 600; cursor: pointer; }
-    .search-bar button:hover { filter: brightness(1.05); }
-    .pagination-wrap { margin-top: 2rem; display: flex; justify-content: center; }
-    .lux-pag__inner { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; justify-content: center; }
-    .lux-pag__btn, .lux-pag__num { display: inline-flex; align-items: center; justify-content: center; padding: 0.45rem 0.75rem; border-radius: 6px; border: 1px solid var(--border); color: var(--text); font-size: 0.875rem; }
-    .lux-pag__btn:hover, .lux-pag__num:hover { border-color: var(--accent-dim); color: var(--accent); }
-    .lux-pag__btn--disabled { color: var(--muted); cursor: not-allowed; opacity: 0.65; }
-    .lux-pag__num--current { background: var(--surface); border-color: var(--accent-dim); color: var(--accent); font-weight: 600; }
-    .lux-pag__dots { padding: 0.45rem 0.35rem; color: var(--muted); font-size: 0.875rem; }
-    .empty-state { padding: 2rem; text-align: center; color: var(--muted); border: 1px dashed var(--border); border-radius: 12px; }
-
-    .filter-group { margin-bottom: 1.5rem; }
-    .filter-title { font-weight: bold; color: var(--accent); margin-bottom: 0.8rem; text-transform: uppercase; font-size: 0.9rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
-    .filter-input, .filter-select { width: 100%; background: #0a0d12; border: 1px solid var(--border); color: var(--text); padding: 0.6rem; border-radius: 6px; margin-bottom: 0.5rem; }
-    .price-range { display: flex; align-items: center; gap: 10px; }
-    .price-range input { width: 100%; }
-    .btn-filter { width: 100%; background: var(--accent); color: #000; font-weight: bold; border: none; padding: 0.8rem; border-radius: 6px; cursor: pointer; transition: 0.3s; }
-    .btn-filter:hover { background: #e4d08a; }
-    .btn-reset { display: block; text-align: center; color: var(--muted); margin-top: 10px; text-decoration: none; font-size: 0.85rem; }
-
-    /* --- CSS MỚI CẬP NHẬT ĐỂ TRÀN MÀN HÌNH VÀ ÉP SIDEBAR --- */
-    .shop-container {
-        display: flex;
-        gap: 1.5rem;
-        max-width: 98%; /* Tràn ra gần sát mép màn hình */
-        margin: 1rem auto;
-        padding: 0 10px;
+    .cars-page {
+        margin-top: -2rem;
     }
 
-    .filter-sidebar {
-        width: 250px; /* Kích thước cố định cho bộ lọc */
-        flex-shrink: 0; /* Ngăn không cho sidebar bị bóp nhỏ lại */
-        background: var(--surface);
+    .cars-wrap {
+        width: min(1440px, calc(100% - 2rem));
+        margin: 0 auto;
+    }
+
+    .cars-hero {
+        padding: 2.4rem 0 1.6rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+        background: linear-gradient(180deg, rgba(20, 26, 34, 0.58), rgba(12, 15, 20, 0));
+    }
+
+    .cars-hero__grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(320px, 0.74fr);
+        gap: 1.25rem;
+        align-items: end;
+    }
+
+    .cars-kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin-bottom: 0.8rem;
+        color: var(--accent);
+        font-size: 0.76rem;
+        font-weight: 850;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    .cars-kicker::before {
+        content: "";
+        width: 34px;
+        height: 1px;
+        background: currentColor;
+    }
+
+    .cars-title {
+        margin: 0;
+        color: #fff;
+        font-size: clamp(2rem, 4vw, 3.6rem);
+        font-weight: 900;
+        line-height: 1;
+    }
+
+    .cars-lead {
+        max-width: 720px;
+        margin: 1rem 0 0;
+        color: #c4ccda;
+        font-size: 1rem;
+        line-height: 1.75;
+    }
+
+    .cars-quick-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+        justify-content: flex-end;
+    }
+
+    .cars-btn,
+    .cars-search__button,
+    .filter-submit,
+    .car-card__link,
+    .lux-btn-cmp {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        min-height: 42px;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 0.9rem;
+        font-weight: 800;
+        text-decoration: none;
+        cursor: pointer;
+        transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .cars-btn svg,
+    .cars-search__button svg,
+    .filter-submit svg,
+    .car-card__link svg,
+    .lux-btn-cmp svg {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+    }
+
+    .cars-btn--soft {
+        padding: 0.72rem 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.045);
+        color: var(--text);
+    }
+
+    .cars-btn--soft:hover {
+        border-color: rgba(201, 169, 98, 0.45);
+        background: rgba(201, 169, 98, 0.09);
+        color: var(--accent);
+    }
+
+    .cars-btn--compare {
+        display: none;
+        padding: 0.72rem 1rem;
+        border: 1px solid rgba(201, 169, 98, 0.45);
+        background: rgba(201, 169, 98, 0.12);
+        color: var(--accent);
+    }
+
+    .cars-search {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 0.75rem;
+        margin-top: 1.6rem;
+        padding: 0.8rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        background: rgba(10, 13, 18, 0.78);
+    }
+
+    .cars-search__field {
+        min-width: 0;
+    }
+
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    .cars-input,
+    .filter-input,
+    .filter-select {
+        width: 100%;
+        min-height: 44px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: #0a0d12;
+        color: var(--text);
+        font: inherit;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    .cars-input {
+        padding: 0 1rem;
+    }
+
+    .filter-input,
+    .filter-select {
+        padding: 0 0.78rem;
+    }
+
+    .cars-input::placeholder,
+    .filter-input::placeholder {
+        color: #667286;
+    }
+
+    .cars-input:focus,
+    .filter-input:focus,
+    .filter-select:focus {
+        outline: none;
+        border-color: rgba(201, 169, 98, 0.7);
+        box-shadow: 0 0 0 3px rgba(201, 169, 98, 0.14);
+        background: #0d1118;
+    }
+
+    .cars-search__button,
+    .filter-submit {
+        padding: 0 1.05rem;
+        border: 1px solid transparent;
+        background: linear-gradient(135deg, var(--accent), #ead990);
+        color: #0c0f14;
+        box-shadow: 0 16px 34px -24px rgba(201, 169, 98, 0.92);
+    }
+
+    .cars-search__button:hover,
+    .filter-submit:hover {
+        color: #0c0f14;
+        box-shadow: 0 18px 40px -24px rgba(201, 169, 98, 1);
+    }
+
+    .cars-workspace {
+        display: grid;
+        grid-template-columns: 292px minmax(0, 1fr);
+        gap: 1.25rem;
+        padding: 1.25rem 0 0;
+        align-items: start;
+    }
+
+    .filter-panel {
+        position: sticky;
+        top: 92px;
         border: 1px solid var(--border);
         border-radius: 12px;
-        padding: 1.5rem;
-        height: fit-content;
-        position: sticky;
-        top: 20px;
+        background: linear-gradient(180deg, #151b24, #0d1118);
+        overflow: hidden;
     }
 
-    .car-list-area {
-        flex-grow: 1; /* Chiếm toàn bộ không gian còn lại */
+    .filter-panel__head {
+        padding: 1.1rem 1.1rem 0.95rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
     }
 
-    .car-grid {
+    .filter-panel__title {
+        margin: 0;
+        color: var(--text);
+        font-size: 1.02rem;
+        font-weight: 900;
+    }
+
+    .filter-panel__hint {
+        margin: 0.35rem 0 0;
+        color: var(--muted);
+        font-size: 0.86rem;
+        line-height: 1.55;
+    }
+
+    .filter-form {
+        padding: 1.1rem;
+    }
+
+    .filter-group {
+        margin-bottom: 1rem;
+    }
+
+    .filter-label {
+        display: block;
+        margin-bottom: 0.48rem;
+        color: #dbe3ef;
+        font-size: 0.8rem;
+        font-weight: 850;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    .price-fields {
         display: grid;
-        grid-template-columns: repeat(4, 1fr); /* Hiển thị 4 cột cho màn hình rộng */
-        gap: 1.5rem;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.55rem;
     }
 
-    /* Đảm bảo hiển thị tốt trên các màn hình nhỏ hơn */
-    @media (max-width: 1400px) {
-        .car-grid { grid-template-columns: repeat(3, 1fr); }
+    .filter-actions {
+        display: grid;
+        gap: 0.65rem;
+        margin-top: 1.1rem;
     }
-    @media (max-width: 992px) {
-        .shop-container { flex-direction: column; }
-        .filter-sidebar { width: 100%; position: static; }
-        .car-grid { grid-template-columns: repeat(2, 1fr); }
+
+    .filter-reset {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 40px;
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        border-radius: 8px;
+        color: var(--muted);
+        font-size: 0.88rem;
+        font-weight: 750;
+        text-decoration: none;
+        cursor: pointer;
     }
-    @media (max-width: 576px) {
-        .car-grid { grid-template-columns: 1fr; }
+
+    .filter-reset:hover {
+        border-color: rgba(201, 169, 98, 0.42);
+        background: rgba(201, 169, 98, 0.08);
+        color: var(--accent);
+    }
+
+    .cars-results {
+        min-width: 0;
+    }
+
+    .results-bar {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .results-eyebrow {
+        margin: 0 0 0.28rem;
+        color: var(--accent);
+        font-size: 0.72rem;
+        font-weight: 850;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+    }
+
+    .results-title {
+        margin: 0;
+        color: var(--text);
+        font-size: clamp(1.28rem, 2vw, 1.8rem);
+        font-weight: 900;
+        line-height: 1.12;
+    }
+
+    .results-range {
+        color: var(--muted);
+        font-size: 0.9rem;
+        white-space: nowrap;
+    }
+
+    .active-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        margin: -0.25rem 0 1rem;
+    }
+
+    .filter-chip {
+        display: inline-flex;
+        align-items: center;
+        min-height: 30px;
+        max-width: 100%;
+        padding: 0 0.72rem;
+        border: 1px solid rgba(201, 169, 98, 0.28);
+        border-radius: 999px;
+        background: rgba(201, 169, 98, 0.08);
+        color: #ead990;
+        font-size: 0.78rem;
+        font-weight: 750;
+    }
+
+    .cars-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+        gap: 1rem;
+    }
+
+    .car-card {
+        display: flex;
+        min-width: 0;
+        min-height: 100%;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: linear-gradient(180deg, #151b24, #0d1118);
+        color: inherit;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .car-card:hover {
+        border-color: rgba(201, 169, 98, 0.5);
+        transform: translateY(-2px);
+        box-shadow: 0 24px 42px -30px rgba(0, 0, 0, 0.95);
+    }
+
+    .car-card__media {
+        position: relative;
+        display: block;
+        aspect-ratio: 16 / 10;
+        overflow: hidden;
+        background: #090d13;
+    }
+
+    .car-card__media img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.28s ease;
+    }
+
+    .car-card:hover .car-card__media img {
+        transform: scale(1.035);
+    }
+
+    .car-card__empty-img {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 0.55rem;
+        color: var(--muted);
+        font-size: 0.9rem;
+    }
+
+    .car-card__empty-img svg {
+        width: 34px;
+        height: 34px;
+        color: rgba(201, 169, 98, 0.8);
+    }
+
+    .status-badge {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        display: inline-flex;
+        align-items: center;
+        min-height: 30px;
+        padding: 0 0.72rem;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(12, 15, 20, 0.72);
+        color: #fff;
+        font-size: 0.78rem;
+        font-weight: 850;
+        backdrop-filter: blur(8px);
+    }
+
+    .status-badge.is-ready {
+        border-color: rgba(52, 211, 153, 0.38);
+        color: #a7f3d0;
+    }
+
+    .status-badge.is-reserved {
+        border-color: rgba(251, 191, 36, 0.42);
+        color: #fde68a;
+    }
+
+    .status-badge.is-sold {
+        border-color: rgba(148, 163, 184, 0.32);
+        color: #cbd5e1;
+    }
+
+    .car-card__body {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: 0.92rem;
+        padding: 1rem;
+    }
+
+    .car-card__brand {
+        color: var(--muted);
+        font-size: 0.82rem;
+        font-weight: 760;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .car-card__title {
+        display: -webkit-box;
+        min-height: 2.8em;
+        margin: 0.18rem 0 0;
+        overflow: hidden;
+        color: var(--text);
+        font-size: 1.12rem;
+        font-weight: 900;
+        line-height: 1.28;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    .car-specs {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.48rem;
+    }
+
+    .car-spec {
+        min-width: 0;
+        padding: 0.62rem 0.58rem;
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.035);
+    }
+
+    .car-spec svg {
+        width: 16px;
+        height: 16px;
+        margin-bottom: 0.32rem;
+        color: var(--accent);
+    }
+
+    .car-spec__label {
+        display: block;
+        margin-bottom: 0.14rem;
+        color: var(--muted);
+        font-size: 0.68rem;
+        font-weight: 850;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    .car-spec__value {
+        display: block;
+        overflow: hidden;
+        color: var(--text);
+        font-size: 0.84rem;
+        font-weight: 780;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .car-card__footer {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.9rem;
+        margin-top: auto;
+    }
+
+    .car-card__price {
+        color: var(--accent);
+        font-size: 1.22rem;
+        font-weight: 950;
+        line-height: 1.1;
+    }
+
+    .car-card__actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.55rem;
+    }
+
+    .car-card__link {
+        padding: 0 0.82rem;
+        border: 1px solid rgba(201, 169, 98, 0.45);
+        background: rgba(201, 169, 98, 0.08);
+        color: var(--accent);
+    }
+
+    .car-card__link:hover {
+        background: var(--accent);
+        color: #0c0f14;
+    }
+
+    .lux-btn-cmp {
+        padding: 0 0.72rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text);
+    }
+
+    .lux-btn-cmp:hover,
+    .lux-btn-cmp.is-active {
+        border-color: rgba(201, 169, 98, 0.45);
+        background: rgba(201, 169, 98, 0.1);
+        color: var(--accent);
+    }
+
+    .empty-state {
+        display: grid;
+        place-items: center;
+        min-height: 300px;
+        padding: 2rem;
+        border: 1px dashed var(--border);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.025);
+        text-align: center;
+    }
+
+    .empty-state__icon {
+        width: 54px;
+        height: 54px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        border: 1px solid rgba(201, 169, 98, 0.32);
+        border-radius: 999px;
+        color: var(--accent);
+        background: rgba(201, 169, 98, 0.08);
+    }
+
+    .empty-state__icon svg {
+        width: 28px;
+        height: 28px;
+    }
+
+    .empty-state h2 {
+        margin: 0;
+        color: var(--text);
+        font-size: 1.25rem;
+    }
+
+    .empty-state p {
+        max-width: 440px;
+        margin: 0.6rem auto 0;
+        color: var(--muted);
+        line-height: 1.65;
+    }
+
+    .empty-state a {
+        font-weight: 800;
+    }
+
+    .pagination-wrap {
+        display: flex;
+        justify-content: center;
+        margin-top: 1.6rem;
+    }
+
+    .lux-pag__inner {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+    }
+
+    .lux-pag__btn,
+    .lux-pag__num {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 38px;
+        min-height: 38px;
+        padding: 0.45rem 0.72rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text);
+        font-size: 0.875rem;
+        font-weight: 750;
+    }
+
+    .lux-pag__btn:hover,
+    .lux-pag__num:hover {
+        border-color: rgba(201, 169, 98, 0.45);
+        color: var(--accent);
+        background: rgba(201, 169, 98, 0.08);
+    }
+
+    .lux-pag__btn--disabled {
+        color: var(--muted);
+        cursor: not-allowed;
+        opacity: 0.65;
+    }
+
+    .lux-pag__num--current {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #0c0f14;
+        font-weight: 900;
+    }
+
+    .lux-pag__dots {
+        padding: 0.45rem 0.35rem;
+        color: var(--muted);
+        font-size: 0.875rem;
+    }
+
+    .cars-btn:focus-visible,
+    .cars-search__button:focus-visible,
+    .filter-submit:focus-visible,
+    .filter-reset:focus-visible,
+    .car-card__link:focus-visible,
+    .lux-btn-cmp:focus-visible,
+    .car-card__media:focus-visible,
+    .lux-pag__btn:focus-visible,
+    .lux-pag__num:focus-visible {
+        outline: 2px solid rgba(201, 169, 98, 0.9);
+        outline-offset: 3px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .car-card,
+        .car-card__media img,
+        .cars-btn,
+        .cars-search__button,
+        .filter-submit,
+        .filter-reset,
+        .car-card__link,
+        .lux-btn-cmp {
+            transition: none;
+        }
+
+        .car-card:hover {
+            transform: none;
+        }
+
+        .car-card:hover .car-card__media img {
+            transform: none;
+        }
+    }
+
+    @media (max-width: 1180px) {
+        .cars-workspace {
+            grid-template-columns: 264px minmax(0, 1fr);
+        }
+    }
+
+    @media (max-width: 960px) {
+        .cars-hero__grid,
+        .cars-workspace {
+            grid-template-columns: 1fr;
+        }
+
+        .cars-quick-actions {
+            justify-content: flex-start;
+        }
+
+        .filter-panel {
+            position: static;
+        }
+
+        .filter-form {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+        }
+
+        .filter-group {
+            margin-bottom: 0;
+        }
+
+        .filter-actions {
+            grid-column: 1 / -1;
+            grid-template-columns: 1fr 1fr;
+            margin-top: 0;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .cars-wrap {
+            width: min(100% - 1.5rem, 1440px);
+        }
+
+        .cars-hero {
+            padding-top: 2rem;
+        }
+
+        .cars-search,
+        .filter-form,
+        .filter-actions,
+        .results-bar,
+        .car-card__actions {
+            grid-template-columns: 1fr;
+        }
+
+        .results-bar {
+            display: grid;
+            align-items: start;
+        }
+
+        .results-range {
+            white-space: normal;
+        }
+
+        .cars-search__button,
+        .cars-btn {
+            width: 100%;
+        }
+
+        .cars-quick-actions {
+            width: 100%;
+        }
+
+        .car-specs,
+        .price-fields {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
+@endpush
 
-<div class="wrap">
+@section('content')
+@php
+    $hasStatusFilter = request()->has('status') && request('status') !== '';
+    $hasFilters = request()->filled('keyword')
+        || request()->filled('brand_id')
+        || $hasStatusFilter
+        || request()->filled('min_price')
+        || request()->filled('max_price');
+    $selectedBrand = request()->filled('brand_id')
+        ? $brands->firstWhere('brand_id', (int) request('brand_id'))
+        : null;
+    $selectedStatus = match ((string) request('status')) {
+        '1' => 'Sẵn sàng',
+        '2' => 'Đã đặt cọc',
+        '3' => 'Đã bán',
+        default => null,
+    };
+@endphp
 
-    <div class="header-actions">
-        <h1 class="page-title">Danh sách xe</h1>
-        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
-            <a href="{{ route('compare.index') }}" id="lux-compare-bar" style="display: none; padding: 0.5rem 1rem; border-radius: 8px; background: rgba(201, 169, 98, 0.15); border: 1px solid var(--accent-dim); color: var(--accent); font-weight: 700; font-size: 0.9rem; text-decoration: none;">
-                So sánh đã chọn (<span id="lux-compare-n">0</span>)
-            </a>
-            <a href="{{ route('promotions.index') }}" style="padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--border); color: var(--text); font-weight: 600; font-size: 0.9rem; text-decoration: none;">Khuyến mãi</a>
-        </div>
-    </div>
-
-    <form class="search-bar" method="get" action="{{ route('cars.index') }}">
-        <input type="search" name="keyword" value="{{ request('keyword') }}" placeholder="Tìm theo hãng hoặc dòng xe…" autocomplete="off">
-        <button type="submit">Tìm kiếm</button>
-    </form>
-
-    <div class="shop-container">
-
-        <aside class="filter-sidebar">
-            <form action="{{ route('cars.index') }}" method="GET">
-
-                <input type="hidden" name="keyword" value="{{ request('keyword') }}">
-
-                <div class="filter-group">
-                    <div class="filter-title">Hãng xe</div>
-                    <select name="brand_id" class="filter-select">
-                        <option value="">-- Tất cả các hãng --</option>
-                        @foreach($brands as $brand)
-                            <option value="{{ $brand->brand_id }}" {{ request('brand_id') == $brand->brand_id ? 'selected' : '' }}>
-                                {{ $brand->name }}
-                            </option>
-                        @endforeach
-                    </select>
+<div class="cars-page">
+    <section class="cars-hero">
+        <div class="cars-wrap">
+            <div class="cars-hero__grid">
+                <div>
+                    <div class="cars-kicker">Kho xe Lux Auto</div>
+                    <h1 class="cars-title">Danh sách xe</h1>
+                    <p class="cars-lead">
+                        Lọc nhanh theo thương hiệu, ngân sách và trạng thái bán hàng để tìm mẫu xe phù hợp trước khi xem chi tiết hoặc đưa vào danh sách so sánh.
+                    </p>
                 </div>
 
-                <div class="filter-group">
-                    <div class="filter-title">Tình trạng</div>
-                    <select name="status" class="filter-select">
-                        <option value="">-- Tất cả --</option>
-                        <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Mới 100%</option>
-                        <option value="0" {{ request('status') == '0' ? 'selected' : '' }}>Xe lướt (Cũ)</option>
-                    </select>
+                <div class="cars-quick-actions" aria-label="Lối tắt danh sách xe">
+                    <a href="{{ route('compare.index') }}" id="lux-compare-bar" class="cars-btn cars-btn--compare">
+                        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 3.75v16.5m9-16.5v16.5M3.75 8.25h16.5M3.75 15.75h16.5" />
+                        </svg>
+                        So sánh đã chọn (<span id="lux-compare-n">0</span>)
+                    </a>
+                    <a href="{{ route('promotions.index') }}" class="cars-btn cars-btn--soft">
+                        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3.75h4.864c.89 0 1.705.497 2.112 1.289l.706 1.373 1.526.22a2.375 2.375 0 0 1 1.317 4.05l-1.103 1.075.261 1.52a2.375 2.375 0 0 1-3.447 2.504l-1.365-.718-1.365.718a2.375 2.375 0 0 1-3.447-2.504l.261-1.52-1.103-1.075a2.375 2.375 0 0 1 1.317-4.05l1.526-.22.706-1.373A2.375 2.375 0 0 1 9.568 3.75Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 20.25h4.5" />
+                        </svg>
+                        Khuyến mãi
+                    </a>
                 </div>
-
-                <div class="filter-group">
-                    <div class="filter-title">Mức giá (VNĐ)</div>
-                    <div class="price-range">
-                        <input type="number" name="min_price" class="filter-input" placeholder="Từ..." value="{{ request('min_price') }}" min="0">
-                        <span>-</span>
-                        <input type="number" name="max_price" class="filter-input" placeholder="Đến..." value="{{ request('max_price') }}" min="0">
-                    </div>
-                </div>
-
-                <button type="submit" class="btn-filter">LỌC XE</button>
-                <a href="{{ route('cars.index') }}" class="btn-reset">Xóa bộ lọc</a>
-            </form>
-        </aside>
-
-        <main class="car-list-area">
-
-            <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-                <h2 style="margin: 0;">Kết quả ({{ $cars->total() }})</h2>
             </div>
 
-            @if($cars->isEmpty())
-                <div class="empty-state">
-                    Không có xe phù hợp. Thử bộ lọc khác hoặc <a href="{{ route('cars.index') }}" style="color: var(--accent);">xóa tìm kiếm</a>.
+            <form class="cars-search" method="get" action="{{ route('cars.index') }}">
+                @if(request()->filled('brand_id'))
+                    <input type="hidden" name="brand_id" value="{{ request('brand_id') }}">
+                @endif
+                @if($hasStatusFilter)
+                    <input type="hidden" name="status" value="{{ request('status') }}">
+                @endif
+                @if(request()->filled('min_price'))
+                    <input type="hidden" name="min_price" value="{{ request('min_price') }}">
+                @endif
+                @if(request()->filled('max_price'))
+                    <input type="hidden" name="max_price" value="{{ request('max_price') }}">
+                @endif
+
+                <div class="cars-search__field">
+                    <label class="sr-only" for="cars-keyword">Tìm theo hãng hoặc dòng xe</label>
+                    <input id="cars-keyword" class="cars-input" type="search" name="keyword" value="{{ request('keyword') }}" placeholder="Tìm theo hãng, dòng xe hoặc phiên bản..." autocomplete="off">
                 </div>
-            @else
-                <div class="grid-cards car-grid">
-                    @foreach($cars as $car)
-                    <div style="background: #0a0d12; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: transform 0.3s, box-shadow 0.3s;" onmouseover="this.style.transform='translateY(-5px)'; this.style.borderColor='var(--accent-dim)';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='var(--border)';">
+                <button class="cars-search__button" type="submit">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197M18 10.5a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Z" />
+                    </svg>
+                    Tìm kiếm
+                </button>
+            </form>
+        </div>
+    </section>
 
-                        <div style="height: 220px; overflow: hidden; position: relative;">
-                            @if($car->image)
-                                <img src="{{ asset('storage/' . $car->image) }}" alt="{{ $car->name }}" style="width: 100%; height: 100%; object-fit: cover;">
-                            @else
-                                <div style="width: 100%; height: 100%; background: #15181f; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 0.9rem;">
-                                    [ Chưa có hình ảnh ]
-                                </div>
-                            @endif
+    <div class="cars-wrap">
+        <div class="cars-workspace">
+            <aside class="filter-panel" aria-label="Bộ lọc xe">
+                <div class="filter-panel__head">
+                    <h2 class="filter-panel__title">Bộ lọc</h2>
+                    <p class="filter-panel__hint">Tinh chỉnh kết quả theo thương hiệu, trạng thái và khoảng giá.</p>
+                </div>
 
-                            @if(isset($car->status))
-                                <span style="position: absolute; top: 10px; right: 10px; background: {{ $car->status == 1 ? 'var(--accent)' : '#4b5563' }}; color: {{ $car->status == 1 ? '#000' : '#fff' }}; padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.8rem; font-weight: bold;">
-                                    {{ $car->status == 1 ? 'Mới 100%' : 'Xe lướt' }}
-                                </span>
-                            @endif
-                        </div>
+                <form class="filter-form" action="{{ route('cars.index') }}" method="get">
+                    <input type="hidden" name="keyword" value="{{ request('keyword') }}">
 
-                        <div style="padding: 1.5rem; display: flex; flex-direction: column;">
+                    <div class="filter-group">
+                        <label class="filter-label" for="filter-brand">Hãng xe</label>
+                        <select id="filter-brand" name="brand_id" class="filter-select">
+                            <option value="">Tất cả các hãng</option>
+                            @foreach($brands as $brand)
+                                <option value="{{ $brand->brand_id }}" {{ request('brand_id') == $brand->brand_id ? 'selected' : '' }}>
+                                    {{ $brand->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                            <h3 style="color: var(--text); font-size: 1.2rem; margin: 0 0 0.8rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $car->name }}">
-                                {{ $car->name }}
-                            </h3>
+                    <div class="filter-group">
+                        <label class="filter-label" for="filter-status">Trạng thái</label>
+                        <select id="filter-status" name="status" class="filter-select">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="1" {{ (string) request('status') === '1' ? 'selected' : '' }}>Sẵn sàng</option>
+                            <option value="2" {{ (string) request('status') === '2' ? 'selected' : '' }}>Đã đặt cọc</option>
+                            <option value="3" {{ (string) request('status') === '3' ? 'selected' : '' }}>Đã bán</option>
+                        </select>
+                    </div>
 
-                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; margin-bottom: 1.2rem; font-size: 0.85rem; color: var(--muted);">
+                    <div class="filter-group">
+                        <span class="filter-label">Mức giá (VNĐ)</span>
+                        <div class="price-fields">
+                            <label class="sr-only" for="filter-min-price">Giá từ</label>
+                            <input id="filter-min-price" type="number" name="min_price" class="filter-input" placeholder="Từ" value="{{ request('min_price') }}" min="0" inputmode="numeric">
 
-                                <div style="display: flex; align-items: center; gap: 5px;">
-                                    <span style="font-size: 1rem;">🏢</span>
-                                    {{ $car->brand ? $car->brand->name : 'Đang cập nhật' }}
-                                </div>
-
-                                <div style="display: flex; align-items: center; gap: 5px;">
-                                    <span style="font-size: 1rem;">📅</span>
-                                    {{ $car->year ?? 'Đang cập nhật' }}
-                                </div>
-
-                            </div>
-                            <div style="color: var(--accent); font-size: 1.3rem; font-weight: 900; margin-bottom: 1.5rem;">
-                                {{ number_format($car->price, 0, ',', '.') }} đ
-                            </div>
-
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-                                <a href="{{ route('cars.show_public', $car->car_id ?? $car->id) }}" style="display: block; text-align: center; background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 0.65rem; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 0.875rem; transition: all 0.3s;" onmouseover="this.style.background='var(--accent)'; this.style.color='#000';" onmouseout="this.style.background='transparent'; this.style.color='var(--accent)';">
-                                    Chi tiết
-                                </a>
-                                <button type="button" class="lux-btn-cmp" data-id="{{ $car->car_id }}" style="padding: 0.65rem; border-radius: 8px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); font-weight: 600; font-size: 0.875rem; cursor: pointer; font-family: inherit;">
-                                    + So sánh
-                                </button>
-                            </div>
-
+                            <label class="sr-only" for="filter-max-price">Giá đến</label>
+                            <input id="filter-max-price" type="number" name="max_price" class="filter-input" placeholder="Đến" value="{{ request('max_price') }}" min="0" inputmode="numeric">
                         </div>
                     </div>
-                    @endforeach
+
+                    <div class="filter-actions">
+                        <button type="submit" class="filter-submit">
+                            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044c0 .318-.126.623-.352.848l-6.298 6.299a1.2 1.2 0 0 0-.351.848v3.686a1.2 1.2 0 0 1-.658 1.071l-2.4 1.2A1.2 1.2 0 0 1 9.2 18.696v-4.883a1.2 1.2 0 0 0-.351-.848L2.55 6.666A1.2 1.2 0 0 1 2.2 5.818V4.774c0-.54.384-1.006.917-1.096A53.17 53.17 0 0 1 12 3Z" />
+                            </svg>
+                            Lọc xe
+                        </button>
+                        <a href="{{ route('cars.index') }}" class="filter-reset">Xóa bộ lọc</a>
+                    </div>
+                </form>
+            </aside>
+
+            <main class="cars-results">
+                <div class="results-bar">
+                    <div>
+                        <p class="results-eyebrow">Kết quả tìm kiếm</p>
+                        <h2 class="results-title">{{ number_format($cars->total()) }} xe phù hợp</h2>
+                    </div>
+                    @if($cars->total() > 0)
+                        <div class="results-range">
+                            Hiển thị {{ number_format($cars->firstItem()) }}-{{ number_format($cars->lastItem()) }} / {{ number_format($cars->total()) }}
+                        </div>
+                    @endif
                 </div>
 
-                @if ($cars->hasPages())
-                    <div class="pagination-wrap">
-                        {{ $cars->links('pagination.lux') }}
+                @if($hasFilters)
+                    <div class="active-filters" aria-label="Bộ lọc đang áp dụng">
+                        @if(request()->filled('keyword'))
+                            <span class="filter-chip">Từ khóa: {{ request('keyword') }}</span>
+                        @endif
+                        @if($selectedBrand)
+                            <span class="filter-chip">Hãng: {{ $selectedBrand->name }}</span>
+                        @endif
+                        @if($selectedStatus)
+                            <span class="filter-chip">Trạng thái: {{ $selectedStatus }}</span>
+                        @endif
+                        @if(request()->filled('min_price'))
+                            <span class="filter-chip">Từ {{ number_format((float) request('min_price'), 0, ',', '.') }} VNĐ</span>
+                        @endif
+                        @if(request()->filled('max_price'))
+                            <span class="filter-chip">Đến {{ number_format((float) request('max_price'), 0, ',', '.') }} VNĐ</span>
+                        @endif
                     </div>
                 @endif
-            @endif
 
-        </main>
+                @if($cars->isEmpty())
+                    <div class="empty-state">
+                        <div>
+                            <div class="empty-state__icon" aria-hidden="true">
+                                <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5 6 8.25A2.25 2.25 0 0 1 8.068 6.9h7.864A2.25 2.25 0 0 1 18 8.25l2.25 5.25M5.25 13.5h13.5m-12 0v3.75m10.5-3.75v3.75M7.5 17.25h.008v.008H7.5v-.008Zm9 0h.008v.008H16.5v-.008Z" />
+                                </svg>
+                            </div>
+                            <h2>Chưa tìm thấy xe phù hợp</h2>
+                            <p>Hãy thử nới khoảng giá, đổi hãng xe hoặc <a href="{{ route('cars.index') }}">xóa bộ lọc</a> để xem toàn bộ kho xe.</p>
+                        </div>
+                    </div>
+                @else
+                    <div class="cars-grid">
+                        @foreach($cars as $car)
+                            @php
+                                $carId = $car->car_id ?? $car->id;
+                                $brandName = $car->carModel?->brand?->name ?? $car->brand?->name ?? null;
+                                $modelName = $car->carModel?->name ?? null;
+                                $statusText = match ((int) $car->status) {
+                                    2 => 'Đã đặt cọc',
+                                    3 => 'Đã bán',
+                                    default => 'Sẵn sàng',
+                                };
+                                $statusClass = match ((int) $car->status) {
+                                    2 => 'is-reserved',
+                                    3 => 'is-sold',
+                                    default => 'is-ready',
+                                };
+                                $mileageText = is_null($car->mileage_km)
+                                    ? 'Đang cập nhật'
+                                    : number_format($car->mileage_km, 0, ',', '.') . ' km';
+                                $transmissionText = $car->carModel?->transmission ?: 'Đang cập nhật';
+                                $cardAlt = trim(($brandName ? $brandName . ' ' : '') . $car->name);
+                            @endphp
+
+                            <article class="car-card">
+                                <a class="car-card__media" href="{{ route('cars.show_public', $carId) }}" aria-label="Xem chi tiết {{ $car->name }}">
+                                    @if($car->image)
+                                        <img src="{{ asset('storage/' . $car->image) }}" alt="{{ $cardAlt }}" loading="lazy">
+                                    @else
+                                        <div class="car-card__empty-img">
+                                            <svg width="34" height="34" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5 6 8.25A2.25 2.25 0 0 1 8.068 6.9h7.864A2.25 2.25 0 0 1 18 8.25l2.25 5.25M5.25 13.5h13.5m-12 0v3.75m10.5-3.75v3.75M7.5 17.25h.008v.008H7.5v-.008Zm9 0h.008v.008H16.5v-.008Z" />
+                                            </svg>
+                                            Chưa có ảnh
+                                        </div>
+                                    @endif
+                                    <span class="status-badge {{ $statusClass }}">{{ $statusText }}</span>
+                                </a>
+
+                                <div class="car-card__body">
+                                    <div>
+                                        <div class="car-card__brand">
+                                            {{ $brandName ? $brandName . ($modelName ? ' - ' . $modelName : '') : 'Đang cập nhật dòng xe' }}
+                                        </div>
+                                        <h3 class="car-card__title" title="{{ $car->name }}">{{ $car->name }}</h3>
+                                    </div>
+
+                                    <div class="car-specs" aria-label="Thông số nhanh">
+                                        <div class="car-spec">
+                                            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25m10.5-2.25v2.25M3.75 9.75h16.5M5.25 5.25h13.5c.828 0 1.5.672 1.5 1.5v11.25c0 .828-.672 1.5-1.5 1.5H5.25c-.828 0-1.5-.672-1.5-1.5V6.75c0-.828.672-1.5 1.5-1.5Z" />
+                                            </svg>
+                                            <span class="car-spec__label">Đời xe</span>
+                                            <span class="car-spec__value">{{ $car->year ?? 'Đang cập nhật' }}</span>
+                                        </div>
+
+                                        <div class="car-spec">
+                                            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75a7.5 7.5 0 1 1 15 0M12 12l3.75-3.75M8.25 18.75h7.5" />
+                                            </svg>
+                                            <span class="car-spec__label">Số km</span>
+                                            <span class="car-spec__value" title="{{ $mileageText }}">{{ $mileageText }}</span>
+                                        </div>
+
+                                        <div class="car-spec">
+                                            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h3m-6 6h9m-6 6h3M6.75 3.75h10.5A1.5 1.5 0 0 1 18.75 5.25v13.5a1.5 1.5 0 0 1-1.5 1.5H6.75a1.5 1.5 0 0 1-1.5-1.5V5.25a1.5 1.5 0 0 1 1.5-1.5Z" />
+                                            </svg>
+                                            <span class="car-spec__label">Hộp số</span>
+                                            <span class="car-spec__value" title="{{ $transmissionText }}">{{ $transmissionText }}</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="car-card__footer">
+                                        <div class="car-card__price">{{ number_format($car->price, 0, ',', '.') }} VNĐ</div>
+
+                                        <div class="car-card__actions">
+                                            <a class="car-card__link" href="{{ route('cars.show_public', $carId) }}">
+                                                Chi tiết
+                                            </a>
+                                            <button type="button" class="lux-btn-cmp" data-id="{{ $carId }}" aria-pressed="false" aria-label="Thêm {{ $car->name }} vào danh sách so sánh">
+                                                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 3.75v16.5m9-16.5v16.5M3.75 8.25h16.5M3.75 15.75h16.5" />
+                                                </svg>
+                                                <span class="lux-cmp-label">So sánh</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </article>
+                        @endforeach
+                    </div>
+
+                    @if ($cars->hasPages())
+                        <div class="pagination-wrap">
+                            {{ $cars->links('pagination.lux') }}
+                        </div>
+                    @endif
+                @endif
+            </main>
+        </div>
     </div>
 </div>
+@endsection
+
 @push('scripts')
 <script>
 (function () {
     var KEY = 'lux_compare_ids';
-    function refreshBar() {
+
+    function readIds() {
         var raw = localStorage.getItem(KEY) || '';
-        var arr = raw ? raw.split(',').filter(Boolean) : [];
-        var n = arr.length;
+        return raw ? raw.split(',').map(function (value) {
+            return parseInt(value, 10);
+        }).filter(Boolean) : [];
+    }
+
+    function refreshBar() {
+        var arr = readIds();
         var bar = document.getElementById('lux-compare-bar');
         var num = document.getElementById('lux-compare-n');
+
         if (bar && num) {
-            num.textContent = n;
-            bar.style.display = n ? 'inline-flex' : 'none';
+            num.textContent = arr.length;
+            bar.style.display = arr.length ? 'inline-flex' : 'none';
             bar.href = @json(route('compare.index')) + '?ids=' + encodeURIComponent(arr.join(','));
         }
+
+        document.querySelectorAll('.lux-btn-cmp').forEach(function (btn) {
+            var id = parseInt(btn.getAttribute('data-id'), 10);
+            var label = btn.querySelector('.lux-cmp-label');
+            var active = arr.indexOf(id) !== -1;
+
+            btn.classList.toggle('is-active', active);
+            btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+
+            if (label) {
+                label.textContent = active ? 'Đã chọn' : 'So sánh';
+            }
+        });
     }
+
     refreshBar();
+
     document.querySelectorAll('.lux-btn-cmp').forEach(function (btn) {
         btn.addEventListener('click', function () {
             var id = parseInt(btn.getAttribute('data-id'), 10);
-            var raw = localStorage.getItem(KEY) || '';
-            var arr = raw ? raw.split(',').map(function (x) { return parseInt(x, 10); }).filter(Boolean) : [];
+            var arr = readIds();
+
             if (arr.indexOf(id) !== -1) {
                 alert('Xe đã có trong danh sách so sánh.');
                 return;
             }
+
             if (arr.length >= 4) {
                 alert('Tối đa 4 xe so sánh.');
                 return;
             }
+
             arr.push(id);
             localStorage.setItem(KEY, arr.join(','));
             refreshBar();
-            btn.textContent = 'Đã thêm ✓';
-            setTimeout(function () { btn.textContent = '+ So sánh'; }, 1500);
         });
     });
 })();
 </script>
 @endpush
-@endsection
