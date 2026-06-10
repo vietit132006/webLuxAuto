@@ -364,6 +364,7 @@
     }
 
     .spec-item {
+        position: relative;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -372,6 +373,35 @@
         min-height: 54px;
         padding: 0.85rem 0;
         border-bottom: 1px solid rgba(255, 255, 255, 0.075);
+        transition: color 0.2s ease, background 0.2s ease;
+    }
+
+    .spec-item::after {
+        content: "";
+        position: absolute;
+        right: 0;
+        bottom: -1px;
+        left: 0;
+        height: 1px;
+        background: linear-gradient(90deg, rgba(201, 169, 98, 0), rgba(201, 169, 98, 0.95), rgba(228, 208, 138, 0.35));
+        opacity: 0;
+        transform: scaleX(0.18);
+        transform-origin: left;
+        transition: opacity 0.2s ease, transform 0.24s ease;
+        pointer-events: none;
+    }
+
+    .spec-item:hover::after {
+        opacity: 1;
+        transform: scaleX(1);
+    }
+
+    .spec-item:hover .spec-label {
+        color: #d7dde8;
+    }
+
+    .spec-item:hover .spec-value {
+        color: #fff7d6;
     }
 
     .spec-label {
@@ -685,7 +715,9 @@
 
     @media (prefers-reduced-motion: reduce) {
         .detail-btn,
-        .media-thumb img {
+        .media-thumb img,
+        .spec-item,
+        .spec-item::after {
             transition: none;
         }
     }

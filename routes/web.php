@@ -24,6 +24,8 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CarModelController;
 
+Route::get('/livestream', [LiveController::class, 'index'])->name('livestream');
+
 
 // ==========================================
 // 1. NHÓM CHƯA ĐĂNG NHẬP (Khách)
@@ -56,8 +58,6 @@ Route::middleware('auth')->group(function () {
     // 1. ROUTE CHO KHÁCH HÀNG
     Route::get('/tin-tuc', [NewsController::class, 'index'])->name('news.index');
     Route::get('/tin-tuc/{slug}', [NewsController::class, 'show'])->name('news.show');
-
-    Route::get('/livestream', [LiveController::class, 'index'])->name('livestream');
 
     // THÊM MỚI: QUẢN LÝ HỒ SƠ CÁ NHÂN
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');

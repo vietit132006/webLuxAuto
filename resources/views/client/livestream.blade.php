@@ -87,6 +87,17 @@
         box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.14);
     }
 
+    .live-status--offline {
+        border-color: rgba(148, 163, 184, 0.36);
+        background: rgba(148, 163, 184, 0.09);
+        color: #cbd5e1;
+    }
+
+    .live-status--offline .live-status__dot {
+        background: #94a3b8;
+        box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.14);
+    }
+
     .live-stage {
         padding-top: 1.25rem;
     }
@@ -389,9 +400,9 @@
                     </p>
                 </div>
 
-                <div class="live-status" aria-label="Trạng thái livestream">
+                <div class="live-status {{ $isLiveActive ? '' : 'live-status--offline' }}" aria-label="Trạng thái livestream">
                     <span class="live-status__dot" aria-hidden="true"></span>
-                    Đang phát sóng
+                    {{ $isLiveActive ? 'Đang phát sóng' : 'Chưa phát sóng' }}
                 </div>
             </div>
         </div>
@@ -418,7 +429,7 @@
                 @endif
             </div>
             <div class="live-player-caption">
-                <div>Đang phát sóng: <strong>Ưu đãi xe tuyển chọn trong phiên live</strong></div>
+                <div>{{ $isLiveActive ? 'Đang phát sóng' : 'Phiên live đang tạm tắt' }}: <strong>Ưu đãi xe tuyển chọn trong phiên live</strong></div>
                 <div>{{ $featuredCars->count() }} xe đang được ghim</div>
             </div>
         </section>
