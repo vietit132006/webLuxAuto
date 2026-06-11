@@ -221,23 +221,38 @@
             visibility: visible;
             transform: translateY(0);
         }
-        .nav-dropdown-menu a {
+        .nav-dropdown-menu form {
+            margin: 0;
+        }
+
+        .nav-dropdown-menu a,
+        .nav-dropdown-menu button {
             display: flex;
             align-items: center;
             gap: 10px;
+            width: 100%;
+            border: 0;
             padding: 0.6rem 1.2rem;
+            background: transparent;
             color: var(--text);
+            cursor: pointer;
+            font-family: inherit;
             font-size: 0.9rem;
             font-weight: 500;
+            text-align: left;
         }
-        .nav-dropdown-menu a svg { color: var(--accent); width: 18px; height: 18px; }
+        .nav-dropdown-menu a svg,
+        .nav-dropdown-menu button svg { color: var(--accent); width: 18px; height: 18px; flex-shrink: 0; }
         .nav-dropdown-menu a.text-danger svg { color: #ef4444; }
-        .nav-dropdown-menu a:hover {
+        .nav-dropdown-menu button.account-switch-restore svg { color: #34d399; }
+        .nav-dropdown-menu a:hover,
+        .nav-dropdown-menu button:hover {
             background: rgba(255,255,255,0.03);
             color: var(--accent);
             padding-left: 1.5rem; /* Hiệu ứng thụt lùi khi trỏ chuột */
         }
         .nav-dropdown-menu a.text-danger:hover { color: #ef4444; }
+        .nav-dropdown-menu button.account-switch-restore:hover { color: #34d399; }
 
         .dropdown-divider {
             height: 1px;
@@ -542,6 +557,17 @@
                         <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                     </span>
                     <div class="nav-dropdown-menu">
+                        @if($isAccountSwitching && $accountSwitcher)
+                            <form method="POST" action="{{ route('account-switch.restore') }}">
+                                @csrf
+                                <button type="submit" class="account-switch-restore">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0 4-4m-4 4h14m-5 4v1a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h7a3 3 0 0 1 3 3v1"/></svg>
+                                    Quay lại {{ $accountSwitcher->name }}
+                                </button>
+                            </form>
+                            <div class="dropdown-divider"></div>
+                        @endif
+
                         <a href="{{ route('profile.index') }}">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                             Hồ sơ của tôi

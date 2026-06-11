@@ -224,6 +224,70 @@
             color: #ef4444;
         }
 
+        .account-switcher {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-width: 0;
+        }
+
+        .account-switcher select {
+            width: 240px;
+            height: 36px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #0a0d12;
+            color: var(--text);
+            padding: 0 0.65rem;
+            font-size: 0.85rem;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .account-switcher select:focus {
+            border-color: rgba(201, 169, 98, 0.7);
+            box-shadow: 0 0 0 3px rgba(201, 169, 98, 0.12);
+        }
+
+        .account-switcher button,
+        .account-switch-restore {
+            min-height: 36px;
+            border: 1px solid rgba(201, 169, 98, 0.45);
+            border-radius: 8px;
+            background: rgba(201, 169, 98, 0.1);
+            color: var(--accent);
+            padding: 0 0.75rem;
+            font-size: 0.84rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .account-switcher button:hover,
+        .account-switch-restore:hover {
+            border-color: var(--accent);
+            background: var(--accent);
+            color: #0c0f14;
+        }
+
+        .account-switch-notice {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            min-width: 0;
+            color: #cbd5e1;
+            font-size: 0.84rem;
+        }
+
+        .account-switch-notice strong {
+            color: #f8fafc;
+        }
+
+        .account-switch-notice form {
+            margin: 0;
+        }
+
         .admin-main {
             padding: 2rem;
             flex: 1;
@@ -293,6 +357,14 @@
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
+            }
+
+            .account-switcher {
+                display: none;
+            }
+
+            .account-switch-notice {
+                gap: 0.4rem;
             }
         }
 
@@ -514,6 +586,29 @@
             <div style="flex: 1;"></div>
 
             <div class="admin-topbar-info">
+                @if($isAccountSwitching && $accountSwitcher)
+                    <div class="account-switch-notice">
+                        <span>Đang xem: <strong>{{ auth()->user()->name ?? 'Tài khoản' }}</strong></span>
+                        <form method="POST" action="{{ route('account-switch.restore') }}">
+                            @csrf
+                            <button type="submit" class="account-switch-restore">Quay lại {{ $accountSwitcher->name }}</button>
+                        </form>
+                    </div>
+                @elseif($quickSwitchUsers->isNotEmpty())
+                    <form class="account-switcher" method="POST" action="{{ route('account-switch.switch') }}">
+                        @csrf
+                        <select name="user_id" aria-label="Chuyển nhanh tài khoản">
+                            <option value="">Chuyển tài khoản...</option>
+                            @foreach($quickSwitchUsers as $switchUser)
+                                <option value="{{ $switchUser->user_id }}">
+                                    {{ $switchUser->name }} - {{ $switchUser->role }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <button type="submit">Chuyển</button>
+                    </form>
+                @endif
+
                 <span>Xin chào, <strong
                         style="color: var(--accent);">{{ auth()->user()->name ?? 'Admin' }}</strong></span>
                 <a href="{{ route('profile.index') }}" style="color: var(--text); font-size: 0.9rem;">Hồ sơ của

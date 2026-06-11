@@ -8,6 +8,7 @@ use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AdminTicketController;
 use App\Http\Controllers\Admin\CarController as AdminCarController;
 use App\Http\Controllers\Admin\TestDriveController;
+use App\Http\Controllers\AccountSwitchController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CarController as ClientCarController;
@@ -54,6 +55,8 @@ Route::middleware('auth')->group(function () {
     // Trang chủ
     Route::get('/', HomeController::class)->name('home');
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::post('/account-switch', [AccountSwitchController::class, 'switchTo'])->name('account-switch.switch');
+    Route::post('/account-switch/restore', [AccountSwitchController::class, 'restore'])->name('account-switch.restore');
 
     // 1. ROUTE CHO KHÁCH HÀNG
     Route::get('/tin-tuc', [NewsController::class, 'index'])->name('news.index');
