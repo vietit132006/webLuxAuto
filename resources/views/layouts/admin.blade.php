@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin Dashboard') — Lux Auto</title>
 
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
@@ -210,6 +211,209 @@
             gap: 1.5rem;
         }
 
+        .admin-account-menu {
+            position: relative;
+            flex: 0 0 auto;
+        }
+
+        .admin-account-trigger {
+            min-height: 42px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.7rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 0.32rem 0.48rem 0.32rem 0.36rem;
+            background: rgba(255, 255, 255, 0.035);
+            color: var(--text);
+            cursor: pointer;
+            font: inherit;
+            transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+        }
+
+        .admin-account-trigger:hover,
+        .admin-account-trigger:focus-visible,
+        .admin-account-menu.is-open .admin-account-trigger {
+            border-color: rgba(201, 169, 98, 0.48);
+            background: rgba(201, 169, 98, 0.08);
+            outline: none;
+        }
+
+        .admin-account-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 auto;
+            border: 1px solid rgba(201, 169, 98, 0.42);
+            background: linear-gradient(135deg, rgba(201, 169, 98, 0.24), rgba(15, 23, 42, 0.95));
+            color: var(--accent);
+            font-size: 0.9rem;
+            font-weight: 850;
+        }
+
+        .admin-account-summary {
+            display: grid;
+            min-width: 0;
+            text-align: left;
+            line-height: 1.15;
+        }
+
+        .admin-account-summary strong {
+            max-width: 180px;
+            overflow: hidden;
+            color: var(--text);
+            font-size: 0.9rem;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .admin-account-summary span {
+            max-width: 180px;
+            overflow: hidden;
+            color: var(--muted);
+            font-size: 0.74rem;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .admin-account-chevron {
+            width: 16px;
+            height: 16px;
+            flex: 0 0 auto;
+            color: var(--muted);
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+
+        .admin-account-menu.is-open .admin-account-chevron {
+            color: var(--accent);
+            transform: rotate(180deg);
+        }
+
+        .admin-account-dropdown {
+            position: absolute;
+            top: calc(100% + 0.65rem);
+            right: 0;
+            width: min(280px, calc(100vw - 2rem));
+            border: 1px solid rgba(201, 169, 98, 0.22);
+            border-radius: 12px;
+            padding: 0.45rem;
+            background: rgba(20, 26, 34, 0.98);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(8px);
+            transition: opacity 0.18s ease, transform 0.18s ease;
+            z-index: 70;
+        }
+
+        .admin-account-menu.is-open .admin-account-dropdown {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        .admin-account-dropdown::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            right: 18px;
+            width: 10px;
+            height: 10px;
+            border-top: 1px solid rgba(201, 169, 98, 0.22);
+            border-left: 1px solid rgba(201, 169, 98, 0.22);
+            background: rgba(20, 26, 34, 0.98);
+            transform: rotate(45deg);
+        }
+
+        .admin-account-card {
+            display: flex;
+            gap: 0.7rem;
+            align-items: center;
+            padding: 0.65rem 0.7rem 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 0.35rem;
+        }
+
+        .admin-account-card .admin-account-avatar {
+            width: 40px;
+            height: 40px;
+        }
+
+        .admin-account-card strong,
+        .admin-account-card span {
+            display: block;
+            max-width: 184px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .admin-account-card strong {
+            color: var(--text);
+            font-size: 0.94rem;
+        }
+
+        .admin-account-card span {
+            color: var(--muted);
+            font-size: 0.78rem;
+        }
+
+        .admin-account-item {
+            width: 100%;
+            min-height: 42px;
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            border: 0;
+            border-radius: 8px;
+            padding: 0.62rem 0.72rem;
+            background: transparent;
+            color: var(--text);
+            cursor: pointer;
+            font: inherit;
+            font-size: 0.9rem;
+            font-weight: 650;
+            text-align: left;
+            transition: color 0.2s ease, background 0.2s ease;
+        }
+
+        .admin-account-item:hover,
+        .admin-account-item:focus-visible {
+            background: rgba(201, 169, 98, 0.1);
+            color: var(--accent);
+            outline: none;
+        }
+
+        .admin-account-item svg {
+            width: 18px;
+            height: 18px;
+            flex: 0 0 auto;
+            color: var(--accent);
+        }
+
+        .admin-account-item.is-danger {
+            color: #fca5a5;
+        }
+
+        .admin-account-item.is-danger svg {
+            color: #f87171;
+        }
+
+        .admin-account-item.is-danger:hover,
+        .admin-account-item.is-danger:focus-visible {
+            color: #fecaca;
+            background: rgba(239, 68, 68, 0.12);
+        }
+
+        .admin-account-divider {
+            height: 1px;
+            margin: 0.35rem 0;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
         .btn-logout {
             padding: 0.4rem 0.9rem;
             border-radius: 6px;
@@ -372,6 +576,14 @@
             .admin-topbar-info {
                 gap: 0.55rem;
                 font-size: 0.82rem;
+            }
+
+            .admin-account-summary {
+                display: none;
+            }
+
+            .admin-account-trigger {
+                gap: 0.45rem;
             }
 
             .admin-topbar-info>a:not(.btn-logout) {
@@ -594,26 +806,59 @@
                             <button type="submit" class="account-switch-restore">Quay lại {{ $accountSwitcher->name }}</button>
                         </form>
                     </div>
-                @elseif($quickSwitchUsers->isNotEmpty())
-                    <form class="account-switcher" method="POST" action="{{ route('account-switch.switch') }}">
-                        @csrf
-                        <select name="user_id" aria-label="Chuyển nhanh tài khoản">
-                            <option value="">Chuyển tài khoản...</option>
-                            @foreach($quickSwitchUsers as $switchUser)
-                                <option value="{{ $switchUser->user_id }}">
-                                    {{ $switchUser->name }} - {{ $switchUser->role }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <button type="submit">Chuyển</button>
-                    </form>
                 @endif
 
-                <span>Xin chào, <strong
-                        style="color: var(--accent);">{{ auth()->user()->name ?? 'Admin' }}</strong></span>
-                <a href="{{ route('profile.index') }}" style="color: var(--text); font-size: 0.9rem;">Hồ sơ của
-                    tôi</a>
-                <a href="{{ route('logout') }}" class="btn-logout">Đăng xuất</a>
+                <div class="admin-account-menu" data-account-menu>
+                    <button type="button" class="admin-account-trigger" data-account-menu-trigger
+                        aria-haspopup="true" aria-expanded="false">
+                        <span class="admin-account-avatar">
+                            {{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr(auth()->user()->name ?? 'A', 0, 1)) }}
+                        </span>
+                        <span class="admin-account-summary">
+                            <strong>{{ auth()->user()->name ?? 'Admin' }}</strong>
+                            <span>{{ auth()->user()->email ?? 'admin@luxauto.local' }}</span>
+                        </span>
+                        <svg class="admin-account-chevron" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+                        </svg>
+                    </button>
+
+                    <div class="admin-account-dropdown" role="menu">
+                        <div class="admin-account-card">
+                            <span class="admin-account-avatar">
+                                {{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr(auth()->user()->name ?? 'A', 0, 1)) }}
+                            </span>
+                            <div>
+                                <strong>{{ auth()->user()->name ?? 'Admin' }}</strong>
+                                <span>{{ auth()->user()->email ?? '' }}</span>
+                            </div>
+                        </div>
+
+                        <a href="{{ route('profile.index') }}" class="admin-account-item" role="menuitem">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M15.75 7.5a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 20.25a7.5 7.5 0 0 1 15 0" />
+                            </svg>
+                            Thông tin tài khoản
+                        </a>
+                        <button type="button" class="admin-account-item" data-open-account-switcher role="menuitem">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h15M16.5 3 21 7.5m0 0L16.5 12M21 7.5H6" />
+                            </svg>
+                            Chuyển đổi tài khoản
+                        </button>
+                        <div class="admin-account-divider"></div>
+                        <a href="{{ route('logout') }}" class="admin-account-item is-danger" role="menuitem">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3-6 3 3m0 0-3 3m3-3H9" />
+                            </svg>
+                            Đăng xuất
+                        </a>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -621,6 +866,8 @@
             @yield('content')
         </main>
     </div>
+
+    @include('partials.saved-login-switcher')
 
     <script>
         (() => {

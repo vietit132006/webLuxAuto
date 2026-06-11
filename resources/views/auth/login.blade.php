@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Đăng nhập — {{ config('app.name', 'Laravel') }}</title>
 
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
@@ -66,10 +67,17 @@
             </div>
         </form>
 
+        <div class="lsa-login-shortcut" data-saved-login-shortcut hidden>
+            <button type="button" class="lsa-inline-switch" data-open-account-switcher>
+                Chuyển đổi tài khoản đã lưu
+            </button>
+        </div>
+
         <p style="margin-top:1.5rem; text-align:center; font-size:0.875rem; color:#52525b;">
             Chưa có tài khoản?
             <a href="{{ route('register') }}" style="color:#2563eb; font-weight: 500; text-decoration: none;">Đăng ký</a>
         </p>
     </div>
+    @include('partials.saved-login-switcher')
 </body>
 </html>

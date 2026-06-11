@@ -27,6 +27,11 @@ use App\Http\Controllers\Admin\CarModelController;
 
 Route::get('/livestream', [LiveController::class, 'index'])->name('livestream');
 
+Route::post('/saved-login-accounts/login', [AccountSwitchController::class, 'loginWithSavedAccount'])
+    ->name('saved-login-accounts.login');
+Route::delete('/saved-login-accounts', [AccountSwitchController::class, 'destroySavedAccount'])
+    ->name('saved-login-accounts.destroy');
+
 
 // ==========================================
 // 1. NHÓM CHƯA ĐĂNG NHẬP (Khách)
@@ -55,6 +60,8 @@ Route::middleware('auth')->group(function () {
     // Trang chủ
     Route::get('/', HomeController::class)->name('home');
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::post('/saved-login-accounts', [AccountSwitchController::class, 'storeSavedAccount'])
+        ->name('saved-login-accounts.store');
     Route::post('/account-switch', [AccountSwitchController::class, 'switchTo'])->name('account-switch.switch');
     Route::post('/account-switch/restore', [AccountSwitchController::class, 'restore'])->name('account-switch.restore');
 
