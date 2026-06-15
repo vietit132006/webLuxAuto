@@ -7,6 +7,7 @@ use App\Http\Controllers\AdminOrderController;
 use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AdminTicketController;
 use App\Http\Controllers\Admin\CarController as AdminCarController;
+use App\Http\Controllers\Admin\CarExcelController;
 use App\Http\Controllers\Admin\TestDriveController;
 use App\Http\Controllers\AccountSwitchController;
 use App\Http\Controllers\AuthController;
@@ -107,6 +108,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/xe', [AdminCarController::class, 'index'])->name('cars.index');
         Route::get('/xe/create', [AdminCarController::class, 'create'])->name('cars.create');
         Route::post('/xe', [AdminCarController::class, 'store'])->name('cars.store');
+        Route::get('/cars/export', [CarExcelController::class, 'export'])->name('cars.export');
+        Route::get('/cars/inventory/export', [CarExcelController::class, 'exportInventory'])->name('cars.inventory.export');
+        Route::get('/cars/import-template', [CarExcelController::class, 'template'])->name('cars.import.template');
+        Route::post('/cars/import', [CarExcelController::class, 'import'])->name('cars.import');
         Route::get('/car-models/{id}/specs', [AdminCarController::class, 'getModelSpecs'])->name('cars.modelSpecs');
 
         // QUẢN LÝ MODEL XE

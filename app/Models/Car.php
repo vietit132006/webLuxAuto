@@ -41,6 +41,8 @@ class Car extends Model
         'on_road_date',
         'vehicle_condition',
         'current_location',
+        'stock_quantity',
+        'stock',
     ];
 
     protected function casts(): array
@@ -57,6 +59,8 @@ class Car extends Model
             'other_fees' => 'integer',
             'estimated_rolling_price' => 'integer',
             'mileage_km' => 'integer',
+            'stock_quantity' => 'integer',
+            'stock' => 'integer',
             'stock_in_date' => 'date',
             'on_road_date' => 'date',
             'is_featured' => 'boolean', // Nên cast cái này về boolean

@@ -66,6 +66,69 @@
             box-shadow: 0 2px 8px -3px rgba(201, 169, 98, 0.4);
         }
 
+        .header-action-group {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .excel-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            flex-wrap: wrap;
+        }
+
+        .excel-import-form {
+            margin: 0;
+        }
+
+        .file-input-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+            padding: 0;
+            margin: -1px;
+        }
+
+        .lux-btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 0.68rem 0.95rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.24);
+            color: var(--text);
+            font-weight: 700;
+            font-size: 0.86rem;
+            line-height: 1;
+            cursor: pointer;
+            text-decoration: none;
+            transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+            white-space: nowrap;
+            font-family: inherit;
+        }
+
+        .lux-btn-secondary svg {
+            width: 17px;
+            height: 17px;
+            flex-shrink: 0;
+        }
+
+        .lux-btn-secondary:hover {
+            transform: translateY(-1px);
+            border-color: rgba(201, 169, 98, 0.52);
+            background: rgba(201, 169, 98, 0.08);
+            color: var(--accent);
+        }
+
         /* --- THANH TÌM KIẾM (SEARCH BAR) --- */
         .search-bar {
             display: flex;
@@ -149,6 +212,20 @@
             align-items: center;
             box-shadow: 0 8px 20px -5px rgba(16, 185, 129, 0.15);
             transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .lux-flash-error {
+            background: rgba(239, 68, 68, 0.08);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .import-error-list {
+            margin: 0.65rem 0 0;
+            padding-left: 1.15rem;
+            color: #fecaca;
+            font-size: 0.88rem;
+            line-height: 1.55;
         }
 
         .lux-flash-alert.hide {
@@ -546,6 +623,22 @@
                 justify-content: center;
             }
 
+            .header-action-group,
+            .excel-actions,
+            .excel-import-form {
+                width: 100%;
+            }
+
+            .excel-actions {
+                align-items: stretch;
+            }
+
+            .lux-btn-secondary,
+            .excel-import-form label {
+                flex: 1 1 150px;
+                justify-content: center;
+            }
+
             .search-bar {
                 flex-direction: column;
             }
@@ -774,12 +867,56 @@
             </div>
 
             @if (auth()->check() && in_array(auth()->user()->role, ['admin', 'staff']))
-                <a href="{{ route('admin.cars.create') }}" class="lux-btn-primary">
-                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                    Thêm xe mới
-                </a>
+                <div class="header-action-group">
+                    <div class="excel-actions">
+                        <form class="excel-import-form" method="post" action="{{ route('admin.cars.import') }}"
+                            enctype="multipart/form-data">
+                            @csrf
+                            <input id="car-import-file" class="file-input-hidden" type="file" name="file"
+                                accept=".xlsx,.xls,.csv" onchange="this.form.submit()">
+                            <label for="car-import-file" class="lux-btn-secondary" title="Import Excel">
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 16.5V3.75m0 0 4.5 4.5M12 3.75l-4.5 4.5M3.75 16.5v2.25A2.25 2.25 0 0 0 6 21h12a2.25 2.25 0 0 0 2.25-2.25V16.5" />
+                                </svg>
+                                Import Excel
+                            </label>
+                        </form>
+
+                        <a href="{{ route('admin.cars.export') }}" class="lux-btn-secondary" title="Export danh sách xe">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M12 3.75v12.75m0 0 4.5-4.5m-4.5 4.5-4.5-4.5M3.75 16.5v2.25A2.25 2.25 0 0 0 6 21h12a2.25 2.25 0 0 0 2.25-2.25V16.5" />
+                            </svg>
+                            Export danh sách xe
+                        </a>
+
+                        <a href="{{ route('admin.cars.inventory.export') }}" class="lux-btn-secondary"
+                            title="Export báo cáo tồn kho">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3 7.5 12 3l9 4.5-9 4.5L3 7.5Zm0 0V16.5l9 4.5 9-4.5V7.5M12 12v9" />
+                            </svg>
+                            Báo cáo tồn kho
+                        </a>
+
+                        <a href="{{ route('admin.cars.import.template') }}" class="lux-btn-secondary"
+                            title="Tải file mẫu import">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5A3.375 3.375 0 0 0 10.125 2.25H8.25m.75 12 3 3m0 0 3-3m-3 3v-6m-4.5 9h9A2.25 2.25 0 0 0 18.75 18V9.75a2.25 2.25 0 0 0-.659-1.591l-5.25-5.25A2.25 2.25 0 0 0 11.25 2.25H7.5A2.25 2.25 0 0 0 5.25 4.5V18A2.25 2.25 0 0 0 7.5 20.25Z" />
+                            </svg>
+                            File mẫu
+                        </a>
+                    </div>
+
+                    <a href="{{ route('admin.cars.create') }}" class="lux-btn-primary">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        Thêm xe mới
+                    </a>
+                </div>
             @endif
         </div>
 
@@ -812,6 +949,31 @@
                 </div>
 
                 <button type="button" class="btn-close-alert" onclick="closeAlert('error-alert')" aria-label="Đóng">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        @endif
+
+        @if ($errors->has('file'))
+            <div id="import-error-alert" class="lux-flash-alert lux-flash-error">
+                <div>
+                    <div class="lux-flash-content">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v3m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                        </svg>
+                        <span>File import có lỗi, chưa ghi dữ liệu vào kho.</span>
+                    </div>
+                    <ul class="import-error-list">
+                        @foreach ($errors->get('file') as $message)
+                            <li>{{ $message }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+
+                <button type="button" class="btn-close-alert" onclick="closeAlert('import-error-alert')" aria-label="Đóng">
                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
