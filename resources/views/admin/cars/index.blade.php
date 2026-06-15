@@ -357,6 +357,30 @@
             color: var(--muted);
         }
 
+        .badge-condition-new {
+            background: rgba(20, 184, 166, 0.1);
+            border-color: rgba(20, 184, 166, 0.3);
+            color: #2dd4bf;
+        }
+
+        .badge-condition-used {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
+        }
+
+        .badge-condition-display {
+            background: rgba(168, 85, 247, 0.1);
+            border-color: rgba(168, 85, 247, 0.3);
+            color: #c084fc;
+        }
+
+        .badge-condition-test {
+            background: rgba(244, 114, 182, 0.1);
+            border-color: rgba(244, 114, 182, 0.3);
+            color: #f472b6;
+        }
+
         /* --- NÚT HÀNH ĐỘNG (ACTION BUTTONS) --- */
         .lux-action-btns {
             display: flex;
@@ -802,7 +826,7 @@
                         d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                 </svg>
                 <input type="search" name="q" value="{{ $search ?? '' }}"
-                    placeholder="Tìm theo tên xe, VIN, biển số..." autocomplete="off">
+                    placeholder="Tìm theo tên xe, VIN, biển số, mã nội bộ, vị trí..." autocomplete="off">
             </div>
             <button type="submit" class="btn-search">Tìm kiếm</button>
         </form>
@@ -823,10 +847,10 @@
                     <thead>
                         <tr>
                             <th>Xe</th>
-                            <th>VIN / Biển số</th>
+                            <th>Mã / VIN</th>
                             <th>Năm / Số km</th>
-                            <th>Màu sắc</th>
-                            <th>Giá bán</th>
+                            <th>Kho / Màu sắc</th>
+                            <th>Giá</th>
                             <th>Trạng thái</th>
                             <th width="230" style="text-align: right;">Hành động</th>
                         </tr>
@@ -846,6 +870,24 @@
                                     default => 'Sẵn sàng',
                                 };
 
+                                $conditionText = match ($car->vehicle_condition ?? 'new') {
+                                    'used' => 'Cũ',
+                                    'display' => 'Trưng bày',
+                                    'test_drive' => 'Lái thử',
+                                    default => 'Mới',
+                                };
+
+                                $conditionClass = match ($car->vehicle_condition ?? 'new') {
+                                    'used' => 'badge-condition-used',
+                                    'display' => 'badge-condition-display',
+                                    'test_drive' => 'badge-condition-test',
+                                    default => 'badge-condition-new',
+                                };
+
+                                $stockInDate = $car->stock_in_date?->format('d/m/Y');
+                                $onRoadDate = $car->on_road_date?->format('d/m/Y');
+                                $listPrice = $car->list_price ?? $car->price;
+                                $salePrice = $car->sale_price;
                                 $brandName = $car->carModel?->brand?->name ?? null;
                                 $modelName = $car->carModel?->name ?? null;
                             @endphp
@@ -868,8 +910,9 @@
                                     </div>
                                 </td>
 
-                                <td data-label="VIN / Biển số">
-                                    <span class="info-main">{{ $car->vin ?? 'Chưa nhập VIN' }}</span>
+                                <td data-label="Mã / VIN">
+                                    <span class="info-main">Mã NB: {{ $car->internal_code ?: 'Chưa nhập' }}</span>
+                                    <span class="info-sub">VIN: {{ $car->vin ?? 'Chưa nhập VIN' }}</span>
                                     <span class="info-sub">Biển số: {{ $car->license_plate ?: 'Chưa có' }}</span>
                                 </td>
 
@@ -877,19 +920,25 @@
                                     <span class="info-main">{{ $car->year }}</span>
                                     <span class="info-sub">{{ number_format($car->mileage_km ?? 0, 0, ',', '.') }}
                                         km</span>
+                                    <span class="info-sub">Nhập kho: {{ $stockInDate ?: 'Chưa nhập' }}</span>
+                                    <span class="info-sub">Lăn bánh: {{ $onRoadDate ?: 'Chưa nhập' }}</span>
                                 </td>
 
-                                <td data-label="Màu sắc">
+                                <td data-label="Kho / Màu sắc">
+                                    <span class="info-main">Vị trí: {{ $car->current_location ?: 'Chưa cập nhật' }}</span>
                                     <span class="info-main">Ngoại thất: {{ $car->color ?: '-' }}</span>
                                     <span class="info-sub">Nội thất: {{ $car->interior_color ?: '-' }}</span>
                                 </td>
 
-                                <td data-label="Giá bán">
-                                    <span class="price-text">{{ number_format($car->price, 0, ',', '.') }} VNĐ</span>
+                                <td data-label="Giá">
+                                    <span class="price-text">Niêm yết: {{ number_format($listPrice, 0, ',', '.') }} VNĐ</span>
+                                    <span class="info-sub">Khuyến mãi: {{ $salePrice !== null ? number_format($salePrice, 0, ',', '.') . ' VNĐ' : 'Chưa áp dụng' }}</span>
+                                    <span class="info-sub">Lăn bánh: {{ $car->estimated_rolling_price !== null ? number_format($car->estimated_rolling_price, 0, ',', '.') . ' VNĐ' : 'Chưa nhập' }}</span>
                                 </td>
 
                                 <td data-label="Trạng thái">
                                     <div class="status-stack">
+                                        <span class="lux-badge {{ $conditionClass }}">{{ $conditionText }}</span>
                                         <span class="lux-badge {{ $statusClass }}">{{ $statusText }}</span>
                                         @if ((int) $car->is_featured === 1)
                                             <span class="lux-badge badge-featured">Nổi bật</span>

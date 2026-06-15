@@ -15,15 +15,30 @@ use Illuminate\Support\Facades\Validator;
 
 class CarController extends Controller
 {
+    private const VEHICLE_CONDITIONS = ['new', 'used', 'display', 'test_drive'];
+    private const FEE_FIELDS = [
+        'registration_fee',
+        'license_plate_fee',
+        'inspection_fee',
+        'insurance_fee',
+        'other_fees',
+    ];
+
     // Hiển thị danh sách xe cũ trong kho
     public function index(Request $request)
     {
-        $search = $request->input('q');
+        $search = trim((string) $request->input('q', ''));
 
-        $query = Car::query();
+        $query = Car::with('carModel.brand');
 
-        if ($search) {
-            $query->where('name', 'LIKE', "%{$search}%");
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                    ->orWhere('vin', 'LIKE', "%{$search}%")
+                    ->orWhere('license_plate', 'LIKE', "%{$search}%")
+                    ->orWhere('internal_code', 'LIKE', "%{$search}%")
+                    ->orWhere('current_location', 'LIKE', "%{$search}%");
+            });
         }
 
         // THAY ĐỔI TẠI ĐÂY: Dùng paginate thay vì get
@@ -57,6 +72,15 @@ class CarController extends Controller
             'license_plate' => $request->filled('license_plate')
                 ? trim((string) $request->license_plate)
                 : null,
+            'internal_code' => $request->filled('internal_code')
+                ? trim((string) $request->internal_code)
+                : null,
+            'current_location' => $request->filled('current_location')
+                ? trim((string) $request->current_location)
+                : null,
+            'registration_area' => $request->filled('registration_area')
+                ? trim((string) $request->registration_area)
+                : null,
         ]);
 
         $currentYear = (int) date('Y');
@@ -67,10 +91,24 @@ class CarController extends Controller
             'name'           => 'required|string|max:255',
             'vin'            => 'required|string|max:17|unique:cars,vin',
             'license_plate'  => 'nullable|string|max:20|unique:cars,license_plate',
-            'price'          => 'required|numeric|min:0',
+            'internal_code'  => 'nullable|string|max:50|unique:cars,internal_code',
+            'price'          => 'nullable|numeric|min:0',
+            'list_price'     => 'required|numeric|min:0',
+            'sale_price'     => 'nullable|numeric|min:0',
+            'registration_fee' => 'nullable|numeric|min:0',
+            'license_plate_fee' => 'nullable|numeric|min:0',
+            'inspection_fee' => 'nullable|numeric|min:0',
+            'insurance_fee'  => 'nullable|numeric|min:0',
+            'other_fees'     => 'nullable|numeric|min:0',
+            'estimated_rolling_price' => 'nullable|numeric|min:0',
+            'registration_area' => 'nullable|string|max:100',
             'year'           => 'required|integer|min:1000|max:' . $currentYear,
             'mileage_km'     => 'required|integer|min:0',
             'owner_count'    => 'nullable|integer|min:0|max:10',
+            'stock_in_date'  => 'nullable|date',
+            'on_road_date'   => 'nullable|date',
+            'vehicle_condition' => 'required|in:' . implode(',', self::VEHICLE_CONDITIONS),
+            'current_location' => 'nullable|string|max:255',
             'color'          => 'nullable|string|max:50',
             'interior_color' => 'nullable|string|max:50',
             'status'         => 'nullable|in:1,2,3',
@@ -94,6 +132,16 @@ class CarController extends Controller
                 $validator->errors()->add(
                     'description',
                     'Mô tả nên có ít nhất 10 ký tự hoặc để trống.'
+                );
+            }
+
+            $listPrice = $request->input('list_price');
+            $salePrice = $request->input('sale_price');
+            if ($salePrice !== null && $salePrice !== '' && is_numeric($salePrice) && is_numeric($listPrice)
+                && (float) $salePrice > (float) $listPrice) {
+                $validator->errors()->add(
+                    'sale_price',
+                    'Giá khuyến mãi không được lớn hơn giá niêm yết.'
                 );
             }
 
@@ -140,9 +188,10 @@ class CarController extends Controller
             'gallery_count' => $request->hasFile('gallery') ? count($request->file('gallery')) : 0,
             'video_file' => $request->hasFile('video_file') ? $request->file('video_file')->getClientOriginalName() : null,
         ];
+        $pricing = $this->calculateCarPricing($validated);
 
         try {
-            $result = DB::transaction(function () use ($request, $validated, &$uiLog) {
+            $result = DB::transaction(function () use ($request, $validated, $pricing, &$uiLog) {
                 // Upload ảnh đại diện
                 $mainImagePath = null;
                 if ($request->hasFile('image')) {
@@ -164,11 +213,25 @@ class CarController extends Controller
                     'name' => $validated['name'],
                     'vin' => $validated['vin'],
                     'license_plate' => $validated['license_plate'] ?? null,
-                    'price' => $validated['price'],
+                    'internal_code' => $validated['internal_code'] ?? null,
+                    'price' => $pricing['actual_price'],
+                    'list_price' => $pricing['list_price'],
+                    'sale_price' => $pricing['sale_price'],
+                    'registration_fee' => $pricing['registration_fee'],
+                    'license_plate_fee' => $pricing['license_plate_fee'],
+                    'inspection_fee' => $pricing['inspection_fee'],
+                    'insurance_fee' => $pricing['insurance_fee'],
+                    'other_fees' => $pricing['other_fees'],
+                    'estimated_rolling_price' => $pricing['estimated_rolling_price'],
+                    'registration_area' => $validated['registration_area'] ?? null,
                     'year' => $validated['year'],
                     'mileage_km' => $validated['mileage_km'],
                     'owner_count' => $validated['owner_count']
                         ?? ($validated['mileage_km'] == 0 ? 0 : 1),
+                    'stock_in_date' => $validated['stock_in_date'] ?? null,
+                    'on_road_date' => $validated['on_road_date'] ?? null,
+                    'vehicle_condition' => $validated['vehicle_condition'] ?? 'new',
+                    'current_location' => $validated['current_location'] ?? null,
                     'color' => $validated['color'] ?? null,
                     'interior_color' => $validated['interior_color'] ?? null,
                     'status' => $validated['status'] ?? 1,
@@ -269,6 +332,15 @@ class CarController extends Controller
             'license_plate' => $request->filled('license_plate')
                 ? trim((string) $request->license_plate)
                 : null,
+            'internal_code' => $request->filled('internal_code')
+                ? trim((string) $request->internal_code)
+                : null,
+            'current_location' => $request->filled('current_location')
+                ? trim((string) $request->current_location)
+                : null,
+            'registration_area' => $request->filled('registration_area')
+                ? trim((string) $request->registration_area)
+                : null,
         ]);
 
         $currentYear = (int) date('Y');
@@ -279,10 +351,24 @@ class CarController extends Controller
             'name'           => 'required|string|max:255',
             'vin'            => 'required|string|max:17|unique:cars,vin,' . $car->getAttribute('car_id') . ',car_id',
             'license_plate'  => 'nullable|string|max:20|unique:cars,license_plate,' . $car->getAttribute('car_id') . ',car_id',
-            'price'          => 'required|numeric|min:0',
+            'internal_code'  => 'nullable|string|max:50|unique:cars,internal_code,' . $car->getAttribute('car_id') . ',car_id',
+            'price'          => 'nullable|numeric|min:0',
+            'list_price'     => 'required|numeric|min:0',
+            'sale_price'     => 'nullable|numeric|min:0',
+            'registration_fee' => 'nullable|numeric|min:0',
+            'license_plate_fee' => 'nullable|numeric|min:0',
+            'inspection_fee' => 'nullable|numeric|min:0',
+            'insurance_fee'  => 'nullable|numeric|min:0',
+            'other_fees'     => 'nullable|numeric|min:0',
+            'estimated_rolling_price' => 'nullable|numeric|min:0',
+            'registration_area' => 'nullable|string|max:100',
             'year'           => 'required|integer|min:1000|max:' . $currentYear,
             'mileage_km'     => 'required|integer|min:0',
             'owner_count'    => 'nullable|integer|min:0|max:10',
+            'stock_in_date'  => 'nullable|date',
+            'on_road_date'   => 'nullable|date',
+            'vehicle_condition' => 'required|in:' . implode(',', self::VEHICLE_CONDITIONS),
+            'current_location' => 'nullable|string|max:255',
             'color'          => 'nullable|string|max:50',
             'interior_color' => 'nullable|string|max:50',
             'status'         => 'nullable|in:1,2,3',
@@ -306,6 +392,16 @@ class CarController extends Controller
                 $validator->errors()->add(
                     'description',
                     'Mô tả nên có ít nhất 10 ký tự hoặc để trống.'
+                );
+            }
+
+            $listPrice = $request->input('list_price');
+            $salePrice = $request->input('sale_price');
+            if ($salePrice !== null && $salePrice !== '' && is_numeric($salePrice) && is_numeric($listPrice)
+                && (float) $salePrice > (float) $listPrice) {
+                $validator->errors()->add(
+                    'sale_price',
+                    'Giá khuyến mãi không được lớn hơn giá niêm yết.'
                 );
             }
 
@@ -346,9 +442,10 @@ class CarController extends Controller
 
         $validated = $validator->validated();
         $uiLog['validated'] = true;
+        $pricing = $this->calculateCarPricing($validated);
 
         try {
-            $result = DB::transaction(function () use ($request, $validated, $car, &$uiLog) {
+            $result = DB::transaction(function () use ($request, $validated, $pricing, $car, &$uiLog) {
                 $mainImagePath = $car->image;
                 if ($request->hasFile('image')) {
                     if ($mainImagePath) {
@@ -372,11 +469,25 @@ class CarController extends Controller
                     'name' => $validated['name'],
                     'vin' => $validated['vin'],
                     'license_plate' => $validated['license_plate'] ?? null,
-                    'price' => $validated['price'],
+                    'internal_code' => $validated['internal_code'] ?? null,
+                    'price' => $pricing['actual_price'],
+                    'list_price' => $pricing['list_price'],
+                    'sale_price' => $pricing['sale_price'],
+                    'registration_fee' => $pricing['registration_fee'],
+                    'license_plate_fee' => $pricing['license_plate_fee'],
+                    'inspection_fee' => $pricing['inspection_fee'],
+                    'insurance_fee' => $pricing['insurance_fee'],
+                    'other_fees' => $pricing['other_fees'],
+                    'estimated_rolling_price' => $pricing['estimated_rolling_price'],
+                    'registration_area' => $validated['registration_area'] ?? null,
                     'year' => $validated['year'],
                     'mileage_km' => $validated['mileage_km'],
                     'owner_count' => $validated['owner_count']
                         ?? ($validated['mileage_km'] == 0 ? 0 : 1),
+                    'stock_in_date' => $validated['stock_in_date'] ?? null,
+                    'on_road_date' => $validated['on_road_date'] ?? null,
+                    'vehicle_condition' => $validated['vehicle_condition'] ?? ($car->vehicle_condition ?? 'new'),
+                    'current_location' => $validated['current_location'] ?? null,
                     'color' => $validated['color'] ?? null,
                     'interior_color' => $validated['interior_color'] ?? null,
                     'status' => $validated['status'] ?? $car->status,
@@ -478,6 +589,47 @@ class CarController extends Controller
         }
     }
 
+    private function calculateCarPricing(array $validated): array
+    {
+        $listPrice = $this->moneyValue($validated['list_price'] ?? 0);
+        $salePrice = $this->nullableMoneyValue($validated['sale_price'] ?? null);
+        $actualPrice = $salePrice ?? $listPrice;
+
+        $pricing = [
+            'list_price' => $listPrice,
+            'sale_price' => $salePrice,
+            'actual_price' => $actualPrice,
+        ];
+
+        $feeTotal = 0;
+        foreach (self::FEE_FIELDS as $field) {
+            $pricing[$field] = $this->moneyValue($validated[$field] ?? 0);
+            $feeTotal += $pricing[$field];
+        }
+
+        $pricing['estimated_rolling_price'] = $actualPrice + $feeTotal;
+
+        return $pricing;
+    }
+
+    private function moneyValue(mixed $value): int
+    {
+        if ($value === null || $value === '') {
+            return 0;
+        }
+
+        return (int) round((float) $value);
+    }
+
+    private function nullableMoneyValue(mixed $value): ?int
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return $this->moneyValue($value);
+    }
+
     private function carFormValidationAttributes(): array
     {
         return [
@@ -485,10 +637,24 @@ class CarController extends Controller
             'name'           => 'tên hiển thị',
             'vin'            => 'số khung (VIN)',
             'license_plate'  => 'biển số xe',
-            'price'          => 'giá bán',
+            'internal_code'  => 'mã xe nội bộ',
+            'price'          => 'giá bán thực tế',
+            'list_price'     => 'giá niêm yết',
+            'sale_price'     => 'giá khuyến mãi',
+            'registration_fee' => 'phí trước bạ',
+            'license_plate_fee' => 'phí biển số',
+            'inspection_fee' => 'phí đăng kiểm',
+            'insurance_fee'  => 'phí bảo hiểm',
+            'other_fees'     => 'phí dịch vụ khác',
+            'estimated_rolling_price' => 'giá lăn bánh dự kiến',
+            'registration_area' => 'khu vực đăng ký',
             'year'           => 'năm sản xuất',
             'mileage_km'     => 'số km đã đi',
             'owner_count'    => 'số đời chủ',
+            'stock_in_date'  => 'ngày nhập kho',
+            'on_road_date'   => 'ngày lăn bánh',
+            'vehicle_condition' => 'tình trạng xe',
+            'current_location' => 'vị trí xe',
             'color'          => 'màu ngoại thất',
             'interior_color' => 'màu nội thất',
             'status'         => 'trạng thái bán hàng',
@@ -511,6 +677,7 @@ class CarController extends Controller
             'string'   => ':attribute phải là chuỗi ký tự.',
             'integer'  => ':attribute phải là số nguyên.',
             'numeric'  => ':attribute phải là số.',
+            'date'     => ':attribute phải là ngày hợp lệ.',
             'max.string' => ':attribute không được vượt quá :max ký tự.',
             'max.array'  => ':attribute chỉ được tối đa :max mục.',
             'max.file'   => ':attribute không được vượt quá :max kilobyte.',
@@ -536,9 +703,29 @@ class CarController extends Controller
             'vin.unique'            => 'Số khung này đã được đăng ký cho xe khác, vui lòng kiểm tra lại.',
             'license_plate.unique'  => 'Biển số xe này đã được đăng ký cho xe khác, vui lòng kiểm tra lại.',
             'license_plate.max'     => 'Biển số xe không được vượt quá 20 ký tự.',
+            'internal_code.unique'   => 'Mã xe nội bộ này đã tồn tại, vui lòng dùng mã khác.',
+            'internal_code.max'      => 'Mã xe nội bộ không được vượt quá 50 ký tự.',
             'price.required'        => 'Vui lòng nhập giá bán.',
             'price.numeric'         => 'Giá bán phải là một con số.',
             'price.min'             => 'Giá xe không được là số âm.',
+            'list_price.required'   => 'Vui lòng nhập giá niêm yết.',
+            'list_price.numeric'    => 'Giá niêm yết phải là một con số.',
+            'list_price.min'        => 'Giá niêm yết không được là số âm.',
+            'sale_price.numeric'    => 'Giá khuyến mãi phải là một con số.',
+            'sale_price.min'        => 'Giá khuyến mãi không được là số âm.',
+            'registration_fee.numeric' => 'Phí trước bạ phải là một con số.',
+            'license_plate_fee.numeric' => 'Phí biển số phải là một con số.',
+            'inspection_fee.numeric' => 'Phí đăng kiểm phải là một con số.',
+            'insurance_fee.numeric' => 'Phí bảo hiểm phải là một con số.',
+            'other_fees.numeric'    => 'Phí dịch vụ khác phải là một con số.',
+            'registration_fee.min'  => 'Phí trước bạ không được là số âm.',
+            'license_plate_fee.min' => 'Phí biển số không được là số âm.',
+            'inspection_fee.min'    => 'Phí đăng kiểm không được là số âm.',
+            'insurance_fee.min'     => 'Phí bảo hiểm không được là số âm.',
+            'other_fees.min'        => 'Phí dịch vụ khác không được là số âm.',
+            'estimated_rolling_price.numeric' => 'Giá lăn bánh dự kiến phải là một con số.',
+            'estimated_rolling_price.min'     => 'Giá lăn bánh dự kiến không được là số âm.',
+            'registration_area.max' => 'Khu vực đăng ký không được vượt quá 100 ký tự.',
             'year.required'         => 'Vui lòng nhập năm sản xuất.',
             'year.integer'          => 'Năm sản xuất phải là số nguyên.',
             'year.min'              => 'Năm sản xuất phải từ năm 1000 trở lên.',
@@ -549,6 +736,11 @@ class CarController extends Controller
             'owner_count.integer'   => 'Số đời chủ phải là số nguyên.',
             'owner_count.min'       => 'Số đời chủ không hợp lệ.',
             'owner_count.max'       => 'Số đời chủ tối đa là 10.',
+            'stock_in_date.date'    => 'Ngày nhập kho không hợp lệ.',
+            'on_road_date.date'     => 'Ngày lăn bánh không hợp lệ.',
+            'vehicle_condition.required' => 'Vui lòng chọn tình trạng xe.',
+            'vehicle_condition.in'  => 'Tình trạng xe không hợp lệ.',
+            'current_location.max'  => 'Vị trí xe không được vượt quá 255 ký tự.',
             'image.required'        => 'Xe phải có ít nhất một ảnh đại diện.',
             'image.mimetypes'       => 'Ảnh đại diện phải là file jpg, png, webp, avif, heic hoặc heif.',
             'image.max'             => 'Ảnh đại diện không được vượt quá 5MB.',

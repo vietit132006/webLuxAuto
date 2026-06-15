@@ -122,6 +122,16 @@
             color: #000;
         }
 
+        .badge-display {
+            background: linear-gradient(135deg, #8b5cf6, #c084fc);
+            color: #fff;
+        }
+
+        .badge-test-drive {
+            background: linear-gradient(135deg, #ec4899, #f472b6);
+            color: #fff;
+        }
+
         .badge-featured {
             background: linear-gradient(135deg, var(--gold), var(--gold-light));
             color: #000;
@@ -541,9 +551,77 @@
             font-family: 'Monaco', 'Consolas', monospace;
             letter-spacing: 0.8px;
         }
+
+        .rolling-cost-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .rolling-cost-table th,
+        .rolling-cost-table td {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 14px;
+        }
+
+        .rolling-cost-table th {
+            color: var(--muted);
+            font-weight: 600;
+            text-align: left;
+        }
+
+        .rolling-cost-table td {
+            color: var(--text);
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .rolling-cost-table tr:last-child th,
+        .rolling-cost-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .rolling-total-row th,
+        .rolling-total-row td {
+            color: var(--gold);
+            font-size: 16px;
+            font-weight: 900;
+        }
     </style>
 
     <div class="car-detail-wrap">
+        @php
+            $conditionText = match ($car->vehicle_condition ?? 'new') {
+                'used' => 'Xe cũ',
+                'display' => 'Xe trưng bày',
+                'test_drive' => 'Xe lái thử',
+                default => 'Xe mới',
+            };
+
+            $conditionClass = match ($car->vehicle_condition ?? 'new') {
+                'used' => 'badge-used',
+                'display' => 'badge-display',
+                'test_drive' => 'badge-test-drive',
+                default => 'badge-new',
+            };
+
+            $statusText = match ((int) $car->status) {
+                2 => 'Đã đặt cọc',
+                3 => 'Đã bán',
+                default => 'Sẵn sàng',
+            };
+
+            $statusClass = match ((int) $car->status) {
+                2 => 'reserved',
+                3 => 'sold',
+                default => '',
+            };
+
+            $listPrice = $car->list_price ?? $car->price;
+            $salePrice = $car->sale_price;
+            $actualPrice = $salePrice ?? $listPrice;
+            $formatMoney = fn ($value) => number_format((int) ($value ?? 0)) . ' ₫';
+        @endphp
 
         <!-- HEADER -->
         <div class="detail-header">
@@ -596,29 +674,23 @@
                 </div>
 
                 <div class="badges">
-                    @if ($car->status == 1)
-                        <span class="badge badge-new">Xe mới</span>
-                    @else
-                        <span class="badge badge-used">Xe đã qua sử dụng</span>
-                    @endif
+                    <span class="badge {{ $conditionClass }}">{{ $conditionText }}</span>
 
                     @if ($car->is_featured)
-                        <span class="badge badge-featured">⭐ Nổi bật</span>
+                        <span class="badge badge-featured">Nổi bật</span>
                     @endif
 
-                    @if ($car->status == 2)
-                        <span class="badge badge-status reserved">Đã đặt cọc</span>
-                    @elseif($car->status == 3)
-                        <span class="badge badge-status sold">Đã bán</span>
-                    @else
-                        <span class="badge badge-status">Sẵn sàng</span>
-                    @endif
+                    <span class="badge badge-status {{ $statusClass }}">{{ $statusText }}</span>
                 </div>
             </div>
 
             <div class="header-right">
-                <div class="price-tag">{{ number_format($car->price) }} ₫</div>
-                <div class="price-note">Giá niêm yết</div>
+                <div class="price-tag">{{ $formatMoney($actualPrice) }}</div>
+                <div class="price-note">Giá bán thực tế</div>
+                <div class="price-note">Niêm yết: <strong>{{ $formatMoney($listPrice) }}</strong></div>
+                @if ($car->estimated_rolling_price !== null)
+                    <div class="price-note">Lăn bánh dự kiến: <strong>{{ $formatMoney($car->estimated_rolling_price) }}</strong></div>
+                @endif
             </div>
         </div>
 
@@ -719,6 +791,11 @@
                 <div class="info-card">
                     <div class="vehicle-meta-box">
                         <div class="meta-row">
+                            <span class="meta-label">Mã nội bộ</span>
+                            <span class="meta-value">{{ $car->internal_code ?? '---' }}</span>
+                        </div>
+
+                        <div class="meta-row">
                             <span class="meta-label">Số VIN</span>
                             <span class="meta-value">{{ $car->vin ?? '---' }}</span>
                         </div>
@@ -728,13 +805,84 @@
                             <span class="meta-value">{{ $car->license_plate ?? 'Chưa có' }}</span>
                         </div>
 
-                        @if ($car->owner_count)
+                        @if ($car->owner_count !== null)
                             <div class="meta-row">
                                 <span class="meta-label">Đời chủ</span>
                                 <span class="meta-value">{{ $car->owner_count }} đời chủ</span>
                             </div>
                         @endif
+
+                        <div class="meta-row">
+                            <span class="meta-label">Vị trí xe</span>
+                            <span class="meta-value">{{ $car->current_location ?? 'Chưa cập nhật' }}</span>
+                        </div>
+
+                        <div class="meta-row">
+                            <span class="meta-label">Ngày nhập kho</span>
+                            <span class="meta-value">{{ $car->stock_in_date?->format('d/m/Y') ?? 'Chưa nhập' }}</span>
+                        </div>
+
+                        <div class="meta-row">
+                            <span class="meta-label">Ngày lăn bánh</span>
+                            <span class="meta-value">{{ $car->on_road_date?->format('d/m/Y') ?? 'Chưa nhập' }}</span>
+                        </div>
+
                     </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-card-title">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 10v-1m0 0c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Chi phí lăn bánh dự kiến
+                    </div>
+
+                    <table class="rolling-cost-table">
+                        <tbody>
+                            <tr>
+                                <th>Giá niêm yết</th>
+                                <td>{{ $formatMoney($listPrice) }}</td>
+                            </tr>
+                            <tr>
+                                <th>Giá khuyến mãi</th>
+                                <td>{{ $salePrice !== null ? $formatMoney($salePrice) : 'Chưa áp dụng' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Giá bán thực tế</th>
+                                <td>{{ $formatMoney($actualPrice) }}</td>
+                            </tr>
+                            <tr>
+                                <th>Phí trước bạ</th>
+                                <td>{{ $formatMoney($car->registration_fee) }}</td>
+                            </tr>
+                            <tr>
+                                <th>Phí biển số</th>
+                                <td>{{ $formatMoney($car->license_plate_fee) }}</td>
+                            </tr>
+                            <tr>
+                                <th>Phí đăng kiểm</th>
+                                <td>{{ $formatMoney($car->inspection_fee) }}</td>
+                            </tr>
+                            <tr>
+                                <th>Phí bảo hiểm</th>
+                                <td>{{ $formatMoney($car->insurance_fee) }}</td>
+                            </tr>
+                            <tr>
+                                <th>Phí dịch vụ khác</th>
+                                <td>{{ $formatMoney($car->other_fees) }}</td>
+                            </tr>
+                            <tr>
+                                <th>Khu vực đăng ký</th>
+                                <td>{{ $car->registration_area ?: 'Chưa cập nhật' }}</td>
+                            </tr>
+                            <tr class="rolling-total-row">
+                                <th>Tổng lăn bánh</th>
+                                <td>{{ $formatMoney($car->estimated_rolling_price) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
                 <!-- SPECS -->
@@ -763,6 +911,10 @@
                         <div class="spec-item">
                             <span class="spec-label">Số Km</span>
                             <span class="spec-value">{{ number_format($car->mileage_km ?? 0) }} km</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Tình trạng</span>
+                            <span class="spec-value">{{ $conditionText }}</span>
                         </div>
                         <div class="spec-item">
                             <span class="spec-label">Nhiên liệu</span>

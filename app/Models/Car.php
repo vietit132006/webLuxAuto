@@ -14,8 +14,18 @@ class Car extends Model
         'car_model_id',
         'vin',
         'license_plate',
+        'internal_code',
         'name',
         'price',
+        'list_price',
+        'sale_price',
+        'registration_fee',
+        'license_plate_fee',
+        'inspection_fee',
+        'insurance_fee',
+        'other_fees',
+        'estimated_rolling_price',
+        'registration_area',
         'year',
         'color',
         'interior_color',
@@ -27,6 +37,10 @@ class Car extends Model
         'video_url',
         'video_file',
         'owner_count',
+        'stock_in_date',
+        'on_road_date',
+        'vehicle_condition',
+        'current_location',
     ];
 
     protected function casts(): array
@@ -34,7 +48,17 @@ class Car extends Model
         return [
             'year' => 'integer',
             'price' => 'integer',
+            'list_price' => 'integer',
+            'sale_price' => 'integer',
+            'registration_fee' => 'integer',
+            'license_plate_fee' => 'integer',
+            'inspection_fee' => 'integer',
+            'insurance_fee' => 'integer',
+            'other_fees' => 'integer',
+            'estimated_rolling_price' => 'integer',
             'mileage_km' => 'integer',
+            'stock_in_date' => 'date',
+            'on_road_date' => 'date',
             'is_featured' => 'boolean', // Nên cast cái này về boolean
         ];
     }
@@ -80,6 +104,15 @@ class Car extends Model
     public function getPriceFormattedAttribute(): string
     {
         return number_format($this->price, 0, ',', '.') . ' VNĐ';
+    }
+
+    public function getEstimatedRollingPriceFormattedAttribute(): ?string
+    {
+        if ($this->estimated_rolling_price === null) {
+            return null;
+        }
+
+        return number_format($this->estimated_rolling_price, 0, ',', '.') . ' VNĐ';
     }
 
     public function carModel()
