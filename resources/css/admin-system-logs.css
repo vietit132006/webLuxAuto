@@ -1,0 +1,65 @@
+.log-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+    .log-table th, .log-table td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+    }
+    .log-table th {
+        color: var(--muted);
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .log-action {
+        font-weight: 600;
+        color: var(--accent);
+    }
+    .log-user {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    .log-avatar {
+        width: 32px;
+        height: 32px;
+        background: #0ea5e9;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 0.8rem;
+    }
+
+/* Inline styles extracted from resources/views/admin/system/logs.blade.php */
+
+.admin-system-logs-inline-1 {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+.admin-system-logs-inline-2 {
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.admin-system-logs-inline-3 {
+    font-weight: bold;
+    color: var(--text);
+}
+
+.admin-system-logs-inline-4 {
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.admin-system-logs-inline-5 {
+    padding: 4rem;
+    text-align: center;
+    color: var(--muted);
+}

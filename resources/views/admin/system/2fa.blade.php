@@ -1,30 +1,37 @@
 @extends('layouts.admin')
 @section('title', 'Đăng nhập 2 lớp (2FA)')
 
+@push('styles')
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite('resources/css/admin-system-2fa.css')
+    @endif
+@endpush
+
+
 @section('content')
 <div class="wrap">
     <div class="panel">
         <div class="panel-header">
             <h2 class="panel-title">Cài đặt Xác thực 2 lớp (2FA)</h2>
         </div>
-        <div class="panel-body" style="padding: 2rem;">
+        <div class="panel-body admin-system-2fa-inline-10">
             @if(session('success'))
-                <div style="background: #d1fae5; color: #065f46; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-weight: bold;">
+                <div class="admin-system-2fa-inline-9">
                     ✅ {{ session('success') }}
                 </div>
             @endif
 
-            <p style="color: var(--muted); margin-bottom: 2rem;">
+            <p class="admin-system-2fa-inline-8">
                 Xác thực 2 lớp giúp tăng cường bảo mật cho tài khoản của bạn bằng cách yêu cầu mã OTP được gửi qua email mỗi khi bạn đăng nhập.
             </p>
 
-            <div style="display: flex; align-items: center; gap: 1.5rem; padding: 1.5rem; background: rgba(255, 255, 255, 0.02); border-radius: 12px; border: 1px solid var(--border);">
-                <div style="font-size: 2rem;">{{ $isEnabled ? '🛡️' : '🔓' }}</div>
-                <div style="flex: 1;">
-                    <div style="font-weight: bold; font-size: 1.1rem; color: var(--text);">
-                        Trạng thái: {!! $isEnabled ? '<span style="color: #4ade80;">ĐANG BẬT</span>' : '<span style="color: #f87171;">ĐANG TẮT</span>' !!}
+            <div class="admin-system-2fa-inline-7">
+                <div class="admin-system-2fa-inline-6">{{ $isEnabled ? '🛡️' : '🔓' }}</div>
+                <div class="admin-system-2fa-inline-5">
+                    <div class="admin-system-2fa-inline-4">
+                        Trạng thái: {!! $isEnabled ? '<span class="admin-system-2fa-inline-3">ĐANG BẬT</span>' : '<span class="admin-system-2fa-inline-2">ĐANG TẮT</span>' !!}
                     </div>
-                    <div style="font-size: 0.9rem; color: var(--muted);">
+                    <div class="admin-system-2fa-inline-1">
                         {{ $isEnabled ? 'Tài khoản của bạn đang được bảo vệ bởi lớp bảo mật thứ hai.' : 'Hãy bật 2FA để bảo vệ tài khoản của bạn tốt hơn.' }}
                     </div>
                 </div>

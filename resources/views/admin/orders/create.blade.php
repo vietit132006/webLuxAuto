@@ -1,75 +1,22 @@
 @extends('layouts.admin')
 @section('title', 'Tạo đơn hàng mới (Bán hàng)')
 
-@section('content')
-<style>
-    .form-wrap {
-        max-width: 800px;
-        margin: 0 auto;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 2rem;
-    }
-    .form-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin-bottom: 2rem;
-        color: var(--text);
-        text-align: center;
-    }
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
-    .label {
-        display: block;
-        margin-bottom: 0.5rem;
-        color: var(--muted);
-        font-weight: 600;
-        font-size: 0.9rem;
-    }
-    .input, .select {
-        width: 100%;
-        padding: 0.8rem;
-        background: #0a0d12;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        color: var(--text);
-        font-size: 1rem;
-    }
-    .input:focus, .select:focus {
-        border-color: var(--accent);
-        outline: none;
-    }
-    .btn-submit {
-        background: var(--accent);
-        color: #000;
-        border: none;
-        padding: 1rem 2rem;
-        border-radius: 8px;
-        font-weight: 800;
-        width: 100%;
-        cursor: pointer;
-        font-size: 1rem;
-        margin-top: 1rem;
-        transition: 0.2s;
-    }
-    .btn-submit:hover { background: #e4d08a; }
+@push('styles')
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite('resources/css/admin-orders-create.css')
+    @endif
+@endpush
 
-    .error-msg {
-        color: #f87171;
-        font-size: 0.85rem;
-        margin-top: 0.3rem;
-    }
-</style>
+
+@section('content')
 
 <div class="wrap">
     <div class="form-wrap">
         <h1 class="form-title">Tạo đơn hàng mới (Bán hàng)</h1>
 
         @if($errors->any())
-            <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #f87171; color: #f87171; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
-                <ul style="margin: 0; padding-left: 1.5rem;">
+            <div class="admin-orders-create-inline-4">
+                <ul class="admin-orders-create-inline-3">
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
@@ -108,11 +55,11 @@
                     <option value="2">✅ Hoàn tất (Giao xe)</option>
                     <option value="3">❌ Hủy bỏ</option>
                 </select>
-                <p style="font-size: 0.8rem; color: var(--muted); margin-top: 5px;">* Nếu chọn "Hoàn tất", hệ thống sẽ tự động giảm tồn kho xe.</p>
+                <p class="admin-orders-create-inline-2">* Nếu chọn "Hoàn tất", hệ thống sẽ tự động giảm tồn kho xe.</p>
             </div>
 
             <button type="submit" class="btn-submit">TẠO ĐƠN HÀNG</button>
-            <a href="{{ route('admin.orders.index') }}" style="display: block; text-align: center; margin-top: 1rem; color: var(--muted); text-decoration: none;">Hủy và quay lại</a>
+            <a class="admin-orders-create-inline-1" href="{{ route('admin.orders.index') }}">Hủy và quay lại</a>
         </form>
     </div>
 </div>

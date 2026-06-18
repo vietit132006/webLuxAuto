@@ -1,0 +1,194 @@
+.order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+    .order-id {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--accent);
+    }
+    .order-date {
+        color: var(--muted);
+        font-size: 0.95rem;
+    }
+
+    .order-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+    }
+
+    .panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .panel-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 0.8rem;
+    }
+
+    .info-group {
+        margin-bottom: 1.2rem;
+    }
+    .info-label {
+        font-size: 0.85rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.3rem;
+    }
+    .info-value {
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .car-item {
+        display: flex;
+        gap: 1.5rem;
+        align-items: center;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 10px;
+    }
+    .car-img {
+        width: 150px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+    .car-info { flex: 1; }
+    .car-name { font-size: 1.2rem; font-weight: 700; color: var(--text); }
+    .car-price { color: var(--accent); font-weight: 700; font-size: 1.1rem; }
+
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+    .badge-0 { background: rgba(234, 179, 8, 0.1); color: #facc15; }
+    .badge-1 { background: rgba(59, 130, 246, 0.1); color: #60a5fa; }
+    .badge-2 { background: rgba(16, 185, 129, 0.1); color: #34d399; }
+    .badge-3 { background: rgba(239, 68, 68, 0.1); color: #f87171; }
+
+    .action-btns {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    .btn {
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        border: none;
+        transition: 0.2s;
+    }
+    .btn-confirm { background: #34d399; color: #000; }
+    .btn-cancel { background: #f87171; color: #fff; }
+    .btn-back { background: var(--border); color: var(--text); }
+
+.flash-alert {
+                background-color: #d1fae5;
+                color: #065f46;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                margin-bottom: 1.5rem;
+                border: 1px solid #34d399;
+                font-weight: 600;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .btn-close-alert {
+                background: none;
+                border: none;
+                color: inherit;
+                font-size: 1.5rem;
+                line-height: 1;
+                cursor: pointer;
+                padding: 0 0 0 1rem;
+            }
+
+.error-alert {
+                background-color: #fee2e2;
+                color: #991b1b;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                margin-bottom: 1.5rem;
+                border: 1px solid #f87171;
+                font-weight: 600;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+/* Inline styles extracted from resources/views/admin/orders/show.blade.php */
+
+.admin-orders-show-inline-1 {
+    font-weight: 800;
+    font-size: 1.3rem;
+    color: var(--accent);
+}
+
+.admin-orders-show-inline-2 {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.admin-orders-show-inline-3 {
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+.admin-orders-show-inline-4 {
+    font-weight: 600;
+    color: #34d399;
+}
+
+.admin-orders-show-inline-5 {
+    color: var(--muted);
+}
+
+.admin-orders-show-inline-6 {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.admin-orders-show-inline-7 {
+    font-weight: 600;
+}
+
+.admin-orders-show-inline-8 {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.8rem;
+}
+
+.admin-orders-show-inline-9 {
+    display:inline;
+}
+
+.admin-orders-show-inline-10 {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+.admin-orders-show-inline-11 {
+    width: 150px;
+    height: 100px;
+    background: #0a0d12;
+    border-radius: 8px;
+}

@@ -2,74 +2,14 @@
 
 @section('title', 'Sửa: '.$vehicle->title)
 
+@push('styles')
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite('resources/css/vehicles-edit.css')
+    @endif
+@endpush
+
+
 @section('content')
-<style>
-    .form-page h1 { margin: 0 0 1.25rem; font-size: 1.5rem; font-weight: 700; }
-    .form-grid {
-        display: grid;
-        gap: 1rem;
-        grid-template-columns: 1fr;
-    }
-    @media (min-width: 640px) {
-        .form-grid { grid-template-columns: 1fr 1fr; }
-    }
-    .form-grid .full { grid-column: 1 / -1; }
-    .field label {
-        display: block;
-        font-size: 0.8125rem;
-        font-weight: 500;
-        color: var(--muted);
-        margin-bottom: 0.35rem;
-    }
-    .field input, .field textarea, .field select {
-        width: 100%;
-        padding: 0.55rem 0.75rem;
-        border-radius: 8px;
-        border: 1px solid var(--border);
-        background: var(--surface);
-        color: var(--text);
-        font-size: 1rem;
-    }
-    .field input:focus, .field textarea:focus, .field select:focus {
-        outline: none;
-        border-color: var(--accent-dim);
-    }
-    .field textarea { min-height: 100px; resize: vertical; }
-    .field .err { font-size: 0.8125rem; color: #f87171; margin-top: 0.25rem; }
-    .check-row { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem; }
-    .check-row input { width: auto; }
-    .form-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-        margin-top: 1.25rem;
-        padding-top: 1rem;
-        border-top: 1px solid var(--border);
-    }
-    .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0.6rem 1.15rem;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.9375rem;
-        cursor: pointer;
-        border: none;
-        text-decoration: none;
-    }
-    .btn-primary {
-        background: linear-gradient(135deg, var(--accent), var(--accent-dim));
-        color: #0c0f14;
-    }
-    .btn-primary:hover { filter: brightness(1.06); color: #0c0f14; }
-    .btn-ghost {
-        background: transparent;
-        border: 1px solid var(--border);
-        color: var(--text);
-    }
-    .btn-ghost:hover { border-color: var(--accent-dim); color: var(--accent); }
-</style>
 
 <div class="wrap form-page">
     <h1>Sửa thông tin xe</h1>
@@ -132,7 +72,7 @@
             <div class="field full">
                 <div class="check-row">
                     <input type="checkbox" id="is_featured" name="is_featured" value="1" @checked(old('is_featured', $vehicle->is_featured))>
-                    <label for="is_featured" style="margin:0;">Xe nổi bật (hiện trên trang chủ)</label>
+                    <label class="vehicles-edit-inline-1" for="is_featured">Xe nổi bật (hiện trên trang chủ)</label>
                 </div>
                 @error('is_featured')<div class="err">{{ $message }}</div>@enderror
             </div>

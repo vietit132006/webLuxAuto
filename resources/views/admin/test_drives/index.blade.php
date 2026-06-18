@@ -1,72 +1,79 @@
 @extends('layouts.admin')
 @section('title', 'Quản lý Đặt Lịch Lái Thử')
 
+@push('styles')
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite('resources/css/admin-test-drives-index.css')
+    @endif
+@endpush
+
+
 @section('content')
 <div class="wrap">
-    <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+    <div class="admin-test-drives-index-inline-30">
         <div>
-            <h1 style="margin: 0; font-size: 1.8rem; color: var(--text); display: flex; align-items: center; gap: 10px;">
-                <svg style="width: 28px; height: 28px; color: var(--accent);" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <h1 class="admin-test-drives-index-inline-29">
+                <svg class="admin-test-drives-index-inline-28" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 Quản lý lái thử
             </h1>
-            <p style="color: var(--muted); margin-top: 0.5rem; margin-bottom: 0;">Theo dõi và xử lý các yêu cầu trải nghiệm xe từ khách hàng.</p>
+            <p class="admin-test-drives-index-inline-27">Theo dõi và xử lý các yêu cầu trải nghiệm xe từ khách hàng.</p>
         </div>
 
-        <form method="get" action="{{ route('admin.test_drives.index') }}" style="display: flex; align-items: center; gap: 10px; background: #0a0d12; padding: 6px; border-radius: 8px; border: 1px solid var(--border);">
-            <select name="status" style="background: transparent; border: none; color: var(--text); padding: 5px 10px; outline: none; cursor: pointer;">
-                <option value="" style="background: var(--bg);">Tất cả trạng thái</option>
+        <form class="admin-test-drives-index-inline-26" method="get" action="{{ route('admin.test_drives.index') }}">
+            <select class="admin-test-drives-index-inline-25" name="status">
+                <option class="admin-test-drives-index-inline-24" value="">Tất cả trạng thái</option>
                 @foreach(['pending' => 'Chờ xử lý', 'approved' => 'Đã duyệt', 'rejected' => 'Đã huỷ', 'completed' => 'Hoàn thành'] as $k => $v)
-                    <option value="{{ $k }}" style="background: var(--bg);" @selected(($status ?? '') === $k)>{{ $v }}</option>
+                    <option class="admin-test-drives-index-inline-24" value="{{ $k }}" @selected(($status ?? '') === $k)>{{ $v }}</option>
                 @endforeach
             </select>
-            <button type="submit" style="padding: 6px 16px; border-radius: 6px; background: var(--accent); color: #000; border: none; font-weight: bold; cursor: pointer; transition: 0.2s;">
+            <button class="admin-test-drives-index-inline-23" type="submit">
                 Lọc
             </button>
         </form>
     </div>
 
     @if(session('success'))
-        <div style="padding: 1rem; margin-bottom: 1.5rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; border-radius: 8px; font-weight: bold; display: flex; align-items: center; gap: 10px;">
-            <svg style="width: 20px; height: 20px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <div class="admin-test-drives-index-inline-22">
+            <svg class="admin-test-drives-index-inline-21" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             {{ session('success') }}
         </div>
     @endif
 
-    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-        <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
-                <thead style="background: rgba(0,0,0,0.2); color: var(--muted); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em;">
+    <div class="admin-test-drives-index-inline-20">
+        <div class="admin-test-drives-index-inline-19">
+            <table class="admin-test-drives-index-inline-18">
+                <thead class="admin-test-drives-index-inline-17">
                     <tr>
-                        <th style="padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border);">Mã vé</th>
-                        <th style="padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border);">Khách hàng</th>
-                        <th style="padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border);">Xe yêu cầu</th>
-                        <th style="padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border);">Ngày tạo</th>
-                        <th style="padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border);">Trạng thái</th>
-                        <th style="padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border); text-align: right;">Thao tác</th>
+                        <th class="admin-test-drives-index-inline-16">Mã vé</th>
+                        <th class="admin-test-drives-index-inline-16">Khách hàng</th>
+                        <th class="admin-test-drives-index-inline-16">Xe yêu cầu</th>
+                        <th class="admin-test-drives-index-inline-16">Ngày tạo</th>
+                        <th class="admin-test-drives-index-inline-16">Trạng thái</th>
+                        <th class="admin-test-drives-index-inline-15">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($bookings as $b)
-                        <tr style="border-bottom: 1px solid var(--border); transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
-                            <td style="padding: 1rem 1.5rem;">
-                                <span style="background: #0a0d12; color: var(--accent); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border); font-family: monospace; font-weight: bold;">
+                        <tr class="admin-test-drives-index-inline-14" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+                            <td class="admin-test-drives-index-inline-9">
+                                <span class="admin-test-drives-index-inline-13">
                                     #{{ $b->ticket_id }}
                                 </span>
                             </td>
-                            <td style="padding: 1rem 1.5rem;">
-                                <div style="font-weight: bold; color: var(--text);">{{ $b->user->name ?? '—' }}</div>
-                                <div style="font-size: 0.8rem; color: var(--muted); margin-top: 2px;">{{ $b->user->email ?? '' }}</div>
+                            <td class="admin-test-drives-index-inline-9">
+                                <div class="admin-test-drives-index-inline-12">{{ $b->user->name ?? '—' }}</div>
+                                <div class="admin-test-drives-index-inline-11">{{ $b->user->email ?? '' }}</div>
                             </td>
-                            <td style="padding: 1rem 1.5rem;">
-                                <div style="font-weight: bold; color: var(--text);">{{ $b->car ? (($b->car->brand->name ?? '') . ' ' . $b->car->name) : '—' }}</div>
-                                <div style="font-size: 0.8rem; color: var(--muted); margin-top: 2px;">{{ Str::limit($b->subject, 30) }}</div>
+                            <td class="admin-test-drives-index-inline-9">
+                                <div class="admin-test-drives-index-inline-12">{{ $b->car ? (($b->car->brand->name ?? '') . ' ' . $b->car->name) : '—' }}</div>
+                                <div class="admin-test-drives-index-inline-11">{{ Str::limit($b->subject, 30) }}</div>
                             </td>
-                            <td style="padding: 1rem 1.5rem; color: var(--muted);">
+                            <td class="admin-test-drives-index-inline-10">
                                 {{ $b->created_at?->format('d/m/Y H:i') }}
                             </td>
-                            <td style="padding: 1rem 1.5rem;">
+                            <td class="admin-test-drives-index-inline-9">
                                 @php
                                     $badgeStyle = match($b->status) {
                                         'pending' => 'background: rgba(234, 179, 8, 0.1); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.3);',
@@ -87,19 +94,19 @@
                                     {{ $statusText }}
                                 </span>
                             </td>
-                            <td style="padding: 1rem 1.5rem; text-align: right;">
-                                <a href="{{ route('admin.test_drives.show', $b->ticket_id) }}" style="display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); color: var(--text); font-size: 0.8rem; transition: 0.2s; text-decoration: none;" onmouseover="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)';" onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text)';">
+                            <td class="admin-test-drives-index-inline-8">
+                                <a class="admin-test-drives-index-inline-7" href="{{ route('admin.test_drives.show', $b->ticket_id) }}" onmouseover="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)';" onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text)';">
                                     Chi tiết
-                                    <svg style="width: 14px; height: 14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                                    <svg class="admin-test-drives-index-inline-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
                                 </a>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" style="padding: 4rem 1rem; text-align: center; color: var(--muted);">
-                                <svg style="width: 48px; height: 48px; opacity: 0.2; margin: 0 auto 10px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                <p style="font-size: 1rem; color: var(--text); margin: 0 0 5px;">Chưa có yêu cầu lái thử nào.</p>
-                                <p style="font-size: 0.85rem; margin: 0;">Khi khách hàng đặt lịch, danh sách sẽ hiển thị tại đây.</p>
+                            <td class="admin-test-drives-index-inline-5" colspan="6">
+                                <svg class="admin-test-drives-index-inline-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                <p class="admin-test-drives-index-inline-3">Chưa có yêu cầu lái thử nào.</p>
+                                <p class="admin-test-drives-index-inline-2">Khi khách hàng đặt lịch, danh sách sẽ hiển thị tại đây.</p>
                             </td>
                         </tr>
                     @endforelse
@@ -109,7 +116,7 @@
     </div>
 
     @if($bookings->hasPages())
-        <div style="margin-top: 2rem; display: flex; justify-content: center;">
+        <div class="admin-test-drives-index-inline-1">
             {{ $bookings->links('pagination.lux') }}
         </div>
     @endif

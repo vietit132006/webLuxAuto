@@ -1,0 +1,41 @@
+.rep-title { font-size: 1.5rem; font-weight: 700; margin: 0 0 0.5rem; }
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .form-grid { display: grid; gap: 1rem; max-width: 520px; }
+    .form-grid label { display: block; font-weight: 600; margin-bottom: 0.35rem; }
+    .form-grid select, .form-grid input, .form-grid textarea {
+        width: 100%; padding: 0.55rem 0.75rem; border-radius: 8px; border: 1px solid var(--border); background: #0a0d12; color: var(--text);
+    }
+    .btn-save { padding: 0.6rem 1.2rem; border-radius: 8px; border: none; background: var(--accent); color: #0c0f14; font-weight: 700; cursor: pointer; }
+    .hint { font-size: 0.85rem; color: var(--muted); margin-top: 0.25rem; }
+    .table-responsive { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); }
+    .admin-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .admin-table th, .admin-table td { padding: 0.65rem 0.85rem; border-bottom: 1px solid var(--border); text-align: left; }
+    .flash-alert { background: #d1fae5; color: #065f46; padding: 0.85rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-weight: 600; }
+    .err { background: #fee2e2; color: #991b1b; padding: 0.85rem 1rem; border-radius: 8px; margin-bottom: 1rem; }
+
+/* Inline styles extracted from resources/views/admin/reports/inventory_check.blade.php */
+
+.admin-reports-inventory-check-inline-1 {
+    text-align: center;
+    color: var(--muted);
+    padding: 1.5rem;
+}
+
+.admin-reports-inventory-check-inline-2 {
+    color: var(--muted);
+}
+
+.admin-reports-inventory-check-inline-3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+}
+
+.admin-reports-inventory-check-inline-4 {
+    margin-top: 0;
+    font-size: 1.1rem;
+}
+
+.admin-reports-inventory-check-inline-5 {
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+}

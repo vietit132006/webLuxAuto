@@ -2,6 +2,13 @@
 
 @section('title', 'Chi tiết model xe')
 
+@push('styles')
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite('resources/css/admin-car-models-show.css')
+    @endif
+@endpush
+
+
 @section('content')
     @include('admin.car_models._style')
 
@@ -12,7 +19,7 @@
                 <p class="model-subtitle">Thông tin kỹ thuật và các xe đang sử dụng model này.</p>
             </div>
 
-            <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+            <div class="admin-car-models-show-inline-20">
                 <a href="{{ route('admin.car-models.index') }}" class="lux-btn-muted">← Danh sách</a>
                 <a href="{{ route('admin.car-models.edit', $carModel->id) }}" class="lux-btn-primary">Sửa model</a>
             </div>
@@ -73,44 +80,43 @@
             </div>
 
             <div class="model-card detail-card">
-                <h3 class="form-section-title" style="margin-bottom:1rem;">Tình trạng sử dụng</h3>
+                <h3 class="form-section-title admin-car-models-show-inline-19">Tình trạng sử dụng</h3>
 
-                <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;border:1px solid var(--border);border-radius:14px;padding:1.1rem;">
+                <div class="admin-car-models-show-inline-18">
                     <div>
-                        <div style="color:var(--muted);font-size:.85rem;">Xe đang dùng model này</div>
-                        <div style="font-size:2rem;font-weight:900;color:var(--accent);">{{ $carModel->cars_count }}</div>
+                        <div class="admin-car-models-show-inline-17">Xe đang dùng model này</div>
+                        <div class="admin-car-models-show-inline-16">{{ $carModel->cars_count }}</div>
                     </div>
 
                     @if ($carModel->cars_count > 0)
-                        <span class="spec-pill" style="color:#fbbf24;border-color:rgba(251,191,36,.25);background:rgba(251,191,36,.08);">Không thể xóa</span>
+                        <span class="spec-pill admin-car-models-show-inline-15">Không thể xóa</span>
                     @else
-                        <span class="spec-pill" style="color:#34d399;border-color:rgba(52,211,153,.25);background:rgba(52,211,153,.08);">Có thể xóa</span>
+                        <span class="spec-pill admin-car-models-show-inline-14">Có thể xóa</span>
                     @endif
                 </div>
 
                 @if ($carModel->cars_count === 0)
-                    <form action="{{ route('admin.car-models.destroy', $carModel->id) }}" method="POST"
-                        style="margin-top:1rem;"
+                    <form class="admin-car-models-show-inline-13" action="{{ route('admin.car-models.destroy', $carModel->id) }}" method="POST"
                         onsubmit="return confirm('Bạn có chắc chắn muốn xóa model này không?');">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="lux-btn-danger" style="width:100%;">Xóa model này</button>
+                        <button type="submit" class="lux-btn-danger admin-car-models-show-inline-12">Xóa model này</button>
                     </form>
                 @endif
             </div>
         </div>
 
-        <div class="model-card" style="margin-top:1.25rem;">
-            <div style="padding:1.2rem 1.4rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:1rem;">
-                <h3 style="margin:0;color:var(--text);font-size:1.05rem;">Xe đang sử dụng model</h3>
+        <div class="model-card admin-car-models-show-inline-11">
+            <div class="admin-car-models-show-inline-10">
+                <h3 class="admin-car-models-show-inline-9">Xe đang sử dụng model</h3>
                 <span class="count-badge">{{ $carModel->cars_count }}</span>
             </div>
 
             @if ($cars->isEmpty())
-                <div class="empty-state" style="padding:2.5rem 1.5rem;">Chưa có xe nào sử dụng model này.</div>
+                <div class="empty-state admin-car-models-show-inline-8">Chưa có xe nào sử dụng model này.</div>
             @else
                 <div class="table-responsive">
-                    <table class="model-table" style="min-width:760px;">
+                    <table class="model-table admin-car-models-show-inline-7">
                         <thead>
                             <tr>
                                 <th>Tên xe</th>
@@ -118,20 +124,20 @@
                                 <th>Biển số</th>
                                 <th>Năm</th>
                                 <th>Giá</th>
-                                <th style="text-align:right;">Chi tiết</th>
+                                <th class="admin-car-models-show-inline-2">Chi tiết</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($cars as $car)
                                 <tr>
-                                    <td style="color:var(--text);font-weight:800;">{{ $car->name }}</td>
-                                    <td style="color:var(--muted);font-family:Monaco,Consolas,monospace;">{{ $car->vin ?? '-' }}</td>
-                                    <td style="color:var(--muted);">{{ $car->license_plate ?? '-' }}</td>
-                                    <td style="color:var(--muted);">{{ $car->year ?? '-' }}</td>
-                                    <td style="color:var(--accent);font-weight:800;white-space:nowrap;">
+                                    <td class="admin-car-models-show-inline-6">{{ $car->name }}</td>
+                                    <td class="admin-car-models-show-inline-5">{{ $car->vin ?? '-' }}</td>
+                                    <td class="admin-car-models-show-inline-4">{{ $car->license_plate ?? '-' }}</td>
+                                    <td class="admin-car-models-show-inline-4">{{ $car->year ?? '-' }}</td>
+                                    <td class="admin-car-models-show-inline-3">
                                         {{ number_format($car->price ?? 0, 0, ',', '.') }} VNĐ
                                     </td>
-                                    <td style="text-align:right;">
+                                    <td class="admin-car-models-show-inline-2">
                                         <a href="{{ route('admin.cars.show', $car->car_id) }}" class="lux-btn-secondary">Xem xe</a>
                                     </td>
                                 </tr>
@@ -141,7 +147,7 @@
                 </div>
 
                 @if ($carModel->cars_count > 8)
-                    <div style="padding:1rem 1.4rem;color:var(--muted);border-top:1px solid var(--border);">
+                    <div class="admin-car-models-show-inline-1">
                         Chỉ hiển thị 8 xe gần nhất.
                     </div>
                 @endif

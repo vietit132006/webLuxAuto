@@ -1,0 +1,176 @@
+/* Inline styles extracted from resources/views/admin/users/index.blade.php */
+
+.admin-users-index-inline-1 {
+    margin-top: 1.5rem;
+}
+
+.admin-users-index-inline-2 {
+    background: none;
+    border: none;
+    color: #f87171;
+    cursor: pointer;
+    padding: 0;
+}
+
+.admin-users-index-inline-3 {
+    display: inline-block;
+}
+
+.admin-users-index-inline-4 {
+    background: none;
+    border: none;
+    color: #34d399;
+    cursor: pointer;
+    padding: 0;
+}
+
+.admin-users-index-inline-5 {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.admin-users-index-inline-6 {
+    color: #facc15;
+    margin-right: 10px;
+}
+
+.admin-users-index-inline-7 {
+    padding: 1rem;
+    text-align: right;
+}
+
+.admin-users-index-inline-8 {
+    padding: 1rem;
+}
+
+.admin-users-index-inline-9 {
+    background: rgba(156, 163, 175, 0.2);
+    color: #9ca3af;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.admin-users-index-inline-10 {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.admin-users-index-inline-11 {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.admin-users-index-inline-12 {
+    padding: 1rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.admin-users-index-inline-13 {
+    padding: 1rem;
+    font-weight: bold;
+    color: var(--text);
+}
+
+.admin-users-index-inline-14 {
+    border-top: 1px solid var(--border);
+}
+
+.admin-users-index-inline-15 {
+    background: rgba(255,255,255,0.05);
+    color: var(--muted);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+.admin-users-index-inline-16 {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.admin-users-index-inline-17 {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.admin-users-index-inline-18 {
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #000;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+}
+
+.admin-users-index-inline-19 {
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    flex: 1;
+    max-width: 300px;
+}
+
+.admin-users-index-inline-20 {
+    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 10px;
+}
+
+.admin-users-index-inline-21 {
+    background-color: #fee2e2;
+    color: #991b1b;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    border: 1px solid #f87171;
+    font-weight: 600;
+}
+
+.admin-users-index-inline-22 {
+    background-color: #d1fae5;
+    color: #065f46;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    border: 1px solid #34d399;
+    font-weight: 600;
+    transition: opacity 0.5s ease;
+}
+
+.admin-users-index-inline-23 {
+    background: var(--accent);
+    color: #000;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: bold;
+}
+
+.admin-users-index-inline-24 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.admin-users-index-inline-25 {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}

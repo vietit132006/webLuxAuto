@@ -1,0 +1,31 @@
+.rep-title { font-size: 1.5rem; font-weight: 700; margin: 0 0 1rem; }
+    .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-box { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; }
+    .stat-box .lbl { color: var(--muted); font-size: 0.8rem; }
+    .stat-box .val { font-size: 1.35rem; font-weight: 800; color: var(--accent); }
+    .table-responsive { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); }
+    .admin-table { width: 100%; border-collapse: collapse; }
+    .admin-table th, .admin-table td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); text-align: left; }
+    .admin-table th { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; }
+
+/* Inline styles extracted from resources/views/admin/reports/customers.blade.php */
+
+.admin-reports-customers-inline-1 {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+.admin-reports-customers-inline-2 {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.admin-reports-customers-inline-3 {
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.admin-reports-customers-inline-4 {
+    font-weight: 600;
+}

@@ -1,0 +1,109 @@
+/* Inline styles extracted from resources/views/admin/car_models/show.blade.php */
+
+.admin-car-models-show-inline-1 {
+    padding:1rem 1.4rem;
+    color:var(--muted);
+    border-top:1px solid var(--border);
+}
+
+.admin-car-models-show-inline-2 {
+    text-align:right;
+}
+
+.admin-car-models-show-inline-3 {
+    color:var(--accent);
+    font-weight:800;
+    white-space:nowrap;
+}
+
+.admin-car-models-show-inline-4 {
+    color:var(--muted);
+}
+
+.admin-car-models-show-inline-5 {
+    color:var(--muted);
+    font-family:Monaco,Consolas,monospace;
+}
+
+.admin-car-models-show-inline-6 {
+    color:var(--text);
+    font-weight:800;
+}
+
+.admin-car-models-show-inline-7 {
+    min-width:760px;
+}
+
+.admin-car-models-show-inline-8 {
+    padding:2.5rem 1.5rem;
+}
+
+.admin-car-models-show-inline-9 {
+    margin:0;
+    color:var(--text);
+    font-size:1.05rem;
+}
+
+.admin-car-models-show-inline-10 {
+    padding:1.2rem 1.4rem;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:1rem;
+}
+
+.admin-car-models-show-inline-11 {
+    margin-top:1.25rem;
+}
+
+.admin-car-models-show-inline-12 {
+    width:100%;
+}
+
+.admin-car-models-show-inline-13 {
+    margin-top:1rem;
+}
+
+.admin-car-models-show-inline-14 {
+    color:#34d399;
+    border-color:rgba(52,211,153,.25);
+    background:rgba(52,211,153,.08);
+}
+
+.admin-car-models-show-inline-15 {
+    color:#fbbf24;
+    border-color:rgba(251,191,36,.25);
+    background:rgba(251,191,36,.08);
+}
+
+.admin-car-models-show-inline-16 {
+    font-size:2rem;
+    font-weight:900;
+    color:var(--accent);
+}
+
+.admin-car-models-show-inline-17 {
+    color:var(--muted);
+    font-size:.85rem;
+}
+
+.admin-car-models-show-inline-18 {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:1rem;
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:1.1rem;
+}
+
+.admin-car-models-show-inline-19 {
+    margin-bottom:1rem;
+}
+
+.admin-car-models-show-inline-20 {
+    display:flex;
+    gap:.75rem;
+    flex-wrap:wrap;
+}

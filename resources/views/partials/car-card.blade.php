@@ -15,8 +15,7 @@
             </a>
         @else
             <a href="{{ route('cars.show_public', $car->car_id) }}"
-               class="v-card__img"
-               style="display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:0.875rem;background:#f3f4f6;">
+               class="v-card__img partial-car-card-inline-3">
                Chưa có ảnh
             </a>
         @endif
@@ -24,7 +23,7 @@
 
     <div class="v-card__body">
         <h3 class="v-card__title">
-            <a href="{{ route('cars.show_public', $car->car_id) }}" style="color:inherit;text-decoration:none;">
+            <a class="partial-car-card-inline-2" href="{{ route('cars.show_public', $car->car_id) }}">
                 {{ $car->brand->name ?? '' }} {{ $car->name }}
             </a>
         </h3>
@@ -39,7 +38,7 @@
             @endif
         </div>
 
-        <p class="v-card__price" style="font-weight: bold; color: var(--accent); margin-top: 10px;">
+        <p class="v-card__price partial-car-card-inline-1">
             {{ number_format($car->price, 0, ',', '.') }} đ
         </p>
     </div>

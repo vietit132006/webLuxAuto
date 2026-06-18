@@ -1,32 +1,39 @@
 @extends('layouts.site')
 @section('title', 'Đặt lại mật khẩu')
 
+@push('styles')
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite('resources/css/auth-reset-password.css')
+    @endif
+@endpush
+
+
 @section('content')
-<div class="wrap" style="max-width: 450px; margin: 4rem auto; background: var(--surface); padding: 2.5rem; border-radius: 12px; border: 1px solid var(--border);">
-    <h1 style="margin-top: 0; color: var(--accent); text-align: center;">Tạo Mật Khẩu Mới</h1>
+<div class="wrap auth-reset-password-inline-9">
+    <h1 class="auth-reset-password-inline-8">Tạo Mật Khẩu Mới</h1>
 
     <form method="POST" action="{{ route('password.update') }}">
         @csrf
         <input type="hidden" name="token" value="{{ $token }}">
 
-        <div style="margin-bottom: 1.25rem;">
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Email</label>
-            <input type="email" name="email" value="{{ $email ?? old('email') }}" required readonly style="width: 100%; padding: 0.8rem; border-radius: 6px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--muted);">
-            @error('email') <div style="color: #f87171; font-size: 0.85rem; margin-top: 5px;">{{ $message }}</div> @enderror
+        <div class="auth-reset-password-inline-6">
+            <label class="auth-reset-password-inline-3">Email</label>
+            <input class="auth-reset-password-inline-7" type="email" name="email" value="{{ $email ?? old('email') }}" required readonly>
+            @error('email') <div class="auth-reset-password-inline-5">{{ $message }}</div> @enderror
         </div>
 
-        <div style="margin-bottom: 1.25rem;">
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Mật khẩu mới</label>
-            <input type="password" name="password" required style="width: 100%; padding: 0.8rem; border-radius: 6px; background: #0c0f14; border: 1px solid var(--border); color: #fff;">
-            @error('password') <div style="color: #f87171; font-size: 0.85rem; margin-top: 5px;">{{ $message }}</div> @enderror
+        <div class="auth-reset-password-inline-6">
+            <label class="auth-reset-password-inline-3">Mật khẩu mới</label>
+            <input class="auth-reset-password-inline-2" type="password" name="password" required>
+            @error('password') <div class="auth-reset-password-inline-5">{{ $message }}</div> @enderror
         </div>
 
-        <div style="margin-bottom: 2rem;">
-            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Nhập lại mật khẩu</label>
-            <input type="password" name="password_confirmation" required style="width: 100%; padding: 0.8rem; border-radius: 6px; background: #0c0f14; border: 1px solid var(--border); color: #fff;">
+        <div class="auth-reset-password-inline-4">
+            <label class="auth-reset-password-inline-3">Nhập lại mật khẩu</label>
+            <input class="auth-reset-password-inline-2" type="password" name="password_confirmation" required>
         </div>
 
-        <button type="submit" style="width: 100%; background: var(--accent); color: #000; padding: 0.8rem; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
+        <button class="auth-reset-password-inline-1" type="submit">
             Lưu mật khẩu & Đăng nhập
         </button>
     </form>

@@ -2,6 +2,13 @@
 
 @section('title', 'Thêm model xe')
 
+@push('styles')
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite('resources/css/admin-car-models-create.css')
+    @endif
+@endpush
+
+
 @section('content')
     @include('admin.car_models._style')
 
@@ -21,10 +28,10 @@
 
         @if ($errors->any())
             <div class="flash-alert flash-error">
-                <div style="margin-bottom:6px;">Vui lòng kiểm tra lại thông tin:</div>
-                <ul style="margin:0;padding-left:18px;">
+                <div class="admin-car-models-create-inline-3">Vui lòng kiểm tra lại thông tin:</div>
+                <ul class="admin-car-models-create-inline-2">
                     @foreach ($errors->all() as $error)
-                        <li style="margin:3px 0;">{{ $error }}</li>
+                        <li class="admin-car-models-create-inline-1">{{ $error }}</li>
                     @endforeach
                 </ul>
             </div>
