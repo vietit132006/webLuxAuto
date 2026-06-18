@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Lux Auto') — {{ config('app.name', 'Lux Auto') }}</title>
 
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
@@ -71,6 +72,50 @@
             align-items: center;
             gap: 1.5rem;
             flex-wrap: wrap;
+        }
+
+        .site-menu-title {
+            display: none;
+        }
+
+        .site-menu-toggle {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.035);
+            color: var(--text);
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+        }
+
+        .site-menu-toggle:hover {
+            border-color: rgba(201, 169, 98, 0.45);
+            color: var(--accent);
+            background: rgba(201, 169, 98, 0.08);
+        }
+
+        .site-menu-toggle svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .site-menu-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            border: 0;
+            padding: 0;
+            background: rgba(0, 0, 0, 0.55);
+            cursor: pointer;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+            z-index: 80;
         }
 
         /* Hiệu ứng gạch chân sang trọng cho Menu */
@@ -143,57 +188,193 @@
             align-items: center;
             height: 100%;
         }
+
         .nav-dropdown-toggle {
-            cursor: pointer;
-            font-size: 0.9375rem;
-            color: var(--muted);
-            padding: 0.5rem 0;
-            display: flex;
+            min-height: 42px;
+            display: inline-flex;
             align-items: center;
-            gap: 0.4rem;
-            transition: color 0.2s;
+            gap: 0.62rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 0.3rem 0.48rem 0.3rem 0.34rem;
+            background: rgba(255, 255, 255, 0.035);
+            color: var(--text);
+            cursor: pointer;
+            font: inherit;
+            transition: border-color 0.2s ease, background 0.2s ease;
         }
-        .nav-dropdown-toggle:hover { color: var(--text); }
+
+        .nav-dropdown-toggle:hover,
+        .nav-dropdown-toggle:focus-visible,
+        .nav-dropdown.is-open .nav-dropdown-toggle {
+            border-color: rgba(201, 169, 98, 0.48);
+            background: rgba(201, 169, 98, 0.08);
+            outline: none;
+        }
+
+        .nav-account-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 auto;
+            border: 1px solid rgba(201, 169, 98, 0.42);
+            background: linear-gradient(135deg, rgba(201, 169, 98, 0.24), rgba(15, 23, 42, 0.95));
+            color: var(--accent);
+            font-size: 0.9rem;
+            font-weight: 850;
+            text-transform: uppercase;
+        }
+
+        .nav-account-name {
+            max-width: 150px;
+            overflow: hidden;
+            color: var(--text);
+            font-size: 0.9rem;
+            font-weight: 750;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .nav-account-chevron {
+            width: 16px;
+            height: 16px;
+            flex: 0 0 auto;
+            color: var(--muted);
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+        .nav-dropdown.is-open .nav-account-chevron {
+            color: var(--accent);
+            transform: rotate(180deg);
+        }
 
         .nav-dropdown-menu {
             position: absolute;
             right: 0;
-            top: 130%;
-            background: rgba(20, 26, 34, 0.95);
+            top: calc(100% + 0.65rem);
+            width: min(280px, calc(100vw - 2rem));
+            background: rgba(20, 26, 34, 0.98);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 10px;
-            min-width: 180px;
-            padding: 0.5rem 0;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(201, 169, 98, 0.22);
+            border-radius: 12px;
+            padding: 0.45rem;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
             opacity: 0;
-            visibility: hidden;
-            transform: translateY(15px);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 50;
+            pointer-events: none;
+            transform: translateY(8px);
+            transition: opacity 0.18s ease, transform 0.18s ease;
+            z-index: 70;
         }
-        .nav-dropdown:hover .nav-dropdown-menu {
+
+        .nav-dropdown.is-open .nav-dropdown-menu {
             opacity: 1;
-            visibility: visible;
+            pointer-events: auto;
             transform: translateY(0);
         }
-        .nav-dropdown-menu a {
+
+        .nav-dropdown-menu::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            right: 18px;
+            width: 10px;
+            height: 10px;
+            border-top: 1px solid rgba(201, 169, 98, 0.22);
+            border-left: 1px solid rgba(201, 169, 98, 0.22);
+            background: rgba(20, 26, 34, 0.98);
+            transform: rotate(45deg);
+        }
+
+        .nav-dropdown-profile {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 0.6rem 1.2rem;
+            gap: 0.7rem;
+            padding: 0.65rem 0.7rem 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 0.35rem;
+        }
+
+        .nav-dropdown-profile .nav-account-avatar {
+            width: 40px;
+            height: 40px;
+        }
+
+        .nav-dropdown-profile strong,
+        .nav-dropdown-profile span {
+            display: block;
+            max-width: 184px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .nav-dropdown-profile strong {
             color: var(--text);
+            font-size: 0.94rem;
+        }
+
+        .nav-dropdown-profile span {
+            color: var(--muted);
+            font-size: 0.78rem;
+        }
+
+        .nav-dropdown-menu form {
+            margin: 0;
+        }
+
+        .nav-dropdown-menu a,
+        .nav-dropdown-menu button {
+            width: 100%;
+            min-height: 42px;
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            border: 0;
+            border-radius: 8px;
+            padding: 0.62rem 0.72rem;
+            background: transparent;
+            color: var(--text);
+            cursor: pointer;
+            font-family: inherit;
             font-size: 0.9rem;
-            font-weight: 500;
+            font-weight: 650;
+            text-align: left;
+            transition: color 0.2s ease, background 0.2s ease;
         }
-        .nav-dropdown-menu a svg { color: var(--accent); width: 18px; height: 18px; }
-        .nav-dropdown-menu a.text-danger svg { color: #ef4444; }
-        .nav-dropdown-menu a:hover {
-            background: rgba(255,255,255,0.03);
+
+        .nav-dropdown-menu a svg,
+        .nav-dropdown-menu button svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
             color: var(--accent);
-            padding-left: 1.5rem; /* Hiệu ứng thụt lùi khi trỏ chuột */
         }
-        .nav-dropdown-menu a.text-danger:hover { color: #ef4444; }
+
+        .nav-dropdown-menu a:hover,
+        .nav-dropdown-menu button:hover,
+        .nav-dropdown-menu a:focus-visible,
+        .nav-dropdown-menu button:focus-visible {
+            background: rgba(201, 169, 98, 0.1);
+            color: var(--accent);
+            outline: none;
+        }
+
+        .nav-dropdown-menu a.text-danger {
+            color: #fca5a5;
+        }
+
+        .nav-dropdown-menu a.text-danger svg {
+            color: #f87171;
+        }
+
+        .nav-dropdown-menu a.text-danger:hover,
+        .nav-dropdown-menu a.text-danger:focus-visible {
+            color: #fecaca;
+            background: rgba(239, 68, 68, 0.12);
+        }
 
         .dropdown-divider {
             height: 1px;
@@ -291,6 +472,181 @@
         .f-zalo { background-color: #0068ff; font-weight: bold; font-size: 15px; font-family: Arial, sans-serif; }
         .f-messenger { background: linear-gradient(45deg, #00B2FF, #006AFF); }
         .f-telegram { background-color: #2AABEE; }
+
+        @media (max-width: 768px) {
+            header.site {
+                z-index: 120;
+            }
+
+            body.site-menu-open {
+                overflow: hidden;
+            }
+
+            .nav-inner {
+                min-height: 64px;
+            }
+
+            .site-menu-toggle {
+                display: inline-flex;
+                margin-left: auto;
+            }
+
+            .site-menu-overlay {
+                display: block;
+            }
+
+            body.site-menu-open .site-menu-overlay {
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            body.site-menu-open .floating-contact-wrapper {
+                display: none;
+            }
+
+            nav.links {
+                position: fixed;
+                top: 0;
+                left: 0;
+                z-index: 130;
+                width: min(320px, 84vw);
+                height: 100vh;
+                padding: 1rem;
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.35rem;
+                flex-wrap: nowrap;
+                overflow-y: auto;
+                background: linear-gradient(180deg, #141a22, #0d1118);
+                border-right: 1px solid var(--border);
+                box-shadow: 18px 0 45px -28px rgba(0, 0, 0, 0.85);
+                transform: translateX(-100%);
+                transition: transform 0.28s ease;
+            }
+
+            body.site-menu-open nav.links {
+                transform: translateX(0);
+            }
+
+            .site-menu-title {
+                display: block;
+                padding: 0.85rem 0.85rem 1.1rem;
+                margin-bottom: 0.35rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                color: var(--text);
+                font-size: 1.08rem;
+                font-weight: 850;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+            }
+
+            .site-menu-title span {
+                color: var(--accent);
+            }
+
+            nav.links a.nav-link,
+            nav.links a.nav-cta {
+                width: 100%;
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                padding: 0.72rem 0.85rem;
+                border-radius: 8px;
+                color: var(--text);
+                opacity: 1;
+            }
+
+            nav.links a.nav-link::after {
+                display: none;
+            }
+
+            nav.links a.nav-link:hover,
+            nav.links a.nav-cta:hover {
+                background: rgba(201, 169, 98, 0.1);
+                color: var(--accent);
+                padding-left: 0.85rem;
+            }
+
+            nav.links a.nav-cta {
+                justify-content: center;
+                margin-top: 0.35rem;
+                border-color: rgba(201, 169, 98, 0.45);
+                color: var(--accent);
+            }
+
+            .nav-live {
+                justify-content: flex-start;
+            }
+
+            .nav-dropdown {
+                width: 100%;
+                height: auto;
+                display: block;
+                padding: 0.7rem 0.85rem;
+                border-top: 1px solid rgba(255, 255, 255, 0.08);
+                margin-top: 0.4rem;
+            }
+
+            .nav-dropdown-toggle {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .nav-account-name {
+                max-width: none;
+                margin-right: auto;
+            }
+
+            .nav-dropdown-menu {
+                position: static;
+                width: 100%;
+                max-height: 0;
+                overflow: hidden;
+                opacity: 0;
+                pointer-events: none;
+                transform: none;
+                padding: 0;
+                border: 0;
+                border-radius: 0;
+                background: transparent;
+                box-shadow: none;
+                transition: max-height 0.2s ease, opacity 0.2s ease;
+            }
+
+            .nav-dropdown.is-open .nav-dropdown-menu {
+                max-height: 360px;
+                opacity: 1;
+                pointer-events: auto;
+                padding-top: 0.45rem;
+            }
+
+            .nav-dropdown-menu::before,
+            .nav-dropdown-profile {
+                display: none;
+            }
+
+            .nav-dropdown-menu a,
+            .nav-dropdown-menu button {
+                min-height: 40px;
+                padding: 0.58rem 0.65rem;
+                border-radius: 8px;
+            }
+
+            .dropdown-divider {
+                margin: 0.45rem 0;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .wrap {
+                padding: 0 1rem;
+            }
+
+            .logo {
+                font-size: 1.08rem;
+            }
+        }
     </style>
     @stack('styles')
 </head>
@@ -300,7 +656,15 @@
     <div class="wrap nav-inner">
         <a href="{{ route('home') }}" class="logo">Lux <span>Auto</span></a>
 
-        <nav class="links">
+        <button type="button" class="site-menu-toggle" id="site-menu-toggle" aria-label="Mở menu"
+            aria-controls="site-menu" aria-expanded="false">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h16M4 17h16" />
+            </svg>
+        </button>
+
+        <nav class="links" id="site-menu">
+            <div class="site-menu-title">Lux <span>Auto</span></div>
             {{-- Menu cho Admin/Staff --}}
             @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'staff']))
                 <a href="{{ route('admin.dashboard') }}" class="nav-link">Dashboard</a>
@@ -322,27 +686,60 @@
 
             {{-- Menu Tài khoản / Đăng nhập --}}
             @auth
-                <div class="nav-dropdown">
-                    <span class="nav-dropdown-toggle">
-                        <strong style="color: var(--text);">{{ auth()->user()->name }}</strong>
-                        <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                    </span>
+                <div class="nav-dropdown" data-account-menu>
+                    <button type="button" class="nav-dropdown-toggle" data-account-menu-trigger
+                        aria-haspopup="true" aria-expanded="false">
+                        <span class="nav-account-avatar">
+                            {{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr(auth()->user()->name ?? 'A', 0, 1)) }}
+                        </span>
+                        <span class="nav-account-name">{{ auth()->user()->name }}</span>
+                        <svg class="nav-account-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+                        </svg>
+                    </button>
                     <div class="nav-dropdown-menu">
+                        <div class="nav-dropdown-profile">
+                            <span class="nav-account-avatar">
+                                {{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr(auth()->user()->name ?? 'A', 0, 1)) }}
+                            </span>
+                            <div>
+                                <strong>{{ auth()->user()->name }}</strong>
+                                <span>{{ auth()->user()->email }}</span>
+                            </div>
+                        </div>
+
+                        @if($isAccountSwitching && $accountSwitcher)
+                            <form method="POST" action="{{ route('account-switch.restore') }}">
+                                @csrf
+                                <button type="submit" class="account-switch-restore">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0 4-4m-4 4h14m-5 4v1a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h7a3 3 0 0 1 3 3v1"/></svg>
+                                    Quay lại {{ $accountSwitcher->name }}
+                                </button>
+                            </form>
+                            <div class="dropdown-divider"></div>
+                        @endif
+
                         <a href="{{ route('profile.index') }}">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                            Hồ sơ của tôi
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M15.75 7.5a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 20.25a7.5 7.5 0 0 1 15 0" />
+                            </svg>
+                            Thông tin tài khoản
                         </a>
-                        <a href="{{ route('order.history') }}">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                            Đơn hàng
-                        </a>
-                        <a href="{{ route('ticket.history') }}">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                            Hỗ trợ
-                        </a>
+                        <button type="button" data-open-account-switcher>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h15M16.5 3 21 7.5m0 0L16.5 12M21 7.5H6" />
+                            </svg>
+                            Chuyển đổi tài khoản
+                        </button>
                         <div class="dropdown-divider"></div>
                         <a href="{{ route('logout') }}" class="text-danger">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3-6 3 3m0 0-3 3m3-3H9" />
+                            </svg>
                             Đăng xuất
                         </a>
                     </div>
@@ -354,6 +751,7 @@
         </nav>
     </div>
 </header>
+<button type="button" class="site-menu-overlay" id="site-menu-overlay" aria-label="Đóng menu"></button>
 
 <main class="site-main">
     @yield('content')
@@ -386,6 +784,48 @@
         </a>
     </div>
 </div>
+
+@include('partials.saved-login-switcher')
+
+<script>
+    (() => {
+        const body = document.body;
+        const toggleButton = document.getElementById('site-menu-toggle');
+        const overlay = document.getElementById('site-menu-overlay');
+        const menu = document.getElementById('site-menu');
+
+        if (!toggleButton || !overlay || !menu) {
+            return;
+        }
+
+        const setMenuOpen = (isOpen) => {
+            body.classList.toggle('site-menu-open', isOpen);
+            toggleButton.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        };
+
+        toggleButton.addEventListener('click', () => {
+            setMenuOpen(!body.classList.contains('site-menu-open'));
+        });
+
+        overlay.addEventListener('click', () => setMenuOpen(false));
+
+        menu.querySelectorAll('a, [data-open-account-switcher]').forEach((link) => {
+            link.addEventListener('click', () => setMenuOpen(false));
+        });
+
+        window.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                setMenuOpen(false);
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                setMenuOpen(false);
+            }
+        });
+    })();
+</script>
 
 @stack('scripts')
 </body>

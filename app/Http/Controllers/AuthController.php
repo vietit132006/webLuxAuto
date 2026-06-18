@@ -30,6 +30,7 @@ class AuthController extends Controller
             $request->session()->regenerate();
 
             $user = Auth::user();
+            $request->session()->flash('show_save_login_prompt', true);
 
             // Kiểm tra: Nếu là admin hoặc staff thì cho vào Dashboard
             if (in_array($user->role, ['admin', 'staff'])) {

@@ -3,8 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Car;
-use Illuminate\Support\Facades\DB; // Thêm dòng này nếu dùng DB query
-use Illuminate\Http\Request;
+use App\Models\LiveSession;
 
 class LiveController extends Controller
 {
@@ -12,15 +11,11 @@ class LiveController extends Controller
     {
         // 1. Lấy cấu hình Livestream từ Database (Bảng live_sessions)
         // Lưu ý: Đổi tên Model \App\Models\LiveSession nếu project của bạn đặt tên khác
-        $live = \App\Models\LiveSession::first();
-
-        // (Tuỳ chọn) Nếu Admin đã TẮT luồng phát sóng, đá người dùng về trang chủ
-        if ($live && $live->is_active == 0) {
-            return redirect()->route('home')->with('error', 'Chưa có chương trình phát sóng trực tiếp nào đang diễn ra.');
-        }
+        $live = LiveSession::first();
 
         // 2. Lấy ID Video YouTube chính xác từ Database
-        $liveVideoId = $live ? $live->video_id : '';
+        $isLiveActive = (bool) ($live && $live->is_active && !empty($live->video_id));
+        $liveVideoId = $isLiveActive ? $live->video_id : '';
 
         // 3. Lấy ra các chiếc xe đang được đánh dấu
         // Nếu trong admin bạn đang ghim xe dựa vào mảng $live->featured_car_ids, bạn có thể dùng đoạn dưới:
@@ -35,6 +30,6 @@ class LiveController extends Controller
             ->take(4)
             ->get();
 
-        return view('client.livestream', compact('featuredCars', 'liveVideoId'));
+        return view('client.livestream', compact('featuredCars', 'liveVideoId', 'isLiveActive'));
     }
 }

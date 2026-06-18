@@ -72,6 +72,7 @@ class AdminReportController extends Controller
             ->orderBy('name')
             ->paginate(25);
 
+        $totalUnits = (int) Car::sum('stock');
         $lowStock = Car::where('stock', '>', 0)->where('stock', '<=', 2)->count();
         $outOfStock = Car::where('stock', '<=', 0)->count();
 
@@ -104,7 +105,10 @@ class AdminReportController extends Controller
                 if ($newStock < 0) {
                     throw new \InvalidArgumentException('Tồn kho sau điều chỉnh không được âm.');
                 }
-                $car->update(['stock' => $newStock]);
+                $car->update([
+                    'stock' => $newStock,
+                    'stock_quantity' => $newStock,
+                ]);
                 InventoryLog::create([
                     'car_id' => $car->car_id,
                     'change_qty' => $data['change_qty'],

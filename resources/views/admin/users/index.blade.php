@@ -63,6 +63,13 @@
                     </td>
                     <td style="padding: 1rem; text-align: right;">
                         <a href="{{ route('admin.users.edit', $user->user_id) }}" style="color: #facc15; margin-right: 10px;">Sửa</a>
+                        @if(auth()->id() != $user->user_id && $user->status && (auth()->user()->role === 'admin' || $user->role === 'customer'))
+                        <form action="{{ route('account-switch.switch') }}" method="POST" style="display: inline-block; margin-right: 10px;">
+                            @csrf
+                            <input type="hidden" name="user_id" value="{{ $user->user_id }}">
+                            <button type="submit" style="background: none; border: none; color: #34d399; cursor: pointer; padding: 0;">Chuyển</button>
+                        </form>
+                        @endif
                         @if(auth()->id() != $user->user_id)
                         <form action="{{ route('admin.users.destroy', $user->user_id) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('Khóa tài khoản này?');">
                             @csrf @method('DELETE')

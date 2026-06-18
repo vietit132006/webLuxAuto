@@ -22,6 +22,12 @@
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
         }
 
+        .page-subtitle {
+            margin: 0.35rem 0 0;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
         /* --- NÚT BẤM CHÍNH (PRIMARY BUTTON) --- */
         .lux-btn-primary {
             display: inline-flex;
@@ -53,12 +59,74 @@
 
         .lux-btn-primary:hover svg {
             transform: rotate(90deg);
-            /* Hiệu ứng xoay nhẹ icon dấu + */
         }
 
         .lux-btn-primary:active {
             transform: translateY(1px);
             box-shadow: 0 2px 8px -3px rgba(201, 169, 98, 0.4);
+        }
+
+        .header-action-group {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .excel-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            flex-wrap: wrap;
+        }
+
+        .excel-import-form {
+            margin: 0;
+        }
+
+        .file-input-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+            padding: 0;
+            margin: -1px;
+        }
+
+        .lux-btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 0.68rem 0.95rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.24);
+            color: var(--text);
+            font-weight: 700;
+            font-size: 0.86rem;
+            line-height: 1;
+            cursor: pointer;
+            text-decoration: none;
+            transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+            white-space: nowrap;
+            font-family: inherit;
+        }
+
+        .lux-btn-secondary svg {
+            width: 17px;
+            height: 17px;
+            flex-shrink: 0;
+        }
+
+        .lux-btn-secondary:hover {
+            transform: translateY(-1px);
+            border-color: rgba(201, 169, 98, 0.52);
+            background: rgba(201, 169, 98, 0.08);
+            color: var(--accent);
         }
 
         /* --- THANH TÌM KIẾM (SEARCH BAR) --- */
@@ -146,6 +214,20 @@
             transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        .lux-flash-error {
+            background: rgba(239, 68, 68, 0.08);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .import-error-list {
+            margin: 0.65rem 0 0;
+            padding-left: 1.15rem;
+            color: #fecaca;
+            font-size: 0.88rem;
+            line-height: 1.55;
+        }
+
         .lux-flash-alert.hide {
             opacity: 0;
             transform: translateY(-15px) scale(0.98);
@@ -191,7 +273,7 @@
         /* --- BẢNG ADMIN (TABLE) --- */
         .table-responsive {
             overflow-x: auto;
-            border-radius: 12px;
+            border-radius: 14px;
             border: 1px solid var(--border);
             background: linear-gradient(145deg, var(--surface), #0f141a);
             box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
@@ -201,22 +283,24 @@
             width: 100%;
             border-collapse: collapse;
             text-align: left;
+            min-width: 980px;
         }
 
         .admin-table th,
         .admin-table td {
-            padding: 1rem 1.2rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            padding: 1rem 1.1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
             vertical-align: middle;
         }
 
         .admin-table th {
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.32);
             color: var(--muted);
-            font-size: 0.8rem;
+            font-size: 0.76rem;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-weight: 700;
+            letter-spacing: 0.06em;
+            font-weight: 800;
+            white-space: nowrap;
         }
 
         .admin-table tr:last-child td {
@@ -228,16 +312,150 @@
         }
 
         .admin-table tr:hover {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.035);
+        }
+
+        .car-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 260px;
         }
 
         .table-img {
-            width: 70px;
-            height: 45px;
+            width: 82px;
+            height: 54px;
             object-fit: cover;
-            border-radius: 6px;
+            border-radius: 10px;
             background: #000;
+            border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            flex-shrink: 0;
+        }
+
+        .no-image {
+            width: 82px;
+            height: 54px;
+            border-radius: 10px;
+            border: 1px dashed rgba(255, 255, 255, 0.16);
+            color: var(--muted);
+            background: rgba(0, 0, 0, 0.22);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.72rem;
+            flex-shrink: 0;
+        }
+
+        .car-name {
+            display: block;
+            color: var(--text);
+            font-weight: 800;
+            font-size: 1rem;
+            line-height: 1.25;
+            margin-bottom: 4px;
+        }
+
+        .car-model {
+            display: block;
+            color: var(--muted);
+            font-size: 0.82rem;
+            line-height: 1.35;
+        }
+
+        .info-main {
+            display: block;
+            color: var(--text);
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .info-sub {
+            display: block;
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: 0.82rem;
+            white-space: nowrap;
+        }
+
+        .price-text {
+            color: var(--accent);
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        .status-stack {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            flex-wrap: wrap;
+            min-width: 150px;
+        }
+
+        .lux-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+
+        .badge-available {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.32);
+            color: #34d399;
+        }
+
+        .badge-deposit {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.32);
+            color: #fbbf24;
+        }
+
+        .badge-sold {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.32);
+            color: #f87171;
+        }
+
+        .badge-featured {
+            background: rgba(201, 169, 98, 0.12);
+            border-color: rgba(201, 169, 98, 0.35);
+            color: var(--accent);
+        }
+
+        .badge-normal {
+            background: rgba(148, 163, 184, 0.08);
+            border-color: rgba(148, 163, 184, 0.2);
+            color: var(--muted);
+        }
+
+        .badge-condition-new {
+            background: rgba(20, 184, 166, 0.1);
+            border-color: rgba(20, 184, 166, 0.3);
+            color: #2dd4bf;
+        }
+
+        .badge-condition-used {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
+        }
+
+        .badge-condition-display {
+            background: rgba(168, 85, 247, 0.1);
+            border-color: rgba(168, 85, 247, 0.3);
+            color: #c084fc;
+        }
+
+        .badge-condition-test {
+            background: rgba(244, 114, 182, 0.1);
+            border-color: rgba(244, 114, 182, 0.3);
+            color: #f472b6;
         }
 
         /* --- NÚT HÀNH ĐỘNG (ACTION BUTTONS) --- */
@@ -247,7 +465,6 @@
             gap: 8px;
             justify-content: flex-end;
             flex-wrap: nowrap;
-            /* QUAN TRỌNG: Ép các nút không được rớt xuống dòng */
         }
 
         .lux-btn-action {
@@ -266,9 +483,7 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             font-family: inherit;
             white-space: nowrap;
-            /* QUAN TRỌNG: Ép chữ "Xem", "Sửa", "Xóa" không bị bẻ dòng */
             flex-shrink: 0;
-            /* Đảm bảo nút không bị bóp méo khi màn hình nhỏ */
         }
 
         .lux-btn-action svg {
@@ -307,16 +522,6 @@
             box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
         }
 
-        @media (max-width: 768px) {
-            .lux-btn-action span {
-                display: none;
-            }
-
-            .lux-btn-action {
-                padding: 8px;
-            }
-        }
-
         /* --- PHÂN TRANG & TRỐNG --- */
         .pagination-wrap {
             margin-top: 2rem;
@@ -332,24 +537,391 @@
             border-radius: 12px;
             background: rgba(0, 0, 0, 0.1);
         }
+
+        /* --- FIX RESPONSIVE KHÔNG BỊ KHUẤT BÊN PHẢI --- */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        .wrap {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        .header-actions,
+        .search-bar,
+        .table-responsive,
+        .pagination-wrap {
+            max-width: 100%;
+        }
+
+        .table-responsive {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .admin-table {
+            width: 100%;
+        }
+
+        @media (min-width: 769px) {
+            .admin-wrapper {
+                flex: 0 0 calc(100vw - var(--sidebar-width));
+                width: calc(100vw - var(--sidebar-width));
+                max-width: calc(100vw - var(--sidebar-width));
+                min-width: 0;
+            }
+
+            .admin-main {
+                min-width: 0;
+            }
+        }
+
+        /* Tablet */
+        @media (max-width: 1024px) {
+            .admin-table {
+                min-width: 900px;
+            }
+
+            .admin-table th,
+            .admin-table td {
+                padding: 0.85rem 0.9rem;
+            }
+
+            .car-cell {
+                min-width: 220px;
+            }
+
+            .table-img,
+            .no-image {
+                width: 72px;
+                height: 48px;
+            }
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .header-actions {
+                align-items: flex-start;
+            }
+
+            .page-title {
+                font-size: 1.45rem;
+            }
+
+            .page-subtitle {
+                font-size: 0.88rem;
+            }
+
+            .lux-btn-primary {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .header-action-group,
+            .excel-actions,
+            .excel-import-form {
+                width: 100%;
+            }
+
+            .excel-actions {
+                align-items: stretch;
+            }
+
+            .lux-btn-secondary,
+            .excel-import-form label {
+                flex: 1 1 150px;
+                justify-content: center;
+            }
+
+            .search-bar {
+                flex-direction: column;
+            }
+
+            .search-input-wrapper {
+                min-width: 100%;
+                width: 100%;
+            }
+
+            .btn-search {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .table-responsive {
+                border-radius: 12px;
+                overflow-x: auto;
+            }
+
+            .admin-table {
+                min-width: 820px;
+            }
+
+            .admin-table th,
+            .admin-table td {
+                padding: 0.75rem 0.8rem;
+                font-size: 0.85rem;
+            }
+
+            .car-cell {
+                min-width: 210px;
+                gap: 10px;
+            }
+
+            .car-name {
+                font-size: 0.92rem;
+            }
+
+            .car-model,
+            .info-sub {
+                font-size: 0.76rem;
+            }
+
+            .price-text {
+                font-size: 0.86rem;
+            }
+
+            .lux-action-btns {
+                justify-content: flex-start;
+            }
+
+            .lux-btn-action {
+                padding: 8px;
+            }
+
+            .lux-btn-action span {
+                display: none;
+            }
+
+            .table-responsive {
+                overflow: visible;
+                border: none;
+                background: transparent;
+                box-shadow: none;
+            }
+
+            .admin-table {
+                min-width: 0;
+                border-collapse: separate;
+                border-spacing: 0 0.9rem;
+            }
+
+            .admin-table thead {
+                display: none;
+            }
+
+            .admin-table,
+            .admin-table tbody,
+            .admin-table tr,
+            .admin-table td {
+                display: block;
+                width: 100%;
+            }
+
+            .admin-table tr {
+                padding: 0.9rem;
+                border: 1px solid var(--border);
+                border-radius: 14px;
+                background: linear-gradient(145deg, var(--surface), #0f141a);
+                box-shadow: 0 10px 24px -16px rgba(0, 0, 0, 0.8);
+            }
+
+            .admin-table tr+tr {
+                margin-top: 0.9rem;
+            }
+
+            .admin-table tr:hover {
+                background: linear-gradient(145deg, #171e28, #0f141a);
+            }
+
+            .admin-table td {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 1rem;
+                padding: 0.72rem 0;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+                text-align: right;
+            }
+
+            .admin-table td>* {
+                min-width: 0;
+            }
+
+            .admin-table td:first-child {
+                display: block;
+                padding-top: 0;
+                text-align: left;
+            }
+
+            .admin-table td:last-child {
+                display: block;
+                padding-bottom: 0;
+                border-bottom: none;
+            }
+
+            .admin-table td:not(:first-child):not(:last-child)::before {
+                content: attr(data-label);
+                flex: 0 0 92px;
+                color: var(--muted);
+                font-size: 0.74rem;
+                font-weight: 800;
+                letter-spacing: 0.04em;
+                text-align: left;
+                text-transform: uppercase;
+            }
+
+            .car-cell {
+                min-width: 0;
+                align-items: center;
+            }
+
+            .car-cell>div {
+                min-width: 0;
+            }
+
+            .car-name,
+            .car-model,
+            .info-main,
+            .info-sub,
+            .price-text {
+                white-space: normal;
+                overflow-wrap: anywhere;
+            }
+
+            .info-main,
+            .info-sub,
+            .price-text {
+                text-align: right;
+            }
+
+            .status-stack {
+                min-width: 0;
+                justify-content: flex-end;
+            }
+
+            .lux-action-btns {
+                display: flex;
+                align-items: stretch;
+                flex-wrap: wrap;
+                gap: 0.6rem;
+                width: 100%;
+            }
+
+            .lux-action-btns form,
+            .lux-action-btns>.lux-btn-action {
+                flex: 1 1 110px;
+                width: 100%;
+            }
+
+            .lux-btn-action {
+                justify-content: center;
+                padding: 0.65rem 0.55rem;
+            }
+
+            .lux-btn-action span {
+                display: inline;
+            }
+        }
+
+        /* Màn rất nhỏ */
+        @media (max-width: 480px) {
+            .wrap {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+
+            .page-title {
+                font-size: 1.3rem;
+            }
+
+            .lux-flash-alert {
+                padding: 0.85rem 1rem;
+                gap: 0.75rem;
+            }
+
+            .table-img,
+            .no-image {
+                width: 64px;
+                height: 44px;
+            }
+
+            .lux-badge {
+                font-size: 0.72rem;
+                padding: 4px 8px;
+            }
+        }
     </style>
 
     <div class="wrap">
         <div class="header-actions">
-            <h1 class="page-title">Quản lý danh sách xe</h1>
+            <div>
+                <h1 class="page-title">Quản lý danh sách xe</h1>
+                <p class="page-subtitle">Theo dõi nhanh thông tin quan trọng. Chi tiết ảnh, video và mô tả xem tại nút Xem.
+                </p>
+            </div>
 
             @if (auth()->check() && in_array(auth()->user()->role, ['admin', 'staff']))
-                <a href="{{ route('admin.cars.create') }}" class="lux-btn-primary">
-                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                    Thêm xe mới
-                </a>
+                <div class="header-action-group">
+                    <div class="excel-actions">
+                        <form class="excel-import-form" method="post" action="{{ route('admin.cars.import') }}"
+                            enctype="multipart/form-data">
+                            @csrf
+                            <input id="car-import-file" class="file-input-hidden" type="file" name="file"
+                                accept=".xlsx,.xls,.csv" onchange="this.form.submit()">
+                            <label for="car-import-file" class="lux-btn-secondary" title="Import Excel">
+                                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 16.5V3.75m0 0 4.5 4.5M12 3.75l-4.5 4.5M3.75 16.5v2.25A2.25 2.25 0 0 0 6 21h12a2.25 2.25 0 0 0 2.25-2.25V16.5" />
+                                </svg>
+                                Import Excel
+                            </label>
+                        </form>
+
+                        <a href="{{ route('admin.cars.export') }}" class="lux-btn-secondary" title="Export danh sách xe">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M12 3.75v12.75m0 0 4.5-4.5m-4.5 4.5-4.5-4.5M3.75 16.5v2.25A2.25 2.25 0 0 0 6 21h12a2.25 2.25 0 0 0 2.25-2.25V16.5" />
+                            </svg>
+                            Export danh sách xe
+                        </a>
+
+                        <a href="{{ route('admin.cars.inventory.export') }}" class="lux-btn-secondary"
+                            title="Export báo cáo tồn kho">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3 7.5 12 3l9 4.5-9 4.5L3 7.5Zm0 0V16.5l9 4.5 9-4.5V7.5M12 12v9" />
+                            </svg>
+                            Báo cáo tồn kho
+                        </a>
+
+                        <a href="{{ route('admin.cars.import.template') }}" class="lux-btn-secondary"
+                            title="Tải file mẫu import">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5A3.375 3.375 0 0 0 10.125 2.25H8.25m.75 12 3 3m0 0 3-3m-3 3v-6m-4.5 9h9A2.25 2.25 0 0 0 18.75 18V9.75a2.25 2.25 0 0 0-.659-1.591l-5.25-5.25A2.25 2.25 0 0 0 11.25 2.25H7.5A2.25 2.25 0 0 0 5.25 4.5V18A2.25 2.25 0 0 0 7.5 20.25Z" />
+                            </svg>
+                            File mẫu
+                        </a>
+                    </div>
+
+                    <a href="{{ route('admin.cars.create') }}" class="lux-btn-primary">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        Thêm xe mới
+                    </a>
+                </div>
             @endif
         </div>
 
         @if (session('success'))
-            <div id="success-alert" class="lux-flash-alert">
+            <div id="success-alert" class="lux-flash-alert lux-flash-success">
                 <div class="lux-flash-content">
                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -357,27 +929,56 @@
                     </svg>
                     <span>{{ session('success') }}</span>
                 </div>
-                <button type="button" class="btn-close-alert" onclick="closeAlert()" aria-label="Đóng">
+
+                <button type="button" class="btn-close-alert" onclick="closeAlert('success-alert')" aria-label="Đóng">
                     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
+        @endif
 
-            <script>
-                function closeAlert() {
-                    const alertBox = document.getElementById('success-alert');
-                    if (alertBox) {
-                        alertBox.classList.add('hide');
-                        setTimeout(() => {
-                            alertBox.remove();
-                        }, 500);
-                    }
-                }
-                setTimeout(() => {
-                    closeAlert();
-                }, 3000); // 3 giây tự tắt
-            </script>
+        @if (session('error'))
+            <div id="error-alert" class="lux-flash-alert lux-flash-error">
+                <div class="lux-flash-content">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v3m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                    </svg>
+                    <span>{{ session('error') }}</span>
+                </div>
+
+                <button type="button" class="btn-close-alert" onclick="closeAlert('error-alert')" aria-label="Đóng">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        @endif
+
+        @if ($errors->has('file'))
+            <div id="import-error-alert" class="lux-flash-alert lux-flash-error">
+                <div>
+                    <div class="lux-flash-content">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v3m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                        </svg>
+                        <span>File import có lỗi, chưa ghi dữ liệu vào kho.</span>
+                    </div>
+                    <ul class="import-error-list">
+                        @foreach ($errors->get('file') as $message)
+                            <li>{{ $message }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+
+                <button type="button" class="btn-close-alert" onclick="closeAlert('import-error-alert')" aria-label="Đóng">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
         @endif
 
         <form class="search-bar" method="get" action="{{ route('admin.cars.index') }}">
@@ -386,8 +987,8 @@
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                 </svg>
-                <input type="search" name="q" value="{{ $search ?? '' }}" placeholder="Tìm theo tên xe…"
-                    autocomplete="off">
+                <input type="search" name="q" value="{{ $search ?? '' }}"
+                    placeholder="Tìm theo tên xe, VIN, biển số, mã nội bộ, vị trí..." autocomplete="off">
             </div>
             <button type="submit" class="btn-search">Tìm kiếm</button>
         </form>
@@ -407,40 +1008,108 @@
                 <table class="admin-table">
                     <thead>
                         <tr>
-                            <th width="90">Hình ảnh</th>
-                            <th>Tên xe</th>
-                            <th>Năm SX</th>
-                            <th>Màu sắc</th>
-                            <th>Giá bán</th>
-                            <th>Tồn kho</th>
-                            <th width="240" style="text-align: right;">Hành động</th>
+                            <th>Xe</th>
+                            <th>Mã / VIN</th>
+                            <th>Năm / Số km</th>
+                            <th>Kho / Màu sắc</th>
+                            <th>Giá</th>
+                            <th>Trạng thái</th>
+                            <th width="230" style="text-align: right;">Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($cars as $car)
+                            @php
+                                $statusClass = match ((int) $car->status) {
+                                    2 => 'badge-deposit',
+                                    3 => 'badge-sold',
+                                    default => 'badge-available',
+                                };
+
+                                $statusText = match ((int) $car->status) {
+                                    2 => 'Đã cọc',
+                                    3 => 'Đã bán',
+                                    default => 'Sẵn sàng',
+                                };
+
+                                $conditionText = match ($car->vehicle_condition ?? 'new') {
+                                    'used' => 'Cũ',
+                                    'display' => 'Trưng bày',
+                                    'test_drive' => 'Lái thử',
+                                    default => 'Mới',
+                                };
+
+                                $conditionClass = match ($car->vehicle_condition ?? 'new') {
+                                    'used' => 'badge-condition-used',
+                                    'display' => 'badge-condition-display',
+                                    'test_drive' => 'badge-condition-test',
+                                    default => 'badge-condition-new',
+                                };
+
+                                $stockInDate = $car->stock_in_date?->format('d/m/Y');
+                                $onRoadDate = $car->on_road_date?->format('d/m/Y');
+                                $listPrice = $car->list_price ?? $car->price;
+                                $salePrice = $car->sale_price;
+                                $brandName = $car->carModel?->brand?->name ?? null;
+                                $modelName = $car->carModel?->name ?? null;
+                            @endphp
                             <tr>
                                 <td>
-                                    @if ($car->image)
-                                        <img src="{{ asset('storage/' . $car->image) }}" alt="{{ $car->name }}"
-                                            class="table-img">
-                                    @else
-                                        <span
-                                            style="font-size: 0.75rem; color: var(--muted); padding: 0.5rem; border: 1px dashed rgba(255,255,255,0.1); border-radius: 6px; display: inline-block; background: rgba(0,0,0,0.2);">No
-                                            Image</span>
-                                    @endif
+                                    <div class="car-cell">
+                                        @if ($car->image)
+                                            <img src="{{ asset('storage/' . $car->image) }}" alt="{{ $car->name }}"
+                                                class="table-img">
+                                        @else
+                                            <span class="no-image">No Image</span>
+                                        @endif
+
+                                        <div>
+                                            <span class="car-name">{{ $car->name }}</span>
+                                            <span class="car-model">
+                                                {{ $brandName ? $brandName . ' - ' : '' }}{{ $modelName ?? 'Chưa gán dòng xe' }}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </td>
-                                <td style="font-weight: 700; color: var(--text); font-size: 1.05rem;">{{ $car->name }}
+
+                                <td data-label="Mã / VIN">
+                                    <span class="info-main">Mã NB: {{ $car->internal_code ?: 'Chưa nhập' }}</span>
+                                    <span class="info-sub">VIN: {{ $car->vin ?? 'Chưa nhập VIN' }}</span>
+                                    <span class="info-sub">Biển số: {{ $car->license_plate ?: 'Chưa có' }}</span>
                                 </td>
-                                <td style="color: var(--muted);">{{ $car->year }}</td>
-                                <td style="color: var(--muted);">{{ $car->color ?? '-' }}</td>
-                                <td style="font-weight: 700; color: var(--accent); white-space: nowrap;">
-                                    {{ number_format($car->price, 0, ',', '.') }} VNĐ</td>
-                                <td>
-                                    <span
-                                        style="background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; border: 1px solid var(--border);">
-                                        {{ $car->stock ?? 0 }}
-                                    </span>
+
+                                <td data-label="Năm / Số km">
+                                    <span class="info-main">{{ $car->year }}</span>
+                                    <span class="info-sub">{{ number_format($car->mileage_km ?? 0, 0, ',', '.') }}
+                                        km</span>
+                                    <span class="info-sub">Nhập kho: {{ $stockInDate ?: 'Chưa nhập' }}</span>
+                                    <span class="info-sub">Lăn bánh: {{ $onRoadDate ?: 'Chưa nhập' }}</span>
                                 </td>
+
+                                <td data-label="Kho / Màu sắc">
+                                    <span class="info-main">Vị trí: {{ $car->current_location ?: 'Chưa cập nhật' }}</span>
+                                    <span class="info-main">Ngoại thất: {{ $car->color ?: '-' }}</span>
+                                    <span class="info-sub">Nội thất: {{ $car->interior_color ?: '-' }}</span>
+                                </td>
+
+                                <td data-label="Giá">
+                                    <span class="price-text">Niêm yết: {{ number_format($listPrice, 0, ',', '.') }} VNĐ</span>
+                                    <span class="info-sub">Khuyến mãi: {{ $salePrice !== null ? number_format($salePrice, 0, ',', '.') . ' VNĐ' : 'Chưa áp dụng' }}</span>
+                                    <span class="info-sub">Lăn bánh: {{ $car->estimated_rolling_price !== null ? number_format($car->estimated_rolling_price, 0, ',', '.') . ' VNĐ' : 'Chưa nhập' }}</span>
+                                </td>
+
+                                <td data-label="Trạng thái">
+                                    <div class="status-stack">
+                                        <span class="lux-badge {{ $conditionClass }}">{{ $conditionText }}</span>
+                                        <span class="lux-badge {{ $statusClass }}">{{ $statusText }}</span>
+                                        @if ((int) $car->is_featured === 1)
+                                            <span class="lux-badge badge-featured">Nổi bật</span>
+                                        @else
+                                            <span class="lux-badge badge-normal">Thường</span>
+                                        @endif
+                                    </div>
+                                </td>
+
                                 <td>
                                     <div class="lux-action-btns">
                                         <a href="{{ route('admin.cars.show', $car->car_id) }}"
@@ -490,8 +1159,7 @@
             </div>
 
             @if ($cars instanceof \Illuminate\Pagination\LengthAwarePaginator && $cars->hasPages())
-                <div class="pagination-wrap" style="margin-top: 2rem; display: flex; justify-content: center;">
-                    {{-- Sử dụng giao diện mặc định --}}
+                <div class="pagination-wrap">
                     {{ $cars->appends(request()->query())->links() }}
                 </div>
             @endif
