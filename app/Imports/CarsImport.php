@@ -28,6 +28,7 @@ class CarsImport implements ToCollection, WithHeadingRow
         $validRows = [];
         $seenVins = [];
         $seenLicensePlates = [];
+        $seenInternalCodes = [];
         $currentYear = (int) date('Y');
 
         foreach ($rows as $index => $row) {
@@ -38,24 +39,42 @@ class CarsImport implements ToCollection, WithHeadingRow
                 continue;
             }
 
-            $data['vehicle_condition'] = $this->normalizeCondition($data['condition'] ?? null);
+            $data['vehicle_condition'] = $this->normalizeCondition($data['vehicle_condition'] ?? null);
             $data['status_value'] = $this->normalizeStatus($data['status'] ?? null);
+            $data['is_featured_value'] = $this->normalizeBoolean($data['is_featured'] ?? null);
 
             $validator = Validator::make($data, [
-                'model_id' => ['required', 'integer', Rule::exists('car_models', 'id')],
+                'car_model_id' => ['required', 'integer', Rule::exists('car_models', 'id')],
                 'name' => ['required', 'string', 'max:255'],
                 'vin' => ['required', 'string', 'max:17', Rule::unique('cars', 'vin')],
                 'license_plate' => ['nullable', 'string', 'max:20', Rule::unique('cars', 'license_plate')],
+                'internal_code' => ['nullable', 'string', 'max:50', Rule::unique('cars', 'internal_code')],
+                'price' => ['nullable', 'numeric', 'min:0'],
                 'list_price' => ['required', 'numeric', 'min:0'],
                 'sale_price' => ['nullable', 'numeric', 'min:0'],
-                'exterior_color' => ['nullable', 'string', 'max:50'],
+                'registration_fee' => ['nullable', 'numeric', 'min:0'],
+                'license_plate_fee' => ['nullable', 'numeric', 'min:0'],
+                'inspection_fee' => ['nullable', 'numeric', 'min:0'],
+                'insurance_fee' => ['nullable', 'numeric', 'min:0'],
+                'other_fees' => ['nullable', 'numeric', 'min:0'],
+                'estimated_rolling_price' => ['nullable', 'numeric', 'min:0'],
+                'registration_area' => ['nullable', 'string', 'max:100'],
+                'color' => ['nullable', 'string', 'max:50'],
                 'interior_color' => ['nullable', 'string', 'max:50'],
-                'manufacture_year' => ['required', 'integer', 'min:1000', 'max:' . $currentYear],
-                'mileage' => ['nullable', 'integer', 'min:0'],
+                'year' => ['required', 'integer', 'min:1000', 'max:' . $currentYear],
+                'mileage_km' => ['nullable', 'integer', 'min:0'],
+                'owner_count' => ['nullable', 'integer', 'min:0', 'max:10'],
+                'stock_in_date' => ['nullable', 'date'],
+                'on_road_date' => ['nullable', 'date'],
                 'vehicle_condition' => ['nullable', Rule::in(self::CONDITION_VALUES)],
+                'current_location' => ['nullable', 'string', 'max:255'],
                 'stock_quantity' => ['nullable', 'integer', 'min:0'],
+                'stock' => ['nullable', 'integer', 'min:0'],
                 'status_value' => ['nullable', Rule::in(self::STATUS_VALUES)],
-                'location' => ['nullable', 'string', 'max:255'],
+                'is_featured_value' => ['nullable', 'boolean'],
+                'image' => ['nullable', 'string', 'max:255'],
+                'video_url' => ['nullable', 'url', 'max:255'],
+                'video_file' => ['nullable', 'string', 'max:255'],
                 'description' => ['nullable', 'string', 'max:10000'],
             ], [
                 'required' => ':attribute là bắt buộc.',
@@ -67,24 +86,41 @@ class CarsImport implements ToCollection, WithHeadingRow
                 'unique' => ':attribute đã tồn tại trên hệ thống.',
                 'in' => ':attribute không hợp lệ.',
             ], [
-                'model_id' => 'model_id',
+                'car_model_id' => 'car_model_id',
                 'name' => 'name',
                 'vin' => 'vin',
                 'license_plate' => 'license_plate',
+                'internal_code' => 'internal_code',
+                'price' => 'price',
                 'list_price' => 'list_price',
                 'sale_price' => 'sale_price',
-                'exterior_color' => 'exterior_color',
+                'registration_fee' => 'registration_fee',
+                'license_plate_fee' => 'license_plate_fee',
+                'inspection_fee' => 'inspection_fee',
+                'insurance_fee' => 'insurance_fee',
+                'other_fees' => 'other_fees',
+                'estimated_rolling_price' => 'estimated_rolling_price',
+                'registration_area' => 'registration_area',
+                'color' => 'color',
                 'interior_color' => 'interior_color',
-                'manufacture_year' => 'manufacture_year',
-                'mileage' => 'mileage',
-                'vehicle_condition' => 'condition',
+                'year' => 'year',
+                'mileage_km' => 'mileage_km',
+                'owner_count' => 'owner_count',
+                'stock_in_date' => 'stock_in_date',
+                'on_road_date' => 'on_road_date',
+                'vehicle_condition' => 'vehicle_condition',
+                'current_location' => 'current_location',
                 'stock_quantity' => 'stock_quantity',
+                'stock' => 'stock',
                 'status_value' => 'status',
-                'location' => 'location',
+                'is_featured_value' => 'is_featured',
+                'image' => 'image',
+                'video_url' => 'video_url',
+                'video_file' => 'video_file',
                 'description' => 'description',
             ]);
 
-            $validator->after(function ($validator) use (&$seenVins, &$seenLicensePlates, $data, $rowNumber) {
+            $validator->after(function ($validator) use (&$seenVins, &$seenLicensePlates, &$seenInternalCodes, $data, $rowNumber) {
                 if (!empty($data['vin'])) {
                     $vin = Str::upper((string) $data['vin']);
                     if (isset($seenVins[$vin])) {
@@ -99,6 +135,14 @@ class CarsImport implements ToCollection, WithHeadingRow
                         $validator->errors()->add('license_plate', "license_plate bị trùng với dòng {$seenLicensePlates[$plate]} trong file.");
                     }
                     $seenLicensePlates[$plate] = $rowNumber;
+                }
+
+                if (!empty($data['internal_code'])) {
+                    $internalCode = Str::upper((string) $data['internal_code']);
+                    if (isset($seenInternalCodes[$internalCode])) {
+                        $validator->errors()->add('internal_code', "internal_code duplicated with row {$seenInternalCodes[$internalCode]} in file.");
+                    }
+                    $seenInternalCodes[$internalCode] = $rowNumber;
                 }
 
                 if (
@@ -151,21 +195,38 @@ class CarsImport implements ToCollection, WithHeadingRow
     private function normalizeRow(array $row): array
     {
         $fields = [
-            'model_id',
+            'car_model_id',
             'model',
             'name',
             'vin',
             'license_plate',
+            'internal_code',
+            'price',
             'list_price',
             'sale_price',
-            'exterior_color',
+            'registration_fee',
+            'license_plate_fee',
+            'inspection_fee',
+            'insurance_fee',
+            'other_fees',
+            'estimated_rolling_price',
+            'registration_area',
+            'color',
             'interior_color',
-            'manufacture_year',
-            'mileage',
-            'condition',
+            'year',
+            'mileage_km',
+            'owner_count',
+            'stock_in_date',
+            'on_road_date',
+            'vehicle_condition',
+            'current_location',
             'stock_quantity',
+            'stock',
             'status',
-            'location',
+            'is_featured',
+            'image',
+            'video_url',
+            'video_file',
             'description',
         ];
 
@@ -174,8 +235,8 @@ class CarsImport implements ToCollection, WithHeadingRow
             $data[$field] = $this->blankToNull($this->valueFromRow($row, $field));
         }
 
-        if ($data['model_id'] === null && $data['model'] !== null) {
-            $data['model_id'] = $this->resolveModelId((string) $data['model']);
+        if ($data['car_model_id'] === null && $data['model'] !== null) {
+            $data['car_model_id'] = $this->resolveModelId((string) $data['model']);
         }
 
         if ($data['vin'] !== null) {
@@ -203,21 +264,38 @@ class CarsImport implements ToCollection, WithHeadingRow
     private function aliasesFor(string $field): array
     {
         return match ($field) {
-            'model_id' => ['model_id', 'car_model_id', 'id_model', 'ma_model', 'id_dong_xe', 'ma_dong_xe'],
+            'car_model_id' => ['car_model_id', 'model_id', 'id_model', 'ma_model', 'id_dong_xe', 'ma_dong_xe'],
             'model' => ['model', 'dong_xe', 'mau_xe'],
             'name' => ['name', 'ten_xe', 'ten', 'phien_ban'],
             'vin' => ['vin', 'so_vin', 'so_khung'],
             'license_plate' => ['license_plate', 'bien_so', 'bien_so_xe'],
+            'internal_code' => ['internal_code', 'ma_noi_bo', 'ma_xe_noi_bo'],
+            'price' => ['price', 'actual_price', 'gia_ban_thuc_te', 'gia_ban'],
             'list_price' => ['list_price', 'gia_niem_yet'],
             'sale_price' => ['sale_price', 'gia_khuyen_mai'],
-            'exterior_color' => ['exterior_color', 'mau_ngoai_that', 'color'],
+            'registration_fee' => ['registration_fee', 'phi_truoc_ba'],
+            'license_plate_fee' => ['license_plate_fee', 'phi_bien_so'],
+            'inspection_fee' => ['inspection_fee', 'phi_dang_kiem'],
+            'insurance_fee' => ['insurance_fee', 'phi_bao_hiem'],
+            'other_fees' => ['other_fees', 'phi_khac', 'phi_dich_vu_khac'],
+            'estimated_rolling_price' => ['estimated_rolling_price', 'gia_lan_banh_du_kien'],
+            'registration_area' => ['registration_area', 'khu_vuc_dang_ky'],
+            'color' => ['color', 'exterior_color', 'mau_ngoai_that'],
             'interior_color' => ['interior_color', 'mau_noi_that'],
-            'manufacture_year' => ['manufacture_year', 'nam_san_xuat', 'year'],
-            'mileage' => ['mileage', 'so_km', 'mileage_km'],
-            'condition' => ['condition', 'tinh_trang', 'vehicle_condition'],
-            'stock_quantity' => ['stock_quantity', 'ton_kho', 'so_luong_ton', 'stock'],
+            'year' => ['year', 'manufacture_year', 'nam_san_xuat'],
+            'mileage_km' => ['mileage_km', 'mileage', 'so_km'],
+            'owner_count' => ['owner_count', 'so_doi_chu'],
+            'stock_in_date' => ['stock_in_date', 'ngay_nhap_kho'],
+            'on_road_date' => ['on_road_date', 'ngay_lan_banh'],
+            'vehicle_condition' => ['vehicle_condition', 'condition', 'tinh_trang'],
+            'current_location' => ['current_location', 'location', 'vi_tri'],
+            'stock_quantity' => ['stock_quantity', 'ton_kho', 'so_luong_ton'],
+            'stock' => ['stock'],
             'status' => ['status', 'trang_thai'],
-            'location' => ['location', 'vi_tri', 'current_location'],
+            'is_featured' => ['is_featured', 'noi_bat'],
+            'image' => ['image', 'anh_dai_dien'],
+            'video_url' => ['video_url', 'youtube_url', 'duong_dan_video'],
+            'video_file' => ['video_file', 'file_video'],
             'description' => ['description', 'mo_ta'],
             default => [$field],
         };
@@ -326,6 +404,40 @@ class CarsImport implements ToCollection, WithHeadingRow
         ][$key] ?? $key;
     }
 
+    private function normalizeBoolean(mixed $value): mixed
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if (is_numeric($value)) {
+            return match ((int) $value) {
+                0 => false,
+                1 => true,
+                default => $value,
+            };
+        }
+
+        $key = $this->key((string) $value);
+
+        return [
+            'true' => true,
+            'yes' => true,
+            'co' => true,
+            'featured' => true,
+            'noi_bat' => true,
+            'false' => false,
+            'no' => false,
+            'khong' => false,
+            'normal' => false,
+            'binh_thuong' => false,
+        ][$key] ?? $value;
+    }
+
     private function key(string $value): string
     {
         return preg_replace(
@@ -339,34 +451,53 @@ class CarsImport implements ToCollection, WithHeadingRow
     {
         $listPrice = $this->moneyValue($data['list_price']);
         $salePrice = $this->nullableMoneyValue($data['sale_price']);
-        $actualPrice = $salePrice ?? $listPrice;
-        $stockQuantity = (int) round((float) ($data['stock_quantity'] ?? 1));
+        $actualPrice = $this->nullableMoneyValue($data['price']) ?? $salePrice ?? $listPrice;
+        $registrationFee = $this->moneyValue($data['registration_fee']);
+        $licensePlateFee = $this->moneyValue($data['license_plate_fee']);
+        $inspectionFee = $this->moneyValue($data['inspection_fee']);
+        $insuranceFee = $this->moneyValue($data['insurance_fee']);
+        $otherFees = $this->moneyValue($data['other_fees']);
+        $feeTotal = $registrationFee + $licensePlateFee + $inspectionFee + $insuranceFee + $otherFees;
+        $estimatedRollingPrice = $this->nullableMoneyValue($data['estimated_rolling_price']) ?? ($actualPrice + $feeTotal);
+        $mileageKm = (int) round((float) ($data['mileage_km'] ?? 0));
+        $stockQuantity = (int) round((float) ($data['stock_quantity'] ?? $data['stock'] ?? 1));
+        $stock = (int) round((float) ($data['stock'] ?? $stockQuantity));
 
         return [
-            'car_model_id' => (int) $data['model_id'],
+            'car_model_id' => (int) $data['car_model_id'],
             'name' => (string) $data['name'],
             'vin' => (string) $data['vin'],
             'license_plate' => $data['license_plate'],
+            'internal_code' => $data['internal_code'],
             'price' => $actualPrice,
             'list_price' => $listPrice,
             'sale_price' => $salePrice,
-            'registration_fee' => 0,
-            'license_plate_fee' => 0,
-            'inspection_fee' => 0,
-            'insurance_fee' => 0,
-            'other_fees' => 0,
-            'estimated_rolling_price' => $actualPrice,
-            'year' => (int) $data['manufacture_year'],
-            'mileage_km' => (int) round((float) ($data['mileage'] ?? 0)),
+            'registration_fee' => $registrationFee,
+            'license_plate_fee' => $licensePlateFee,
+            'inspection_fee' => $inspectionFee,
+            'insurance_fee' => $insuranceFee,
+            'other_fees' => $otherFees,
+            'estimated_rolling_price' => $estimatedRollingPrice,
+            'registration_area' => $data['registration_area'],
+            'year' => (int) $data['year'],
+            'mileage_km' => $mileageKm,
+            'owner_count' => $data['owner_count'] !== null
+                ? (int) $data['owner_count']
+                : ($mileageKm === 0 ? 0 : 1),
+            'stock_in_date' => $data['stock_in_date'],
+            'on_road_date' => $data['on_road_date'],
             'vehicle_condition' => $data['vehicle_condition'] ?? 'new',
             'stock_quantity' => $stockQuantity,
-            'stock' => $stockQuantity,
+            'stock' => $stock,
             'status' => $data['status_value'] ?? 1,
-            'current_location' => $data['location'],
-            'color' => $data['exterior_color'],
+            'current_location' => $data['current_location'],
+            'color' => $data['color'],
             'interior_color' => $data['interior_color'],
             'description' => $data['description'],
-            'is_featured' => false,
+            'image' => $data['image'],
+            'video_url' => $data['video_url'],
+            'video_file' => $data['video_file'],
+            'is_featured' => (bool) ($data['is_featured_value'] ?? false),
         ];
     }
 

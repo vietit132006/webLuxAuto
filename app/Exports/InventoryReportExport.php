@@ -22,50 +22,136 @@ class InventoryReportExport implements FromCollection, WithHeadings, WithMapping
     public function headings(): array
     {
         return [
-            'Tên xe',
-            'Model',
-            'VIN',
-            'Biển số',
-            'Số lượng tồn',
-            'Trạng thái',
-            'Vị trí',
-            'Giá trị tồn kho ước tính',
-            'Ngày cập nhật',
+            'car_id',
+            'internal_code',
+            'car_model_id',
+            'brand_name',
+            'car_model_name',
+            'name',
+            'vin',
+            'license_plate',
+            'year',
+            'color',
+            'interior_color',
+            'vehicle_condition',
+            'vehicle_condition_label',
+            'status',
+            'status_label',
+            'current_location',
+            'stock_quantity',
+            'stock',
+            'unit_inventory_price',
+            'inventory_value',
+            'price',
+            'list_price',
+            'sale_price',
+            'estimated_rolling_price',
+            'rolling_inventory_value',
+            'registration_area',
+            'stock_in_date',
+            'stock_age_days',
+            'on_road_date',
+            'mileage_km',
+            'owner_count',
+            'updated_at',
         ];
     }
 
     public function map($car): array
     {
-        $stockQuantity = (int) ($car->stock_quantity ?? $car->stock ?? 0);
+        $stockQuantity = $this->stockQuantity($car);
         $unitValue = (int) ($car->sale_price ?? $car->list_price ?? $car->price ?? 0);
+        $rollingValue = (int) ($car->estimated_rolling_price ?? 0);
 
         return [
+            $car->car_id,
+            $car->internal_code,
+            $car->car_model_id,
+            $car->carModel?->brand?->name,
+            $car->carModel?->name,
             $car->name,
-            $this->modelName($car),
             $car->vin,
             $car->license_plate,
-            $stockQuantity,
-            $this->statusText($car->status),
+            $car->year,
+            $car->color,
+            $car->interior_color,
+            $car->vehicle_condition,
+            $this->conditionLabel($car->vehicle_condition),
+            $car->status,
+            $this->statusLabel($car->status),
             $car->current_location,
+            $stockQuantity,
+            $car->stock,
+            $unitValue,
             $stockQuantity * $unitValue,
-            $car->updated_at?->format('d/m/Y H:i'),
+            $car->price,
+            $car->list_price,
+            $car->sale_price,
+            $car->estimated_rolling_price,
+            $stockQuantity * $rollingValue,
+            $car->registration_area,
+            $this->dateValue($car->stock_in_date),
+            $this->stockAgeDays($car->stock_in_date),
+            $this->dateValue($car->on_road_date),
+            $car->mileage_km,
+            $car->owner_count,
+            $this->dateTimeValue($car->updated_at),
         ];
     }
 
-    private function modelName(Car $car): string
+    private function stockQuantity(Car $car): int
     {
-        $brandName = $car->carModel?->brand?->name;
-        $modelName = $car->carModel?->name;
-
-        return trim(($brandName ? "{$brandName} - " : '') . ($modelName ?? ''));
+        return (int) ($car->stock_quantity ?? $car->stock ?? 0);
     }
 
-    private function statusText(mixed $status): string
+    private function conditionLabel(?string $condition): string
+    {
+        return match ($condition) {
+            'used' => 'Used',
+            'display' => 'Display',
+            'test_drive' => 'Test drive',
+            default => 'New',
+        };
+    }
+
+    private function statusLabel(mixed $status): string
     {
         return match ((int) $status) {
-            2 => 'Đã cọc',
-            3 => 'Đã bán',
-            default => 'Sẵn sàng',
+            2 => 'Deposit',
+            3 => 'Sold',
+            default => 'Available',
         };
+    }
+
+    private function stockAgeDays(mixed $value): ?int
+    {
+        if (!$value instanceof \DateTimeInterface) {
+            return null;
+        }
+
+        return (int) $value->diff(now()->startOfDay())->format('%r%a');
+    }
+
+    private function dateValue(mixed $value): ?string
+    {
+        return $this->formatDate($value, 'Y-m-d');
+    }
+
+    private function dateTimeValue(mixed $value): ?string
+    {
+        return $this->formatDate($value, 'Y-m-d H:i:s');
+    }
+
+    private function formatDate(mixed $value, string $format): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format($format);
+        }
+
+        return (string) $value;
     }
 }
