@@ -5,11 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Str;
+use Spatie\Permission\Traits\HasRoles;
+use Throwable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, HasRoles, Notifiable;
 
     protected $fillable = [
         'name',
@@ -20,6 +21,8 @@ class User extends Authenticatable
         'status',
     ];
     protected $primaryKey = 'user_id';
+    protected $guard_name = 'web';
+
     protected $hidden = [
         'password',
         'remember_token',
@@ -50,22 +53,52 @@ class User extends Authenticatable
 
     public function canViewStockHistory(): bool
     {
-        $role = Str::of((string) $this->role)
-            ->ascii()
-            ->lower()
-            ->replace([' ', '-'], '_')
-            ->replaceMatches('/_+/', '_')
-            ->trim('_')
-            ->toString();
+        try {
+            return $this->can('inventory.history');
+        } catch (Throwable) {
+            return $this->role === 'admin';
+        }
+    }
 
-        return in_array($role, [
-            'super_admin',
-            'admin',
-            'warehouse_manager',
-            'inventory_manager',
-            'quan_ly_kho',
-            'accountant',
-            'ke_toan',
-        ], true);
+    public function canAccessAdmin(): bool
+    {
+        if (!$this->status) {
+            return false;
+        }
+
+        try {
+            return $this->can('dashboard.view');
+        } catch (Throwable) {
+            return in_array($this->role, ['admin', 'staff'], true);
+        }
+    }
+
+    public function adminRoleName(): ?string
+    {
+        try {
+            return $this->getRoleNames()->first();
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
+    public function adminRoleLabel(): string
+    {
+        return $this->adminRoleName() ?? match ($this->role) {
+            'admin' => 'Admin',
+            'staff' => 'Nhân viên',
+            default => 'Khách hàng',
+        };
+    }
+
+    public static function legacyRoleForAdminRole(?string $roleName): string
+    {
+        if (!$roleName) {
+            return 'customer';
+        }
+
+        $roles = config('admin_permissions.roles', []);
+
+        return $roles[$roleName]['legacy_role'] ?? 'staff';
     }
 }

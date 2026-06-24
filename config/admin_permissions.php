@@ -1,0 +1,175 @@
+<?php
+
+$permissions = [
+    'dashboard.view' => 'Xem bảng điều khiển',
+    'cars.view' => 'Xem xe',
+    'cars.create' => 'Tạo xe',
+    'cars.edit' => 'Sửa xe',
+    'cars.delete' => 'Xóa xe',
+    'inventory.view' => 'Xem tồn kho',
+    'inventory.adjust' => 'Điều chỉnh tồn kho',
+    'inventory.history' => 'Xem lịch sử tồn kho',
+    'customers.view' => 'Xem khách hàng',
+    'customers.create' => 'Tạo khách hàng',
+    'customers.edit' => 'Sửa khách hàng',
+    'orders.view' => 'Xem đơn hàng',
+    'orders.create' => 'Tạo đơn hàng',
+    'orders.edit' => 'Sửa đơn hàng',
+    'news.view' => 'Xem tin tức',
+    'news.create' => 'Tạo tin tức',
+    'news.edit' => 'Sửa tin tức',
+    'news.delete' => 'Xóa tin tức',
+    'promotions.view' => 'Xem khuyến mãi',
+    'promotions.create' => 'Tạo khuyến mãi',
+    'promotions.edit' => 'Sửa khuyến mãi',
+    'promotions.delete' => 'Xóa khuyến mãi',
+    'reports.view' => 'Xem báo cáo',
+    'users.view' => 'Xem người dùng',
+    'users.create' => 'Tạo người dùng',
+    'users.edit' => 'Sửa người dùng',
+    'users.delete' => 'Xóa người dùng',
+    'roles.view' => 'Xem vai trò',
+    'roles.create' => 'Tạo vai trò',
+    'roles.edit' => 'Sửa vai trò',
+    'roles.delete' => 'Xóa vai trò',
+    'reviews.view' => 'Xem đánh giá',
+    'live.view' => 'Xem livestream',
+    'live.edit' => 'Cập nhật livestream',
+    'tickets.view' => 'Xem hỗ trợ',
+    'tickets.reply' => 'Trả lời hỗ trợ',
+    'test_drives.view' => 'Xem lịch lái thử',
+    'test_drives.edit' => 'Cập nhật lịch lái thử',
+];
+
+$allPermissions = array_keys($permissions);
+
+return [
+    'guard' => 'web',
+
+    'permissions' => $permissions,
+
+    'groups' => [
+        'dashboard' => [
+            'label' => 'Bảng điều khiển',
+            'permissions' => ['dashboard.view'],
+        ],
+        'cars' => [
+            'label' => 'Xe',
+            'permissions' => ['cars.view', 'cars.create', 'cars.edit', 'cars.delete'],
+        ],
+        'inventory' => [
+            'label' => 'Tồn kho',
+            'permissions' => ['inventory.view', 'inventory.adjust', 'inventory.history'],
+        ],
+        'sales' => [
+            'label' => 'Bán hàng',
+            'permissions' => [
+                'customers.view',
+                'customers.create',
+                'customers.edit',
+                'orders.view',
+                'orders.create',
+                'orders.edit',
+                'test_drives.view',
+                'test_drives.edit',
+            ],
+        ],
+        'marketing' => [
+            'label' => 'Marketing',
+            'permissions' => [
+                'news.view',
+                'news.create',
+                'news.edit',
+                'news.delete',
+                'promotions.view',
+                'promotions.create',
+                'promotions.edit',
+                'promotions.delete',
+                'reviews.view',
+                'live.view',
+                'live.edit',
+            ],
+        ],
+        'support' => [
+            'label' => 'Hỗ trợ',
+            'permissions' => ['tickets.view', 'tickets.reply'],
+        ],
+        'reports' => [
+            'label' => 'Báo cáo',
+            'permissions' => ['reports.view'],
+        ],
+        'system' => [
+            'label' => 'Hệ thống',
+            'permissions' => [
+                'users.view',
+                'users.create',
+                'users.edit',
+                'users.delete',
+                'roles.view',
+                'roles.create',
+                'roles.edit',
+                'roles.delete',
+            ],
+        ],
+    ],
+
+    'roles' => [
+        'Super Admin' => [
+            'legacy_role' => 'admin',
+            'permissions' => '*',
+        ],
+        'Admin' => [
+            'legacy_role' => 'admin',
+            'permissions' => array_values(array_diff($allPermissions, ['roles.delete'])),
+        ],
+        'Quản lý kho' => [
+            'legacy_role' => 'staff',
+            'permissions' => [
+                'dashboard.view',
+                'cars.view',
+                'inventory.view',
+                'inventory.adjust',
+                'inventory.history',
+            ],
+        ],
+        'Nhân viên bán hàng' => [
+            'legacy_role' => 'staff',
+            'permissions' => [
+                'dashboard.view',
+                'cars.view',
+                'customers.view',
+                'customers.create',
+                'customers.edit',
+                'orders.view',
+                'orders.create',
+                'orders.edit',
+                'test_drives.view',
+                'test_drives.edit',
+            ],
+        ],
+        'Marketing' => [
+            'legacy_role' => 'staff',
+            'permissions' => [
+                'dashboard.view',
+                'news.view',
+                'news.create',
+                'news.edit',
+                'news.delete',
+                'promotions.view',
+                'promotions.create',
+                'promotions.edit',
+                'promotions.delete',
+                'reviews.view',
+            ],
+        ],
+        'Kế toán' => [
+            'legacy_role' => 'staff',
+            'permissions' => [
+                'dashboard.view',
+                'orders.view',
+                'reports.view',
+                'customers.view',
+            ],
+        ],
+    ],
+];

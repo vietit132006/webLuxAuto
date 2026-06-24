@@ -32,74 +32,90 @@
             'icon' => 'dashboard',
             'route' => 'admin.dashboard',
             'active' => ['admin.dashboard'],
+            'permission' => 'dashboard.view',
         ],
         [
             'label' => 'Quản lý xe',
             'icon' => 'car',
             'items' => [
-                ['label' => 'Quản lý kho xe', 'route' => 'admin.cars.index', 'active' => ['admin.cars.*'], 'icon' => 'car'],
-                ['label' => 'Hãng xe', 'route' => 'admin.brands.index', 'active' => ['admin.brands.*'], 'icon' => 'building'],
-                ['label' => 'Dòng xe', 'route' => 'admin.car-models.index', 'active' => ['admin.car-models.*'], 'icon' => 'list_tree'],
-                ['label' => 'Tồn kho', 'route' => 'admin.reports.inventory', 'active' => ['admin.reports.inventory'], 'icon' => 'boxes'],
-                ['label' => 'Kiểm tra tồn', 'route' => 'admin.reports.inventory_check', 'active' => ['admin.reports.inventory_check', 'admin.reports.inventory_log'], 'icon' => 'clipboard_check'],
-                ['label' => 'Lịch sử tồn kho', 'route' => 'admin.stock-movements.index', 'active' => ['admin.stock-movements.*'], 'icon' => 'history', 'permission' => 'stock_history'],
+                ['label' => 'Quản lý kho xe', 'route' => 'admin.cars.index', 'active' => ['admin.cars.*'], 'icon' => 'car', 'permission' => 'cars.view'],
+                ['label' => 'Hãng xe', 'route' => 'admin.brands.index', 'active' => ['admin.brands.*'], 'icon' => 'building', 'permission' => 'cars.view'],
+                ['label' => 'Dòng xe', 'route' => 'admin.car-models.index', 'active' => ['admin.car-models.*'], 'icon' => 'list_tree', 'permission' => 'cars.view'],
+                ['label' => 'Tồn kho', 'route' => 'admin.reports.inventory', 'active' => ['admin.reports.inventory'], 'icon' => 'boxes', 'permission' => 'inventory.view'],
+                ['label' => 'Kiểm tra tồn', 'route' => 'admin.reports.inventory_check', 'active' => ['admin.reports.inventory_check', 'admin.reports.inventory_log'], 'icon' => 'clipboard_check', 'permission' => 'inventory.adjust'],
+                ['label' => 'Lịch sử tồn kho', 'route' => 'admin.stock-movements.index', 'active' => ['admin.stock-movements.*'], 'icon' => 'history', 'permission' => 'inventory.history'],
             ],
         ],
         [
             'label' => 'Bán hàng',
             'icon' => 'shopping_cart',
             'items' => [
-                ['label' => 'Khách hàng', 'route' => 'admin.reports.customers', 'active' => ['admin.reports.customers'], 'icon' => 'users'],
-                ['label' => 'Đơn hàng', 'route' => 'admin.orders.index', 'active' => ['admin.orders.*'], 'icon' => 'shopping_cart'],
-                ['label' => 'Lái thử', 'route' => 'admin.test_drives.index', 'active' => ['admin.test_drives.*'], 'icon' => 'calendar'],
+                ['label' => 'Khách hàng', 'route' => 'admin.reports.customers', 'active' => ['admin.reports.customers'], 'icon' => 'users', 'permission' => 'customers.view'],
+                ['label' => 'Đơn hàng', 'route' => 'admin.orders.index', 'active' => ['admin.orders.*'], 'icon' => 'shopping_cart', 'permission' => 'orders.view'],
+                ['label' => 'Lái thử', 'route' => 'admin.test_drives.index', 'active' => ['admin.test_drives.*'], 'icon' => 'calendar', 'permission' => 'test_drives.view'],
             ],
         ],
         [
             'label' => 'Marketing',
             'icon' => 'megaphone',
             'items' => [
-                ['label' => 'Tin tức', 'route' => 'admin.news.index', 'active' => ['admin.news.*'], 'icon' => 'newspaper'],
-                ['label' => 'Khuyến mãi', 'route' => 'admin.promotions', 'active' => ['admin.promotions*'], 'icon' => 'tag'],
-                ['label' => 'Đánh giá', 'route' => 'admin.reports.reviews', 'active' => ['admin.reports.reviews'], 'icon' => 'star'],
-                ['label' => 'Livestream', 'route' => 'admin.live.index', 'active' => ['admin.live.*'], 'icon' => 'video', 'class' => 'sidebar-link-live'],
+                ['label' => 'Tin tức', 'route' => 'admin.news.index', 'active' => ['admin.news.*'], 'icon' => 'newspaper', 'permission' => 'news.view'],
+                ['label' => 'Khuyến mãi', 'route' => 'admin.promotions', 'active' => ['admin.promotions*'], 'icon' => 'tag', 'permission' => 'promotions.view'],
+                ['label' => 'Đánh giá', 'route' => 'admin.reports.reviews', 'active' => ['admin.reports.reviews'], 'icon' => 'star', 'permission' => 'reviews.view'],
+                ['label' => 'Livestream', 'route' => 'admin.live.index', 'active' => ['admin.live.*'], 'icon' => 'video', 'class' => 'sidebar-link-live', 'permission' => 'live.view'],
             ],
         ],
         [
             'label' => 'Hỗ trợ khách hàng',
             'icon' => 'headset',
             'items' => [
-                ['label' => 'Hỗ trợ', 'route' => 'admin.tickets.index', 'active' => ['admin.tickets.*'], 'icon' => 'headset'],
+                ['label' => 'Hỗ trợ', 'route' => 'admin.tickets.index', 'active' => ['admin.tickets.*'], 'icon' => 'headset', 'permission' => 'tickets.view'],
             ],
         ],
         [
             'label' => 'Báo cáo & Phân tích',
             'icon' => 'bar_chart',
             'items' => [
-                ['label' => 'Doanh số', 'route' => 'admin.reports.sales', 'active' => ['admin.reports.sales'], 'icon' => 'bar_chart'],
+                ['label' => 'Doanh số', 'route' => 'admin.reports.sales', 'active' => ['admin.reports.sales'], 'icon' => 'bar_chart', 'permission' => 'reports.view'],
             ],
         ],
         [
             'label' => 'Hệ thống',
             'icon' => 'settings',
             'items' => [
-                ['label' => 'Người dùng', 'route' => 'admin.users.index', 'active' => ['admin.users.*'], 'icon' => 'users'],
+                ['label' => 'Người dùng', 'route' => 'admin.users.index', 'active' => ['admin.users.*'], 'icon' => 'users', 'permission' => 'users.view'],
+                ['label' => 'Vai trò', 'route' => 'admin.roles.index', 'active' => ['admin.roles.*'], 'icon' => 'settings', 'permission' => 'roles.view'],
             ],
         ],
     ];
 
-    $canViewStockHistory = auth()->user()?->canViewStockHistory() ?? false;
-    $isVisibleSidebarItem = fn (array $item): bool => ($item['permission'] ?? null) !== 'stock_history' || $canViewStockHistory;
+    $canSeePermission = function (string|array|null $permission): bool {
+        if (!$permission) {
+            return true;
+        }
+
+        $user = auth()->user();
+
+        return $user ? $user->canAny((array) $permission) : false;
+    };
+
+    $isVisibleSidebarItem = fn (array $item): bool => $canSeePermission($item['permission'] ?? null);
 @endphp
 
 <nav class="sidebar-nav" aria-label="Menu quản trị">
     @foreach ($adminSidebarGroups as $group)
         @php
             $isDirectLink = isset($group['route']);
+            $visibleItems = $isDirectLink ? collect() : collect($group['items'])->filter($isVisibleSidebarItem)->values();
+            $isGroupVisible = $isDirectLink ? $isVisibleSidebarItem($group) : $visibleItems->isNotEmpty();
+
+            if (!$isGroupVisible) {
+                continue;
+            }
+
             $isGroupActive = $isDirectLink
                 ? request()->routeIs(...$group['active'])
-                : collect($group['items'])
-                    ->filter($isVisibleSidebarItem)
-                    ->contains(fn ($item) => request()->routeIs(...$item['active']));
+                : $visibleItems->contains(fn ($item) => request()->routeIs(...$item['active']));
             $groupId = 'admin-menu-group-' . $loop->index;
         @endphp
 
@@ -123,12 +139,8 @@
                 </button>
 
                 <div class="sidebar-group-children" id="{{ $groupId }}" aria-hidden="{{ $isGroupActive ? 'false' : 'true' }}">
-                    @foreach ($group['items'] as $item)
+                    @foreach ($visibleItems as $item)
                         @php
-                            if (!$isVisibleSidebarItem($item)) {
-                                continue;
-                            }
-
                             $isItemActive = request()->routeIs(...$item['active']);
                             $itemClasses = trim('sidebar-link sidebar-child-link ' . ($item['class'] ?? '') . ' ' . ($isItemActive ? 'active' : ''));
                         @endphp

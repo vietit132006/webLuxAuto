@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Brand;
 use App\Models\Car;
+use App\Models\Order;
 use App\Models\StockMovement;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -16,25 +17,39 @@ class AdminController extends Controller
     // 1. Dashboard
     public function dashboard()
     {
-        $totalCars = Car::count();
-        $totalCarModels = CarModel::count();
-        $totalBrands = Brand::count();
+        $user = auth()->user();
+        $canViewCars = $user?->can('cars.view') ?? false;
+        $canViewReports = $user?->can('reports.view') ?? false;
+        $canViewInventory = $user?->can('inventory.view') ?? false;
+        $canViewInventoryHistory = $user?->can('inventory.history') ?? false;
 
-        $recentCars = Car::with('brand')
+        $totalCars = $canViewCars ? Car::count() : null;
+        $totalCarModels = $canViewCars ? CarModel::count() : null;
+        $totalBrands = $canViewCars ? Brand::count() : null;
+        $totalRevenue = $canViewReports ? (float) Order::where('status', 2)->sum('total_price') : null;
+        $totalInventoryUnits = $canViewInventory ? (int) Car::sum('stock') : null;
+
+        $recentCars = $canViewCars ? Car::with('brand')
             ->orderBy('car_id', 'desc')
             ->take(5)
-            ->get();
+            ->get() : collect();
 
-        $recentStockMovements = StockMovement::with(['car', 'user'])
+        $recentStockMovements = $canViewInventoryHistory ? StockMovement::with(['car', 'user'])
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->take(10)
-            ->get();
+            ->get() : collect();
 
         return view('admin.cars.dashboard', compact(
             'totalCars',
             'totalCarModels',
             'totalBrands',
+            'totalRevenue',
+            'totalInventoryUnits',
+            'canViewCars',
+            'canViewReports',
+            'canViewInventory',
+            'canViewInventoryHistory',
             'recentCars',
             'recentStockMovements'
         ));
