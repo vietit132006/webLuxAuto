@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Brand;
 use App\Models\Car;
+use App\Models\StockMovement;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Storage;
@@ -24,11 +25,18 @@ class AdminController extends Controller
             ->take(5)
             ->get();
 
+        $recentStockMovements = StockMovement::with(['car', 'user'])
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->take(10)
+            ->get();
+
         return view('admin.cars.dashboard', compact(
             'totalCars',
             'totalCarModels',
             'totalBrands',
-            'recentCars'
+            'recentCars',
+            'recentStockMovements'
         ));
     }
 

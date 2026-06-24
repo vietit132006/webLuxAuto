@@ -140,5 +140,33 @@
                 </div>
             </div>
         </div>
+
+        <div class="panel stock-activity-panel">
+            <div class="panel-header">
+                <h2 class="panel-title">Hoạt động tồn kho gần đây</h2>
+                <a href="{{ route('admin.stock-movements.index') }}" class="panel-link">Xem tất cả →</a>
+            </div>
+
+            @if (($recentStockMovements ?? collect())->isEmpty())
+                <p class="empty-text">Chưa có biến động tồn kho.</p>
+            @else
+                <div class="stock-activity-list">
+                    @foreach ($recentStockMovements as $movement)
+                        <div class="stock-activity-item">
+                            <div class="stock-activity-main">
+                                <span class="stock-activity-car">{{ $movement->car->name ?? 'Xe đã xóa' }}</span>
+                                <span class="stock-activity-meta">
+                                    {{ $movement->created_at?->format('d/m/Y H:i') }}
+                                </span>
+                            </div>
+                            <div class="stock-activity-delta {{ $movement->quantity_change >= 0 ? 'is-positive' : 'is-negative' }}">
+                                {{ $movement->quantity_change > 0 ? '+' : '' }}{{ $movement->quantity_change }}
+                                <span>({{ $movement->action_type }})</span>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </div>
     </div>
 @endsection

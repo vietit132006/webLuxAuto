@@ -8,6 +8,7 @@ use App\Http\Controllers\AdminReportController;
 use App\Http\Controllers\AdminTicketController;
 use App\Http\Controllers\Admin\CarController as AdminCarController;
 use App\Http\Controllers\Admin\CarExcelController;
+use App\Http\Controllers\Admin\StockMovementController;
 use App\Http\Controllers\Admin\TestDriveController;
 use App\Http\Controllers\AccountSwitchController;
 use App\Http\Controllers\AuthController;
@@ -180,5 +181,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/test-drives', [TestDriveController::class, 'index'])->name('test_drives.index');
         Route::get('/test-drives/{id}', [TestDriveController::class, 'show'])->name('test_drives.show');
         Route::post('/test-drives/{id}/status', [TestDriveController::class, 'updateStatus'])->name('test_drives.updateStatus');
+    });
+
+    Route::middleware('stock.history')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/stock-movements', [StockMovementController::class, 'index'])->name('stock-movements.index');
+        Route::get('/stock-movements/export', [StockMovementController::class, 'export'])->name('stock-movements.export');
     });
 });

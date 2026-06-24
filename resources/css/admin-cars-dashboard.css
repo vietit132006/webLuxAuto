@@ -247,6 +247,69 @@
             margin: 0;
         }
 
+        .stock-activity-panel {
+            margin-top: 2rem;
+        }
+
+        .stock-activity-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .stock-activity-item {
+            min-height: 62px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.8rem 0.9rem;
+            background: rgba(255, 255, 255, 0.024);
+        }
+
+        .stock-activity-main {
+            display: grid;
+            gap: 0.18rem;
+            min-width: 0;
+        }
+
+        .stock-activity-car {
+            overflow: hidden;
+            color: var(--text);
+            font-weight: 800;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .stock-activity-meta {
+            color: var(--muted);
+            font-size: 0.78rem;
+        }
+
+        .stock-activity-delta {
+            flex: 0 0 auto;
+            color: var(--text);
+            font-size: 0.95rem;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        .stock-activity-delta span {
+            color: var(--muted);
+            font-size: 0.78rem;
+            font-weight: 750;
+        }
+
+        .stock-activity-delta.is-positive {
+            color: #4ade80;
+        }
+
+        .stock-activity-delta.is-negative {
+            color: #f87171;
+        }
+
 /* Inline styles extracted from resources/views/admin/cars/dashboard.blade.php */
 
 .admin-cars-dashboard-inline-1 {

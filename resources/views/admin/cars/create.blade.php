@@ -325,6 +325,16 @@
                             <div class="field-error">{{ $message }}</div>
                         @enderror
                     </div>
+
+                    <div class="form-group">
+                        <label>Số lượng tồn</label>
+                        <input type="number" name="stock_quantity" class="lux-input"
+                            value="{{ old('stock_quantity', 1) }}" min="0" step="1">
+                        <p class="field-hint">Số lượng ban đầu sẽ được ghi vào lịch sử nhập kho.</p>
+                        @error('stock_quantity')
+                            <div class="field-error">{{ $message }}</div>
+                        @enderror
+                    </div>
                 </div>
             </div>
 

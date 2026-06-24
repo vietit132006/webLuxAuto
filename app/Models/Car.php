@@ -88,6 +88,11 @@ class Car extends Model
         return $this->hasMany(Review::class, 'car_id', 'car_id');
     }
 
+    public function stockMovements()
+    {
+        return $this->hasMany(StockMovement::class, 'car_id', 'car_id');
+    }
+
     // ========================
     // ACCESSORS
     // ========================

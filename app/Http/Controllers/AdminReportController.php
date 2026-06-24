@@ -7,7 +7,9 @@ use App\Models\InventoryLog;
 use App\Models\Order;
 use App\Models\Review;
 use App\Models\Setting;
+use App\Models\StockMovement;
 use App\Models\User;
+use App\Services\StockMovementService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +17,10 @@ use Illuminate\View\View;
 
 class AdminReportController extends Controller
 {
+    public function __construct(private readonly StockMovementService $stockMovementService)
+    {
+    }
+
     public function sales(Request $request): View
     {
         $month = $request->input('month', now()->format('Y-m'));
@@ -99,9 +105,10 @@ class AdminReportController extends Controller
         ]);
 
         try {
-            DB::transaction(function () use ($data) {
+            DB::transaction(function () use ($data, $request) {
                 $car = Car::lockForUpdate()->findOrFail($data['car_id']);
-                $newStock = $car->stock + $data['change_qty'];
+                $oldStock = (int) ($car->stock_quantity ?? $car->stock ?? 0);
+                $newStock = $oldStock + $data['change_qty'];
                 if ($newStock < 0) {
                     throw new \InvalidArgumentException('Tồn kho sau điều chỉnh không được âm.');
                 }
@@ -114,6 +121,18 @@ class AdminReportController extends Controller
                     'change_qty' => $data['change_qty'],
                     'note' => $data['note'] ?? null,
                 ]);
+
+                $this->stockMovementService->recordMovement(
+                    $car,
+                    $oldStock,
+                    (int) $data['change_qty'],
+                    $newStock,
+                    StockMovement::ACTION_INVENTORY_CHECK,
+                    'Kiểm tra và điều chỉnh tồn kho.',
+                    $data['note'] ?? null,
+                    null,
+                    $request
+                );
             });
         } catch (\InvalidArgumentException $e) {
             return redirect()->route('admin.reports.inventory_check')->withErrors(['car_id' => $e->getMessage()]);

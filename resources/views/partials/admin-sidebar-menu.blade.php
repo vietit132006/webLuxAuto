@@ -6,6 +6,7 @@
         'list_tree' => '<path d="M21 6H8" /><path d="M21 12h-8" /><path d="M21 18h-8" /><path d="M3 6h1c2 0 3 1 3 3v6c0 2 1 3 3 3h1" />',
         'boxes' => '<path d="m7.5 4.27 4.5 2.6 4.5-2.6" /><path d="M3 8.54 12 14l9-5.46" /><path d="M12 14v8" /><path d="M3 8.54v6.92a2 2 0 0 0 1 1.73l7 4.04a2 2 0 0 0 2 0l7-4.04a2 2 0 0 0 1-1.73V8.54a2 2 0 0 0-1-1.73l-7-4.04a2 2 0 0 0-2 0l-7 4.04a2 2 0 0 0-1 1.73Z" />',
         'clipboard_check' => '<rect width="8" height="4" x="8" y="2" rx="1" /><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><path d="m9 14 2 2 4-4" />',
+        'history' => '<path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 3v6h6" /><path d="M12 7v5l3 2" />',
         'shopping_cart' => '<circle cx="8" cy="21" r="1" /><circle cx="19" cy="21" r="1" /><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h8.36a2 2 0 0 0 1.95-1.57L21 4H5.12" />',
         'users' => '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />',
         'calendar' => '<path d="M8 2v4" /><path d="M16 2v4" /><rect width="18" height="18" x="3" y="4" rx="2" /><path d="M3 10h18" />',
@@ -36,11 +37,12 @@
             'label' => 'Quản lý xe',
             'icon' => 'car',
             'items' => [
-                ['label' => 'Kho xe', 'route' => 'admin.cars.index', 'active' => ['admin.cars.*'], 'icon' => 'car'],
+                ['label' => 'Quản lý kho xe', 'route' => 'admin.cars.index', 'active' => ['admin.cars.*'], 'icon' => 'car'],
                 ['label' => 'Hãng xe', 'route' => 'admin.brands.index', 'active' => ['admin.brands.*'], 'icon' => 'building'],
                 ['label' => 'Dòng xe', 'route' => 'admin.car-models.index', 'active' => ['admin.car-models.*'], 'icon' => 'list_tree'],
                 ['label' => 'Tồn kho', 'route' => 'admin.reports.inventory', 'active' => ['admin.reports.inventory'], 'icon' => 'boxes'],
                 ['label' => 'Kiểm tra tồn', 'route' => 'admin.reports.inventory_check', 'active' => ['admin.reports.inventory_check', 'admin.reports.inventory_log'], 'icon' => 'clipboard_check'],
+                ['label' => 'Lịch sử tồn kho', 'route' => 'admin.stock-movements.index', 'active' => ['admin.stock-movements.*'], 'icon' => 'history', 'permission' => 'stock_history'],
             ],
         ],
         [
@@ -84,6 +86,9 @@
             ],
         ],
     ];
+
+    $canViewStockHistory = auth()->user()?->canViewStockHistory() ?? false;
+    $isVisibleSidebarItem = fn (array $item): bool => ($item['permission'] ?? null) !== 'stock_history' || $canViewStockHistory;
 @endphp
 
 <nav class="sidebar-nav" aria-label="Menu quản trị">
@@ -92,7 +97,9 @@
             $isDirectLink = isset($group['route']);
             $isGroupActive = $isDirectLink
                 ? request()->routeIs(...$group['active'])
-                : collect($group['items'])->contains(fn ($item) => request()->routeIs(...$item['active']));
+                : collect($group['items'])
+                    ->filter($isVisibleSidebarItem)
+                    ->contains(fn ($item) => request()->routeIs(...$item['active']));
             $groupId = 'admin-menu-group-' . $loop->index;
         @endphp
 
@@ -118,6 +125,10 @@
                 <div class="sidebar-group-children" id="{{ $groupId }}" aria-hidden="{{ $isGroupActive ? 'false' : 'true' }}">
                     @foreach ($group['items'] as $item)
                         @php
+                            if (!$isVisibleSidebarItem($item)) {
+                                continue;
+                            }
+
                             $isItemActive = request()->routeIs(...$item['active']);
                             $itemClasses = trim('sidebar-link sidebar-child-link ' . ($item['class'] ?? '') . ' ' . ($isItemActive ? 'active' : ''));
                         @endphp

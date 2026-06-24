@@ -7,6 +7,8 @@ use App\Models\Car;
 use App\Models\CarModel;
 use App\Models\Brand;
 use App\Models\CarImage;
+use App\Models\StockMovement;
+use App\Services\StockMovementService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -23,6 +25,10 @@ class CarController extends Controller
         'insurance_fee',
         'other_fees',
     ];
+
+    public function __construct(private readonly StockMovementService $stockMovementService)
+    {
+    }
 
     // Hiển thị danh sách xe cũ trong kho
     public function index(Request $request)
@@ -109,6 +115,7 @@ class CarController extends Controller
             'on_road_date'   => 'nullable|date',
             'vehicle_condition' => 'required|in:' . implode(',', self::VEHICLE_CONDITIONS),
             'current_location' => 'nullable|string|max:255',
+            'stock_quantity' => 'nullable|integer|min:0',
             'color'          => 'nullable|string|max:50',
             'interior_color' => 'nullable|string|max:50',
             'status'         => 'nullable|in:1,2,3',
@@ -189,9 +196,10 @@ class CarController extends Controller
             'video_file' => $request->hasFile('video_file') ? $request->file('video_file')->getClientOriginalName() : null,
         ];
         $pricing = $this->calculateCarPricing($validated);
+        $initialStock = (int) ($validated['stock_quantity'] ?? 1);
 
         try {
-            $result = DB::transaction(function () use ($request, $validated, $pricing, &$uiLog) {
+            $result = DB::transaction(function () use ($request, $validated, $pricing, $initialStock, &$uiLog) {
                 // Upload ảnh đại diện
                 $mainImagePath = null;
                 if ($request->hasFile('image')) {
@@ -232,6 +240,8 @@ class CarController extends Controller
                     'on_road_date' => $validated['on_road_date'] ?? null,
                     'vehicle_condition' => $validated['vehicle_condition'] ?? 'new',
                     'current_location' => $validated['current_location'] ?? null,
+                    'stock_quantity' => $initialStock,
+                    'stock' => $initialStock,
                     'color' => $validated['color'] ?? null,
                     'interior_color' => $validated['interior_color'] ?? null,
                     'status' => $validated['status'] ?? 1,
@@ -245,6 +255,18 @@ class CarController extends Controller
                 $car->save();
                 $uiLog['car_saved'] = true;
                 $uiLog['car_id'] = $car->getAttribute('car_id');
+
+                $this->stockMovementService->recordMovement(
+                    $car,
+                    0,
+                    $initialStock,
+                    $initialStock,
+                    StockMovement::ACTION_IMPORT,
+                    'Tạo xe mới và nhập tồn kho ban đầu.',
+                    null,
+                    null,
+                    $request
+                );
 
                 // Upload gallery (nếu có)
                 $galleryPaths = [];
@@ -369,6 +391,7 @@ class CarController extends Controller
             'on_road_date'   => 'nullable|date',
             'vehicle_condition' => 'required|in:' . implode(',', self::VEHICLE_CONDITIONS),
             'current_location' => 'nullable|string|max:255',
+            'stock_quantity' => 'nullable|integer|min:0',
             'color'          => 'nullable|string|max:50',
             'interior_color' => 'nullable|string|max:50',
             'status'         => 'nullable|in:1,2,3',
@@ -464,6 +487,9 @@ class CarController extends Controller
                 }
                 $uiLog['stored_video_file'] = $videoFilePath;
 
+                $oldStock = (int) ($car->stock_quantity ?? $car->stock ?? 0);
+                $newStock = (int) ($validated['stock_quantity'] ?? $oldStock);
+
                 $car->fill([
                     'car_model_id' => $validated['car_model_id'],
                     'name' => $validated['name'],
@@ -488,6 +514,8 @@ class CarController extends Controller
                     'on_road_date' => $validated['on_road_date'] ?? null,
                     'vehicle_condition' => $validated['vehicle_condition'] ?? ($car->vehicle_condition ?? 'new'),
                     'current_location' => $validated['current_location'] ?? null,
+                    'stock_quantity' => $newStock,
+                    'stock' => $newStock,
                     'color' => $validated['color'] ?? null,
                     'interior_color' => $validated['interior_color'] ?? null,
                     'status' => $validated['status'] ?? $car->status,
@@ -500,6 +528,18 @@ class CarController extends Controller
 
                 $car->save();
                 $uiLog['car_saved'] = true;
+
+                $this->stockMovementService->recordMovement(
+                    $car,
+                    $oldStock,
+                    $newStock - $oldStock,
+                    $newStock,
+                    StockMovement::ACTION_ADJUSTMENT,
+                    'Cập nhật số lượng tồn trong hồ sơ xe.',
+                    null,
+                    null,
+                    $request
+                );
 
                 $galleryPaths = [];
                 if ($request->hasFile('gallery')) {
@@ -655,6 +695,7 @@ class CarController extends Controller
             'on_road_date'   => 'ngày lăn bánh',
             'vehicle_condition' => 'tình trạng xe',
             'current_location' => 'vị trí xe',
+            'stock_quantity' => 'số lượng tồn kho',
             'color'          => 'màu ngoại thất',
             'interior_color' => 'màu nội thất',
             'status'         => 'trạng thái bán hàng',

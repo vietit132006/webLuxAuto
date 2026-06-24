@@ -4,6 +4,8 @@ namespace App\Imports;
 
 use App\Models\Car;
 use App\Models\CarModel;
+use App\Models\StockMovement;
+use App\Services\StockMovementService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -20,6 +22,10 @@ class CarsImport implements ToCollection, WithHeadingRow
 
     private int $importedCount = 0;
     private array $errors = [];
+
+    public function __construct(private readonly ?StockMovementService $stockMovementService = null)
+    {
+    }
 
     public function collection(Collection $rows): void
     {
@@ -181,7 +187,18 @@ class CarsImport implements ToCollection, WithHeadingRow
 
         DB::transaction(function () use ($validRows) {
             foreach ($validRows as $payload) {
-                Car::create($payload);
+                $car = Car::create($payload);
+                $stockQuantity = (int) ($car->stock_quantity ?? $car->stock ?? 0);
+
+                $this->stockMovementService?->recordMovement(
+                    $car,
+                    0,
+                    $stockQuantity,
+                    $stockQuantity,
+                    StockMovement::ACTION_IMPORT,
+                    'Import Excel xe vào kho.'
+                );
+
                 $this->importedCount++;
             }
         });
@@ -461,7 +478,7 @@ class CarsImport implements ToCollection, WithHeadingRow
         $estimatedRollingPrice = $this->nullableMoneyValue($data['estimated_rolling_price']) ?? ($actualPrice + $feeTotal);
         $mileageKm = (int) round((float) ($data['mileage_km'] ?? 0));
         $stockQuantity = (int) round((float) ($data['stock_quantity'] ?? $data['stock'] ?? 1));
-        $stock = (int) round((float) ($data['stock'] ?? $stockQuantity));
+        $stock = $stockQuantity;
 
         return [
             'car_model_id' => (int) $data['car_model_id'],

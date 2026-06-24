@@ -3,10 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Services\StockMovementService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AdminOrderController extends Controller
 {
+    public function __construct(private readonly StockMovementService $stockMovementService)
+    {
+    }
+
     // 1. Hiển thị danh sách đơn hàng
     public function index(Request $request)
     {
@@ -25,8 +31,28 @@ class AdminOrderController extends Controller
             'status' => 'required|integer|in:0,1,2,3'
         ]);
 
-        $order = Order::findOrFail($id);
-        $order->update(['status' => $request->status]);
+        try {
+            DB::transaction(function () use ($id, $request) {
+                $order = Order::with(['details.car', 'user'])->lockForUpdate()->findOrFail($id);
+                $statusBefore = $order->status;
+                $statusAfter = (int) $request->status;
+
+                if ((string) $statusBefore === (string) $statusAfter) {
+                    return;
+                }
+
+                $order->update(['status' => $statusAfter]);
+
+                $this->stockMovementService->recordOrderStatusChange(
+                    $order,
+                    $statusBefore,
+                    $statusAfter,
+                    $request
+                );
+            });
+        } catch (\InvalidArgumentException $e) {
+            return redirect()->back()->withErrors(['stock' => $e->getMessage()]);
+        }
 
         return redirect()->back()->with('success', 'Đã cập nhật trạng thái đơn hàng #' . $id . ' thành công!');
     }

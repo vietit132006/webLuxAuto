@@ -7,6 +7,7 @@ use App\Exports\CarsImportTemplateExport;
 use App\Exports\InventoryReportExport;
 use App\Http\Controllers\Controller;
 use App\Imports\CarsImport;
+use App\Services\StockMovementService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -15,6 +16,10 @@ use Throwable;
 
 class CarExcelController extends Controller
 {
+    public function __construct(private readonly StockMovementService $stockMovementService)
+    {
+    }
+
     public function import(Request $request): RedirectResponse
     {
         $request->validate([
@@ -26,7 +31,7 @@ class CarExcelController extends Controller
             'file.max' => 'File import không được vượt quá 10MB.',
         ]);
 
-        $import = new CarsImport();
+        $import = new CarsImport($this->stockMovementService);
 
         try {
             Excel::import($import, $request->file('file'));

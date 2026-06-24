@@ -5,12 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\Car;
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Services\StockMovementService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
+    public function __construct(private readonly StockMovementService $stockMovementService)
+    {
+    }
+
     // 1. Xem lịch sử đơn hàng của khách
     public function history()
     {
@@ -32,6 +37,12 @@ class OrderController extends Controller
         }
 
         $car = Car::findOrFail($car_id);
+        if ((int) ($car->stock_quantity ?? $car->stock ?? 0) <= 0) {
+            return back()->withErrors([
+                'stock' => 'Xe hiện không còn tồn kho để đặt cọc.',
+            ]);
+        }
+
         $deposit_amount = 20000000; // 20 triệu
 
         try {
@@ -138,7 +149,21 @@ class OrderController extends Controller
             if ($request->vnp_ResponseCode == '00') {
                 // MÃ 00 LÀ THÀNH CÔNG -> Đổi trạng thái đơn hàng thành 1 (Đã cọc)
                 if ($order && $order->status == 0) {
-                    $order->update(['status' => 1]);
+                    try {
+                        DB::transaction(function () use ($order, $request) {
+                            $statusBefore = $order->status;
+                            $order->update(['status' => 1]);
+
+                            $this->stockMovementService->recordOrderStatusChange(
+                                $order,
+                                $statusBefore,
+                                1,
+                                $request
+                            );
+                        });
+                    } catch (\InvalidArgumentException $e) {
+                        return redirect()->route('order.history')->withErrors(['stock' => $e->getMessage()]);
+                    }
                 }
                 return redirect()->route('order.history')->with('success', 'Tuyệt vời! Bạn đã thanh toán cọc thành công chiếc xe.');
             } else {
