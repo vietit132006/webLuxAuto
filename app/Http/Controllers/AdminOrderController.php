@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -30,8 +31,18 @@ class AdminOrderController extends Controller
             ->paginate(15)
             ->withQueryString();
         $statusOptions = Order::statusOptions();
+        $depositFilterOptions = $this->depositFilterOptions();
+        $sortOptions = $this->sortOptions();
+        $orderStats = $this->orderStats($filters);
 
-        return view('admin.orders.index', compact('orders', 'statusOptions', 'filters'));
+        return view('admin.orders.index', compact(
+            'depositFilterOptions',
+            'filters',
+            'orderStats',
+            'orders',
+            'sortOptions',
+            'statusOptions'
+        ));
     }
 
     public function create()
@@ -266,11 +277,27 @@ class AdminOrderController extends Controller
         $filters = $request->validate([
             'q' => 'nullable|string|max:255',
             'status' => 'nullable|integer|in:0,1,2,3',
+            'deposit_filter' => ['nullable', Rule::in(array_keys($this->depositFilterOptions()))],
             'date_from' => 'nullable|date',
             'date_to' => 'nullable|date|after_or_equal:date_from',
+            'price_from' => 'nullable|numeric|min:0',
+            'price_to' => 'nullable|numeric|min:0',
+            'sort' => ['nullable', Rule::in(array_keys($this->sortOptions()))],
         ]);
 
+        if (
+            ($filters['price_from'] ?? '') !== ''
+            && ($filters['price_to'] ?? '') !== ''
+            && (float) $filters['price_from'] > (float) $filters['price_to']
+        ) {
+            throw ValidationException::withMessages([
+                'price_to' => 'Giá đến phải lớn hơn hoặc bằng Giá từ.',
+            ]);
+        }
+
         $filters['q'] = trim((string) ($filters['q'] ?? ''));
+        $filters['deposit_filter'] = $filters['deposit_filter'] ?? '';
+        $filters['sort'] = $filters['sort'] ?? 'latest';
 
         if (($filters['status'] ?? '') !== '') {
             $filters['status'] = (int) $filters['status'];
@@ -281,29 +308,85 @@ class AdminOrderController extends Controller
 
     private function ordersQuery(array $filters): Builder
     {
-        return Order::query()
+        $query = Order::query()
             ->with(['user', 'details.car'])
+            ->select('orders.*');
+
+        $this->applyOrderFilters($query, $filters);
+        $this->applyOrderSorting($query, $filters['sort'] ?? 'latest');
+
+        return $query;
+    }
+
+    private function orderStats(array $filters): array
+    {
+        $query = Order::query();
+        $this->applyOrderFilters($query, $filters);
+
+        return [
+            'total_orders' => (clone $query)->count(),
+            'total_value' => (float) (clone $query)->sum('total_price'),
+            'pending' => (clone $query)->whereIn('status', $this->statusFilterValues(Order::STATUS_PENDING))->count(),
+            'deposited' => (clone $query)->whereIn('status', $this->statusFilterValues(Order::STATUS_DEPOSITED))->count(),
+            'completed' => (clone $query)->whereIn('status', $this->statusFilterValues(Order::STATUS_COMPLETED))->count(),
+            'cancelled' => (clone $query)->whereIn('status', $this->statusFilterValues(Order::STATUS_CANCELLED))->count(),
+        ];
+    }
+
+    private function applyOrderFilters(Builder $query, array $filters): void
+    {
+        $query
             ->when($filters['q'] ?? null, function (Builder $query, string $search): void {
                 $query->where(function (Builder $inner) use ($search): void {
                     $inner->where('order_code', 'like', "%{$search}%")
                         ->orWhere('order_id', 'like', "%{$search}%")
                         ->orWhereHas('user', function (Builder $userQuery) use ($search): void {
                             $userQuery->where('name', 'like', "%{$search}%")
-                                ->orWhere('email', 'like', "%{$search}%");
+                                ->orWhere('email', 'like', "%{$search}%")
+                                ->orWhere('phone', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('details.car', function (Builder $carQuery) use ($search): void {
+                            $carQuery->where('name', 'like', "%{$search}%");
                         });
                 });
             })
             ->when(($filters['status'] ?? '') !== '', function (Builder $query) use ($filters): void {
                 $query->whereIn('status', $this->statusFilterValues((int) $filters['status']));
             })
+            ->when(($filters['deposit_filter'] ?? '') === 'with_deposit', function (Builder $query): void {
+                $query->where('deposit_amount', '>', 0);
+            })
+            ->when(($filters['deposit_filter'] ?? '') === 'without_deposit', function (Builder $query): void {
+                $query->where(function (Builder $inner): void {
+                    $inner->whereNull('deposit_amount')
+                        ->orWhere('deposit_amount', '<=', 0);
+                });
+            })
             ->when($filters['date_from'] ?? null, function (Builder $query, string $date): void {
                 $query->where('created_at', '>=', Carbon::parse($date)->startOfDay());
             })
             ->when($filters['date_to'] ?? null, function (Builder $query, string $date): void {
                 $query->where('created_at', '<=', Carbon::parse($date)->endOfDay());
-            })
-            ->orderByDesc('created_at')
-            ->orderByDesc('order_id');
+            });
+
+        if (($filters['price_from'] ?? '') !== '') {
+            $query->where('total_price', '>=', (float) $filters['price_from']);
+        }
+
+        if (($filters['price_to'] ?? '') !== '') {
+            $query->where('total_price', '<=', (float) $filters['price_to']);
+        }
+    }
+
+    private function applyOrderSorting(Builder $query, string $sort): void
+    {
+        match ($sort) {
+            'oldest' => $query->orderBy('created_at')->orderBy('order_id'),
+            'total_desc' => $query->orderByDesc('total_price')->orderByDesc('created_at')->orderByDesc('order_id'),
+            'total_asc' => $query->orderBy('total_price')->orderByDesc('created_at')->orderByDesc('order_id'),
+            'deposit_desc' => $query->orderByDesc('deposit_amount')->orderByDesc('created_at')->orderByDesc('order_id'),
+            default => $query->orderByDesc('created_at')->orderByDesc('order_id'),
+        };
     }
 
     private function statusFilterValues(int $status): array
@@ -315,6 +398,25 @@ class AdminOrderController extends Controller
             Order::STATUS_CANCELLED => [3, '3', 'cancel', 'canceled', 'cancelled'],
             default => [$status, (string) $status],
         };
+    }
+
+    private function depositFilterOptions(): array
+    {
+        return [
+            'with_deposit' => 'Có tiền cọc',
+            'without_deposit' => 'Chưa cọc',
+        ];
+    }
+
+    private function sortOptions(): array
+    {
+        return [
+            'latest' => 'Mới nhất',
+            'oldest' => 'Cũ nhất',
+            'total_desc' => 'Giá trị cao nhất',
+            'total_asc' => 'Giá trị thấp nhất',
+            'deposit_desc' => 'Tiền cọc cao nhất',
+        ];
     }
 
     private function recordStatusHistory(

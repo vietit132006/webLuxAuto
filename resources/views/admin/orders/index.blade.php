@@ -53,11 +53,38 @@
         </div>
     @endif
 
+    <div class="order-stats-grid">
+        <div class="order-stat-card">
+            <span>Tổng đơn hàng</span>
+            <strong>{{ number_format($orderStats['total_orders'] ?? 0) }}</strong>
+        </div>
+        <div class="order-stat-card order-stat-card-wide">
+            <span>Tổng giá trị đơn</span>
+            <strong>{{ number_format((float) ($orderStats['total_value'] ?? 0), 0, ',', '.') }} đ</strong>
+        </div>
+        <div class="order-stat-card">
+            <span>Đơn chờ xử lý</span>
+            <strong>{{ number_format($orderStats['pending'] ?? 0) }}</strong>
+        </div>
+        <div class="order-stat-card">
+            <span>Đơn đã cọc</span>
+            <strong>{{ number_format($orderStats['deposited'] ?? 0) }}</strong>
+        </div>
+        <div class="order-stat-card">
+            <span>Đơn hoàn tất</span>
+            <strong>{{ number_format($orderStats['completed'] ?? 0) }}</strong>
+        </div>
+        <div class="order-stat-card">
+            <span>Đơn hủy</span>
+            <strong>{{ number_format($orderStats['cancelled'] ?? 0) }}</strong>
+        </div>
+    </div>
+
     <form method="GET" action="{{ route('admin.orders.index') }}" class="filter-panel">
         <div class="filter-grid">
             <div class="filter-field filter-field-search">
                 <label for="order-q">Tìm kiếm</label>
-                <input id="order-q" type="search" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Mã đơn, khách hàng, email">
+                <input id="order-q" type="search" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Mã đơn, khách hàng, email, SĐT, tên xe">
             </div>
 
             <div class="filter-field">
@@ -71,6 +98,16 @@
             </div>
 
             <div class="filter-field">
+                <label for="deposit-filter">Tiền cọc</label>
+                <select id="deposit-filter" name="deposit_filter">
+                    <option value="">Tất cả</option>
+                    @foreach($depositFilterOptions as $value => $label)
+                        <option value="{{ $value }}" @selected((string)($filters['deposit_filter'] ?? '') === (string)$value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="filter-field">
                 <label for="date-from">Từ ngày</label>
                 <input id="date-from" type="date" name="date_from" value="{{ $filters['date_from'] ?? '' }}">
             </div>
@@ -78,6 +115,25 @@
             <div class="filter-field">
                 <label for="date-to">Đến ngày</label>
                 <input id="date-to" type="date" name="date_to" value="{{ $filters['date_to'] ?? '' }}">
+            </div>
+
+            <div class="filter-field">
+                <label for="price-from">Giá từ</label>
+                <input id="price-from" type="number" name="price_from" min="0" step="1000000" value="{{ $filters['price_from'] ?? '' }}" placeholder="0">
+            </div>
+
+            <div class="filter-field">
+                <label for="price-to">Giá đến</label>
+                <input id="price-to" type="number" name="price_to" min="0" step="1000000" value="{{ $filters['price_to'] ?? '' }}" placeholder="5000000000">
+            </div>
+
+            <div class="filter-field">
+                <label for="order-sort">Sắp xếp</label>
+                <select id="order-sort" name="sort">
+                    @foreach($sortOptions as $value => $label)
+                        <option value="{{ $value }}" @selected((string)($filters['sort'] ?? 'latest') === (string)$value)>{{ $label }}</option>
+                    @endforeach
+                </select>
             </div>
         </div>
 

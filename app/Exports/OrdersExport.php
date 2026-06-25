@@ -18,29 +18,14 @@ class OrdersExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMappi
 
     public function query(): Builder
     {
-        return Order::query()
+        $query = Order::query()
             ->with(['user', 'details.car'])
-            ->when($this->filters['q'] ?? null, function (Builder $query, string $search): void {
-                $query->where(function (Builder $inner) use ($search): void {
-                    $inner->where('order_code', 'like', "%{$search}%")
-                        ->orWhere('order_id', 'like', "%{$search}%")
-                        ->orWhereHas('user', function (Builder $userQuery) use ($search): void {
-                            $userQuery->where('name', 'like', "%{$search}%")
-                                ->orWhere('email', 'like', "%{$search}%");
-                        });
-                });
-            })
-            ->when(($this->filters['status'] ?? '') !== '', function (Builder $query): void {
-                $query->whereIn('status', $this->statusFilterValues((int) $this->filters['status']));
-            })
-            ->when($this->filters['date_from'] ?? null, function (Builder $query, string $date): void {
-                $query->where('created_at', '>=', Carbon::parse($date)->startOfDay());
-            })
-            ->when($this->filters['date_to'] ?? null, function (Builder $query, string $date): void {
-                $query->where('created_at', '<=', Carbon::parse($date)->endOfDay());
-            })
-            ->orderByDesc('created_at')
-            ->orderByDesc('order_id');
+            ->select('orders.*');
+
+        $this->applyFilters($query);
+        $this->applySorting($query, $this->filters['sort'] ?? 'latest');
+
+        return $query;
     }
 
     public function headings(): array
@@ -90,6 +75,62 @@ class OrdersExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMappi
             Order::STATUS_COMPLETED => [2, '2', 'complete', 'completed', 'done'],
             Order::STATUS_CANCELLED => [3, '3', 'cancel', 'canceled', 'cancelled'],
             default => [$status, (string) $status],
+        };
+    }
+
+    private function applyFilters(Builder $query): void
+    {
+        $query
+            ->when($this->filters['q'] ?? null, function (Builder $query, string $search): void {
+                $query->where(function (Builder $inner) use ($search): void {
+                    $inner->where('order_code', 'like', "%{$search}%")
+                        ->orWhere('order_id', 'like', "%{$search}%")
+                        ->orWhereHas('user', function (Builder $userQuery) use ($search): void {
+                            $userQuery->where('name', 'like', "%{$search}%")
+                                ->orWhere('email', 'like', "%{$search}%")
+                                ->orWhere('phone', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('details.car', function (Builder $carQuery) use ($search): void {
+                            $carQuery->where('name', 'like', "%{$search}%");
+                        });
+                });
+            })
+            ->when(($this->filters['status'] ?? '') !== '', function (Builder $query): void {
+                $query->whereIn('status', $this->statusFilterValues((int) $this->filters['status']));
+            })
+            ->when(($this->filters['deposit_filter'] ?? '') === 'with_deposit', function (Builder $query): void {
+                $query->where('deposit_amount', '>', 0);
+            })
+            ->when(($this->filters['deposit_filter'] ?? '') === 'without_deposit', function (Builder $query): void {
+                $query->where(function (Builder $inner): void {
+                    $inner->whereNull('deposit_amount')
+                        ->orWhere('deposit_amount', '<=', 0);
+                });
+            })
+            ->when($this->filters['date_from'] ?? null, function (Builder $query, string $date): void {
+                $query->where('created_at', '>=', Carbon::parse($date)->startOfDay());
+            })
+            ->when($this->filters['date_to'] ?? null, function (Builder $query, string $date): void {
+                $query->where('created_at', '<=', Carbon::parse($date)->endOfDay());
+            });
+
+        if (($this->filters['price_from'] ?? '') !== '') {
+            $query->where('total_price', '>=', (float) $this->filters['price_from']);
+        }
+
+        if (($this->filters['price_to'] ?? '') !== '') {
+            $query->where('total_price', '<=', (float) $this->filters['price_to']);
+        }
+    }
+
+    private function applySorting(Builder $query, string $sort): void
+    {
+        match ($sort) {
+            'oldest' => $query->orderBy('created_at')->orderBy('order_id'),
+            'total_desc' => $query->orderByDesc('total_price')->orderByDesc('created_at')->orderByDesc('order_id'),
+            'total_asc' => $query->orderBy('total_price')->orderByDesc('created_at')->orderByDesc('order_id'),
+            'deposit_desc' => $query->orderByDesc('deposit_amount')->orderByDesc('created_at')->orderByDesc('order_id'),
+            default => $query->orderByDesc('created_at')->orderByDesc('order_id'),
         };
     }
 }
