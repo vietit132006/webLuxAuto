@@ -43,7 +43,7 @@ class SystemController extends Controller
     public function downloadBackup()
     {
         // Đây là bản demo sao lưu đơn giản (chỉ xuất JSON cho gọn vì mysqldump có thể không có sẵn)
-        $tables = ['users', 'cars', 'brands', 'orders', 'order_details', 'reviews', 'news', 'settings'];
+        $tables = ['users', 'cars', 'brands', 'orders', 'order_details', 'order_status_histories', 'reviews', 'news', 'settings'];
         $data = [];
         foreach ($tables as $table) {
             $data[$table] = DB::table($table)->get();

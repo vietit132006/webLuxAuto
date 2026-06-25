@@ -1,194 +1,333 @@
 .order-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2rem;
-    }
-    .order-id {
-        font-size: 1.8rem;
-        font-weight: 800;
-        color: var(--accent);
-    }
-    .order-date {
-        color: var(--muted);
-        font-size: 0.95rem;
-    }
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
 
-    .order-grid {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 2rem;
-    }
+.back-link {
+    display: inline-flex;
+    margin-bottom: 0.45rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+}
 
-    .panel {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-    }
-    .panel-title {
-        font-size: 1.2rem;
-        font-weight: 700;
-        margin-bottom: 1.5rem;
-        border-bottom: 1px solid var(--border);
-        padding-bottom: 0.8rem;
-    }
-
-    .info-group {
-        margin-bottom: 1.2rem;
-    }
-    .info-label {
-        font-size: 0.85rem;
-        color: var(--muted);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 0.3rem;
-    }
-    .info-value {
-        font-weight: 600;
-        color: var(--text);
-    }
-
-    .car-item {
-        display: flex;
-        gap: 1.5rem;
-        align-items: center;
-        padding: 1rem;
-        background: rgba(255, 255, 255, 0.02);
-        border-radius: 10px;
-    }
-    .car-img {
-        width: 150px;
-        height: 100px;
-        object-fit: cover;
-        border-radius: 8px;
-    }
-    .car-info { flex: 1; }
-    .car-name { font-size: 1.2rem; font-weight: 700; color: var(--text); }
-    .car-price { color: var(--accent); font-weight: 700; font-size: 1.1rem; }
-
-    .status-badge {
-        padding: 0.5rem 1rem;
-        border-radius: 50px;
-        font-weight: bold;
-        font-size: 0.9rem;
-    }
-    .badge-0 { background: rgba(234, 179, 8, 0.1); color: #facc15; }
-    .badge-1 { background: rgba(59, 130, 246, 0.1); color: #60a5fa; }
-    .badge-2 { background: rgba(16, 185, 129, 0.1); color: #34d399; }
-    .badge-3 { background: rgba(239, 68, 68, 0.1); color: #f87171; }
-
-    .action-btns {
-        display: flex;
-        gap: 1rem;
-        margin-top: 1rem;
-    }
-    .btn {
-        padding: 0.6rem 1.2rem;
-        border-radius: 8px;
-        font-weight: bold;
-        cursor: pointer;
-        border: none;
-        transition: 0.2s;
-    }
-    .btn-confirm { background: #34d399; color: #000; }
-    .btn-cancel { background: #f87171; color: #fff; }
-    .btn-back { background: var(--border); color: var(--text); }
-
-.flash-alert {
-                background-color: #d1fae5;
-                color: #065f46;
-                padding: 1rem 1.5rem;
-                border-radius: 8px;
-                margin-bottom: 1.5rem;
-                border: 1px solid #34d399;
-                font-weight: 600;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-            .btn-close-alert {
-                background: none;
-                border: none;
-                color: inherit;
-                font-size: 1.5rem;
-                line-height: 1;
-                cursor: pointer;
-                padding: 0 0 0 1rem;
-            }
-
-.error-alert {
-                background-color: #fee2e2;
-                color: #991b1b;
-                padding: 1rem 1.5rem;
-                border-radius: 8px;
-                margin-bottom: 1.5rem;
-                border: 1px solid #f87171;
-                font-weight: 600;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-
-/* Inline styles extracted from resources/views/admin/orders/show.blade.php */
-
-.admin-orders-show-inline-1 {
-    font-weight: 800;
-    font-size: 1.3rem;
+.back-link:hover {
     color: var(--accent);
 }
 
-.admin-orders-show-inline-2 {
-    font-weight: 700;
-    font-size: 1.1rem;
+.order-id {
+    margin: 0;
+    color: var(--accent);
+    font-size: 1.85rem;
+    font-weight: 800;
 }
 
-.admin-orders-show-inline-3 {
-    border-top: 1px solid var(--border);
-    padding-top: 1rem;
+.order-date {
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+.order-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+    gap: 1.25rem;
+    align-items: start;
+}
+
+.panel {
+    margin-bottom: 1.25rem;
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+}
+
+.panel-title {
+    margin: 0 0 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    font-size: 1.05rem;
+    font-weight: 800;
+}
+
+.car-list {
+    display: grid;
+    gap: 0.8rem;
+}
+
+.car-item {
+    display: grid;
+    grid-template-columns: 132px minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.85rem;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.car-img,
+.car-img-placeholder {
+    width: 132px;
+    height: 88px;
+    border-radius: 8px;
+}
+
+.car-img {
+    object-fit: cover;
+}
+
+.car-img-placeholder {
+    display: grid;
+    place-items: center;
+    background: #0a0d12;
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+.car-info {
+    min-width: 0;
+}
+
+.car-name {
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 800;
+    overflow-wrap: anywhere;
+}
+
+.car-meta,
+.history-email {
+    margin-top: 0.25rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+.car-price {
+    color: #34d399;
+    font-size: 1rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.info-group {
+    margin-bottom: 1rem;
+}
+
+.info-label {
+    margin-bottom: 0.3rem;
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.info-value,
+.history-user {
+    color: var(--text);
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.summary-row,
+.summary-total {
     display: flex;
     justify-content: space-between;
+    gap: 1rem;
+    padding: 0.55rem 0;
+    color: var(--muted);
 }
 
-.admin-orders-show-inline-4 {
-    font-weight: 600;
+.summary-row strong,
+.summary-total strong {
+    color: var(--text);
+    text-align: right;
+}
+
+.summary-total {
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    color: var(--text);
+    font-weight: 800;
+}
+
+.summary-total strong {
+    color: var(--accent);
+}
+
+.status-update-form {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.form-label {
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.form-control {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #0a0d12;
+    color: var(--text);
+    padding: 0.65rem 0.75rem;
+}
+
+.form-control:focus {
+    border-color: var(--accent);
+    outline: none;
+}
+
+.btn-submit {
+    min-height: 42px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #111827;
+    cursor: pointer;
+    font-weight: 800;
+}
+
+.history-table-wrap {
+    overflow-x: auto;
+}
+
+.history-table {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: collapse;
+}
+
+.history-table th,
+.history-table td {
+    padding: 0.8rem;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+}
+
+.history-table th {
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.badge,
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 0.28rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.status-badge {
+    min-height: 36px;
+    padding-inline: 0.95rem;
+}
+
+.badge-0 {
+    background: rgba(234, 179, 8, 0.12);
+    color: #facc15;
+}
+
+.badge-1 {
+    background: rgba(59, 130, 246, 0.12);
+    color: #60a5fa;
+}
+
+.badge-2 {
+    background: rgba(16, 185, 129, 0.12);
     color: #34d399;
 }
 
-.admin-orders-show-inline-5 {
-    color: var(--muted);
+.badge-3 {
+    background: rgba(239, 68, 68, 0.12);
+    color: #f87171;
 }
 
-.admin-orders-show-inline-6 {
+.badge-unknown {
+    background: rgba(148, 163, 184, 0.12);
+    color: #cbd5e1;
+}
+
+.flash-alert,
+.error-alert {
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    margin-bottom: 1.5rem;
-}
-
-.admin-orders-show-inline-7 {
-    font-weight: 600;
-}
-
-.admin-orders-show-inline-8 {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.8rem;
-}
-
-.admin-orders-show-inline-9 {
-    display:inline;
-}
-
-.admin-orders-show-inline-10 {
-    color: var(--muted);
-    font-size: 0.9rem;
-    margin-top: 5px;
-}
-
-.admin-orders-show-inline-11 {
-    width: 150px;
-    height: 100px;
-    background: #0a0d12;
+    gap: 1rem;
+    padding: 0.85rem 1rem;
     border-radius: 8px;
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+.flash-alert {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #34d399;
+}
+
+.error-alert {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #f87171;
+}
+
+.btn-close-alert {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font-size: 1.4rem;
+    line-height: 1;
+}
+
+.empty-state,
+.empty-cell {
+    padding: 1.5rem;
+    color: var(--muted);
+    text-align: center;
+}
+
+@media (max-width: 1080px) {
+    .order-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 680px) {
+    .order-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .car-item {
+        grid-template-columns: 96px minmax(0, 1fr);
+    }
+
+    .car-img,
+    .car-img-placeholder {
+        width: 96px;
+        height: 72px;
+    }
+
+    .car-price {
+        grid-column: 1 / -1;
+    }
 }

@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Tạo đơn hàng mới (Bán hàng)')
+@section('title', 'Tạo đơn hàng mới')
 
 @push('styles')
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
@@ -7,16 +7,17 @@
     @endif
 @endpush
 
-
 @section('content')
-
 <div class="wrap">
     <div class="form-wrap">
-        <h1 class="form-title">Tạo đơn hàng mới (Bán hàng)</h1>
+        <div class="form-header">
+            <a href="{{ route('admin.orders.index') }}" class="back-link">Quay lại danh sách</a>
+            <h1 class="form-title">Tạo đơn hàng mới</h1>
+        </div>
 
         @if($errors->any())
-            <div class="admin-orders-create-inline-4">
-                <ul class="admin-orders-create-inline-3">
+            <div class="error-box">
+                <ul>
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
@@ -27,39 +28,60 @@
         <form action="{{ route('admin.orders.store') }}" method="POST">
             @csrf
 
-            <div class="form-group">
-                <label class="label">Chọn khách hàng</label>
-                <select name="user_id" class="select" required>
-                    <option value="">-- Chọn khách hàng --</option>
-                    @foreach($users as $user)
-                        <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
-                    @endforeach
-                </select>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="label" for="user_id">Khách hàng</label>
+                    <select id="user_id" name="user_id" class="select" required>
+                        <option value="">Chọn khách hàng</option>
+                        @foreach($users as $user)
+                            <option value="{{ $user->user_id }}" @selected((string) old('user_id') === (string) $user->user_id)>
+                                {{ $user->name }} ({{ $user->email }})
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="label" for="car_id">Xe bán</label>
+                    <select id="car_id" name="car_id" class="select" required>
+                        <option value="">Chọn xe</option>
+                        @foreach($cars as $car)
+                            @php
+                                $stock = $car->stock_quantity ?? $car->stock ?? 0;
+                            @endphp
+                            <option value="{{ $car->car_id }}" @selected((string) old('car_id') === (string) $car->car_id)>
+                                {{ $car->name }} - {{ number_format((float) $car->price, 0, ',', '.') }} đ - Kho: {{ $stock }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="label" for="deposit_amount">Tiền cọc</label>
+                    <input id="deposit_amount" type="number" name="deposit_amount" class="input" min="0" step="1000" value="{{ old('deposit_amount', (int) $defaultDepositAmount) }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="label" for="deposit_date">Ngày cọc</label>
+                    <input id="deposit_date" type="datetime-local" name="deposit_date" class="input" value="{{ old('deposit_date') }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="label" for="status">Trạng thái ban đầu</label>
+                    <select id="status" name="status" class="select" required>
+                        @foreach($statusOptions as $value => $label)
+                            <option value="{{ $value }}" @selected((string) old('status', 0) === (string) $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="label" for="note">Ghi chú lịch sử</label>
+                    <textarea id="note" name="note" class="input" rows="3" placeholder="Ghi chú khi tạo đơn">{{ old('note') }}</textarea>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label class="label">Chọn xe cần bán</label>
-                <select name="car_id" class="select" required>
-                    <option value="">-- Chọn xe --</option>
-                    @foreach($cars as $car)
-                        <option value="{{ $car->car_id }}">{{ $car->name }} - {{ number_format($car->price, 0, ',', '.') }} đ (Kho: {{ $car->stock }})</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label class="label">Trạng thái ban đầu</label>
-                <select name="status" class="select" required>
-                    <option value="0">⏳ Chờ xử lý</option>
-                    <option value="1">💸 Đã đặt cọc</option>
-                    <option value="2">✅ Hoàn tất (Giao xe)</option>
-                    <option value="3">❌ Hủy bỏ</option>
-                </select>
-                <p class="admin-orders-create-inline-2">* Nếu chọn "Hoàn tất", hệ thống sẽ tự động giảm tồn kho xe.</p>
-            </div>
-
-            <button type="submit" class="btn-submit">TẠO ĐƠN HÀNG</button>
-            <a class="admin-orders-create-inline-1" href="{{ route('admin.orders.index') }}">Hủy và quay lại</a>
+            <button type="submit" class="btn-submit">Tạo đơn hàng</button>
         </form>
     </div>
 </div>

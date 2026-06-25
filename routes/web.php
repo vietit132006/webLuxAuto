@@ -234,6 +234,18 @@ Route::middleware('auth')->group(function () {
         Route::get('/orders', [AdminOrderController::class, 'index'])
             ->middleware('permission:orders.view')
             ->name('orders.index');
+        Route::get('/orders/create', [AdminOrderController::class, 'create'])
+            ->middleware('permission:orders.create')
+            ->name('orders.create');
+        Route::post('/orders', [AdminOrderController::class, 'store'])
+            ->middleware('permission:orders.create')
+            ->name('orders.store');
+        Route::get('/orders/export', [AdminOrderController::class, 'export'])
+            ->middleware('permission:orders.view')
+            ->name('orders.export');
+        Route::get('/orders/{id}', [AdminOrderController::class, 'show'])
+            ->middleware('permission:orders.view')
+            ->name('orders.show');
         Route::post('/orders/{id}/status', [AdminOrderController::class, 'updateStatus'])
             ->middleware('permission:orders.edit')
             ->name('orders.updateStatus');

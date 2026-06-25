@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Chi tiết đơn hàng #' . $order->order_id)
+@section('title', 'Chi tiết đơn hàng ' . $order->display_code)
 
 @push('styles')
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
@@ -7,83 +7,106 @@
     @endif
 @endpush
 
-
 @section('content')
-
 <div class="wrap">
     @if(session('success'))
-        <div id="success-alert" class="flash-alert">
-            <span>✅ {{ session('success') }}</span>
-            <button type="button" class="btn-close-alert" onclick="this.parentElement.remove()">&times;</button>
+        <div class="flash-alert">
+            <span>{{ session('success') }}</span>
+            <button type="button" class="btn-close-alert" onclick="this.parentElement.remove()" aria-label="Đóng">&times;</button>
         </div>
     @endif
 
-    @if($errors->has('status'))
+    @if($errors->any())
         <div class="error-alert">
-            <span>❌ {{ $errors->first('status') }}</span>
-            <button type="button" class="btn-close-alert" onclick="this.parentElement.remove()">&times;</button>
+            <div>
+                @foreach($errors->all() as $error)
+                    <div>{{ $error }}</div>
+                @endforeach
+            </div>
+            <button type="button" class="btn-close-alert" onclick="this.parentElement.remove()" aria-label="Đóng">&times;</button>
         </div>
     @endif
 
     <div class="order-header">
         <div>
-            <div class="order-id">Đơn hàng #{{ $order->order_id }}</div>
-            <div class="order-date">Đặt lúc: {{ $order->created_at->format('H:i - d/m/Y') }}</div>
+            <a href="{{ route('admin.orders.index') }}" class="back-link">Quay lại danh sách</a>
+            <h1 class="order-id">{{ $order->display_code }}</h1>
+            <div class="order-date">Ngày tạo: {{ $order->created_at ? $order->created_at->format('H:i - d/m/Y') : 'N/A' }}</div>
         </div>
-        <div>
-            @if($order->status == 0) <span class="status-badge badge-0">⏳ Chờ xử lý</span>
-            @elseif($order->status == 1) <span class="status-badge badge-1">💸 Đã cọc</span>
-            @elseif($order->status == 2) <span class="status-badge badge-2">✅ Hoàn tất</span>
-            @elseif($order->status == 3) <span class="status-badge badge-3">❌ Đã hủy</span>
-            @endif
-        </div>
+        <span class="status-badge {{ $order->status_badge_class }}">{{ $order->status_label }}</span>
     </div>
 
     <div class="order-grid">
         <div class="main-content">
-            <div class="panel">
-                <h3 class="panel-title">Sản phẩm trong đơn hàng</h3>
-                @foreach($order->details as $detail)
-                    <div class="car-item">
-                        @if($detail->car && $detail->car->image)
-                            <img src="{{ asset('storage/' . $detail->car->image) }}" class="car-img">
-                        @else
-                            <div class="admin-orders-show-inline-11"></div>
-                        @endif
-                        <div class="car-info">
-                            <div class="car-name">{{ $detail->car->name ?? 'Xe đã bị xóa' }}</div>
-                            <div class="car-price">{{ number_format($detail->price, 0, ',', '.') }} đ</div>
-                            <div class="admin-orders-show-inline-10">Số lượng: {{ $detail->quantity }}</div>
+            <section class="panel">
+                <h2 class="panel-title">Danh sách xe</h2>
+
+                <div class="car-list">
+                    @forelse($order->details as $detail)
+                        <div class="car-item">
+                            @if($detail->car && $detail->car->image)
+                                <img src="{{ asset('storage/' . $detail->car->image) }}" class="car-img" alt="{{ $detail->car->name }}">
+                            @else
+                                <div class="car-img-placeholder">NO IMAGE</div>
+                            @endif
+
+                            <div class="car-info">
+                                <div class="car-name">{{ $detail->car->name ?? 'Xe đã bị xóa' }}</div>
+                                <div class="car-meta">Số lượng: {{ $detail->quantity }}</div>
+                            </div>
+
+                            <div class="car-price">{{ number_format((float) $detail->price, 0, ',', '.') }} đ</div>
                         </div>
-                    </div>
-                @endforeach
-            </div>
-
-            <div class="panel">
-                <h3 class="panel-title">Thao tác nhanh</h3>
-                <div class="action-btns">
-                    <a href="{{ route('admin.orders.index') }}" class="btn btn-back">← Quay lại danh sách</a>
-                    
-                    @if($order->status != 2 && $order->status != 3)
-                        <form class="admin-orders-show-inline-9" action="{{ route('admin.orders.updateStatus', $order->order_id) }}" method="POST">
-                            @csrf
-                            <input type="hidden" name="status" value="2">
-                            <button type="submit" class="btn btn-confirm">Xác nhận hoàn tất</button>
-                        </form>
-
-                        <form class="admin-orders-show-inline-9" action="{{ route('admin.orders.updateStatus', $order->order_id) }}" method="POST">
-                            @csrf
-                            <input type="hidden" name="status" value="3">
-                            <button type="submit" class="btn btn-cancel">Hủy đơn hàng</button>
-                        </form>
-                    @endif
+                    @empty
+                        <div class="empty-state">Đơn hàng chưa có xe.</div>
+                    @endforelse
                 </div>
-            </div>
+            </section>
+
+            <section class="panel">
+                <h2 class="panel-title">Lịch sử trạng thái</h2>
+
+                <div class="history-table-wrap">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Thời gian</th>
+                                <th>Trạng thái cũ</th>
+                                <th>Trạng thái mới</th>
+                                <th>Người cập nhật</th>
+                                <th>Ghi chú</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($order->statusHistories as $history)
+                                <tr>
+                                    <td>{{ $history->created_at ? $history->created_at->format('H:i - d/m/Y') : 'N/A' }}</td>
+                                    <td>{{ \App\Models\Order::labelForStatus($history->old_status) }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ \App\Models\Order::normalizeStatus($history->new_status) ?? 'unknown' }}">
+                                            {{ \App\Models\Order::labelForStatus($history->new_status) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="history-user">{{ $history->user->name ?? 'Hệ thống' }}</div>
+                                        <div class="history-email">{{ $history->user->email ?? '' }}</div>
+                                    </td>
+                                    <td>{{ $history->note ?? 'N/A' }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="empty-cell">Chưa có lịch sử trạng thái.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </div>
 
         <div class="sidebar-content">
-            <div class="panel">
-                <h3 class="panel-title">Thông tin khách hàng</h3>
+            <section class="panel">
+                <h2 class="panel-title">Khách hàng</h2>
                 <div class="info-group">
                     <div class="info-label">Họ tên</div>
                     <div class="info-value">{{ $order->user->name ?? 'Khách ẩn danh' }}</div>
@@ -96,23 +119,47 @@
                     <div class="info-label">Số điện thoại</div>
                     <div class="info-value">{{ $order->user->phone ?? 'N/A' }}</div>
                 </div>
-            </div>
+            </section>
 
-            <div class="panel">
-                <h3 class="panel-title">Tổng kết thanh toán</h3>
-                <div class="admin-orders-show-inline-8">
-                    <span class="admin-orders-show-inline-5">Giá trị xe:</span>
-                    <span class="admin-orders-show-inline-7">{{ number_format($order->total_price, 0, ',', '.') }} đ</span>
+            <section class="panel">
+                <h2 class="panel-title">Thanh toán</h2>
+                <div class="summary-row">
+                    <span>Tổng tiền</span>
+                    <strong>{{ number_format((float) $order->total_price, 0, ',', '.') }} đ</strong>
                 </div>
-                <div class="admin-orders-show-inline-6">
-                    <span class="admin-orders-show-inline-5">Số tiền đã cọc:</span>
-                    <span class="admin-orders-show-inline-4">{{ $order->status >= 1 ? '20.000.000' : '0' }} đ</span>
+                <div class="summary-row">
+                    <span>Tiền cọc</span>
+                    <strong>{{ number_format((float) ($order->deposit_amount ?? 0), 0, ',', '.') }} đ</strong>
                 </div>
-                <div class="admin-orders-show-inline-3">
-                    <span class="admin-orders-show-inline-2">Tổng cộng:</span>
-                    <span class="admin-orders-show-inline-1">{{ number_format($order->total_price, 0, ',', '.') }} đ</span>
+                <div class="summary-row">
+                    <span>Ngày cọc</span>
+                    <strong>{{ $order->deposit_date ? $order->deposit_date->format('H:i - d/m/Y') : 'N/A' }}</strong>
                 </div>
-            </div>
+                <div class="summary-total">
+                    <span>Còn lại</span>
+                    <strong>{{ number_format(max(0, (float) $order->total_price - (float) ($order->deposit_amount ?? 0)), 0, ',', '.') }} đ</strong>
+                </div>
+            </section>
+
+            @can('orders.edit')
+                <section class="panel">
+                    <h2 class="panel-title">Cập nhật trạng thái</h2>
+                    <form action="{{ route('admin.orders.updateStatus', $order->order_id) }}" method="POST" class="status-update-form">
+                        @csrf
+                        <label for="status" class="form-label">Trạng thái</label>
+                        <select id="status" name="status" class="form-control">
+                            @foreach($statusOptions as $value => $label)
+                                <option value="{{ $value }}" @selected((string)$order->status === (string)$value)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+
+                        <label for="note" class="form-label">Ghi chú</label>
+                        <textarea id="note" name="note" class="form-control" rows="3" placeholder="Ghi chú cho lịch sử trạng thái"></textarea>
+
+                        <button type="submit" class="btn-submit">Lưu trạng thái</button>
+                    </form>
+                </section>
+            @endcan
         </div>
     </div>
 </div>
