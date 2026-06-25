@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class Order extends Model
 {
@@ -63,15 +64,49 @@ class Order extends Model
                 return;
             }
 
-            $order->forceFill([
-                'order_code' => self::formatOrderCode((int) $order->getKey()),
-            ])->saveQuietly();
+            self::assignOrderCode($order);
         });
     }
 
-    public static function formatOrderCode(int $orderId): string
+    public static function formatOrderCode(int $number): string
     {
-        return 'DH' . str_pad((string) $orderId, 6, '0', STR_PAD_LEFT);
+        return 'DH' . str_pad((string) $number, 6, '0', STR_PAD_LEFT);
+    }
+
+    public static function nextOrderCode(): string
+    {
+        $lastCode = self::query()
+            ->whereNotNull('order_code')
+            ->where('order_code', 'regexp', '^DH[0-9]{6}$')
+            ->orderByRaw('CAST(SUBSTRING(order_code, 3) AS UNSIGNED) DESC')
+            ->lockForUpdate()
+            ->value('order_code');
+
+        $nextNumber = $lastCode ? ((int) substr($lastCode, 2)) + 1 : 1;
+
+        return self::formatOrderCode($nextNumber);
+    }
+
+    private static function assignOrderCode(Order $order): void
+    {
+        DB::transaction(function () use ($order): void {
+            $freshOrder = self::query()
+                ->whereKey($order->getKey())
+                ->lockForUpdate()
+                ->first();
+
+            if (!$freshOrder || !blank($freshOrder->order_code)) {
+                return;
+            }
+
+            $freshOrder->forceFill([
+                'order_code' => self::nextOrderCode(),
+            ])->saveQuietly();
+
+            $order->forceFill([
+                'order_code' => $freshOrder->order_code,
+            ]);
+        });
     }
 
     public static function statusOptions(): array

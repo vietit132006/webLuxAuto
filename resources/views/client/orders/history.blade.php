@@ -25,7 +25,7 @@
                 <div class="history-card">
                     <div class="h-card-header">
                         <div>
-                            <span class="h-code">Mã đơn: #{{ $order->order_id }}</span>
+                            <span class="h-code">Mã đơn: {{ $order->display_code }}</span>
                             <span class="client-orders-history-inline-5">|</span>
                             <span class="h-date">Ngày đặt: {{ $order->created_at ? $order->created_at->format('H:i - d/m/Y') : 'N/A' }}</span>
                         </div>
