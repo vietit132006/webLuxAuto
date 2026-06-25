@@ -8,6 +8,7 @@
         'clipboard_check' => '<rect width="8" height="4" x="8" y="2" rx="1" /><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><path d="m9 14 2 2 4-4" />',
         'history' => '<path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 3v6h6" /><path d="M12 7v5l3 2" />',
         'shopping_cart' => '<circle cx="8" cy="21" r="1" /><circle cx="19" cy="21" r="1" /><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h8.36a2 2 0 0 0 1.95-1.57L21 4H5.12" />',
+        'file_text' => '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M10 9H8" /><path d="M16 13H8" /><path d="M16 17H8" />',
         'users' => '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />',
         'calendar' => '<path d="M8 2v4" /><path d="M16 2v4" /><rect width="18" height="18" x="3" y="4" rx="2" /><path d="M3 10h18" />',
         'newspaper' => '<path d="M4 22h16a2 2 0 0 0 2-2V4H6a2 2 0 0 0-2 2v16Z" /><path d="M16 2v4" /><path d="M8 10h8" /><path d="M8 14h8" /><path d="M8 18h5" />',
@@ -51,6 +52,7 @@
             'icon' => 'shopping_cart',
             'items' => [
                 ['label' => 'Khách hàng', 'route' => 'admin.customers.index', 'active' => ['admin.customers.*'], 'icon' => 'users', 'permission' => 'customers.view'],
+                ['label' => 'Báo giá', 'route' => 'admin.quotes.index', 'active' => ['admin.quotes.*'], 'icon' => 'file_text', 'permission' => 'quotes.view'],
                 ['label' => 'Đơn hàng', 'route' => 'admin.orders.index', 'active' => ['admin.orders.*'], 'icon' => 'shopping_cart', 'permission' => 'orders.view'],
                 ['label' => 'Lái thử', 'route' => 'admin.test_drives.index', 'active' => ['admin.test_drives.*'], 'icon' => 'calendar', 'permission' => 'test_drives.view'],
             ],

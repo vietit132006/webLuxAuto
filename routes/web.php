@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CarController as AdminCarController;
 use App\Http\Controllers\Admin\CarExcelController;
 use App\Http\Controllers\Admin\CarModelController;
 use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\QuoteController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\StockMovementController;
 use App\Http\Controllers\Admin\TestDriveController;
@@ -24,12 +25,16 @@ use App\Http\Controllers\NewsController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PromotionController;
+use App\Http\Controllers\PublicQuoteController;
 use App\Http\Controllers\ResetPasswordController;
 use App\Http\Controllers\TicketController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/livestream', [LiveController::class, 'index'])->name('livestream');
+Route::get('/bao-gia/{quote}/{token}', [PublicQuoteController::class, 'show'])->name('quotes.public.show');
+Route::get('/bao-gia/{quote}/{token}/pdf', [PublicQuoteController::class, 'pdf'])->name('quotes.public.pdf');
+Route::post('/bao-gia/{quote}/{token}/phan-hoi', [PublicQuoteController::class, 'respond'])->name('quotes.public.respond');
 
 Route::post('/saved-login-accounts/login', [AccountSwitchController::class, 'loginWithSavedAccount'])
     ->name('saved-login-accounts.login');
@@ -257,6 +262,34 @@ Route::middleware('auth')->group(function () {
         Route::post('/customers/{customer}/interactions', [CustomerController::class, 'storeInteraction'])
             ->middleware('permission:customers.edit')
             ->name('customers.interactions.store');
+
+        Route::get('/quotes', [QuoteController::class, 'index'])
+            ->middleware('permission:quotes.view')
+            ->name('quotes.index');
+        Route::get('/quotes/create', [QuoteController::class, 'create'])
+            ->middleware('permission:quotes.create')
+            ->name('quotes.create');
+        Route::post('/quotes', [QuoteController::class, 'store'])
+            ->middleware('permission:quotes.create')
+            ->name('quotes.store');
+        Route::get('/quotes/{quote}/pdf', [QuoteController::class, 'pdf'])
+            ->middleware('permission:quotes.view')
+            ->name('quotes.pdf');
+        Route::post('/quotes/{quote}/send', [QuoteController::class, 'send'])
+            ->middleware('permission:quotes.edit')
+            ->name('quotes.send');
+        Route::get('/quotes/{quote}', [QuoteController::class, 'show'])
+            ->middleware('permission:quotes.view')
+            ->name('quotes.show');
+        Route::get('/quotes/{quote}/edit', [QuoteController::class, 'edit'])
+            ->middleware('permission:quotes.edit')
+            ->name('quotes.edit');
+        Route::put('/quotes/{quote}', [QuoteController::class, 'update'])
+            ->middleware('permission:quotes.edit')
+            ->name('quotes.update');
+        Route::delete('/quotes/{quote}', [QuoteController::class, 'destroy'])
+            ->middleware('permission:quotes.delete')
+            ->name('quotes.destroy');
 
         Route::get('/reports/sales', [AdminReportController::class, 'sales'])
             ->middleware('permission:reports.view')

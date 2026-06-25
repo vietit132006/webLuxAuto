@@ -51,6 +51,11 @@ class User extends Authenticatable
         return $this->hasMany(StockMovement::class, 'user_id', 'user_id');
     }
 
+    public function quotes()
+    {
+        return $this->hasMany(Quote::class, 'user_id', 'user_id');
+    }
+
     public function canViewStockHistory(): bool
     {
         try {

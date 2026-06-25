@@ -1,0 +1,672 @@
+.admin-quotes-page {
+    display: grid;
+    gap: 1.25rem;
+}
+
+.admin-quotes-page.is-form {
+    max-width: 1040px;
+}
+
+.admin-quotes-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.admin-quotes-head h1 {
+    margin: 0;
+    color: var(--text);
+    font-size: 1.55rem;
+    font-weight: 850;
+}
+
+.admin-quotes-head p {
+    margin: 0.3rem 0 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.admin-quotes-primary,
+.admin-quotes-secondary,
+.quote-filter-actions button,
+.quote-filter-actions a {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    padding: 0 1rem;
+    border: 1px solid transparent;
+    font: inherit;
+    font-weight: 850;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.admin-quotes-primary,
+.quote-filter-actions button {
+    background: var(--accent);
+    color: #0c0f14;
+}
+
+.admin-quotes-primary:hover,
+.admin-quotes-primary:focus-visible,
+.quote-filter-actions button:hover,
+.quote-filter-actions button:focus-visible {
+    border-color: #d9bd78;
+    background: #d9bd78;
+    color: #0c0f14;
+    outline: none;
+}
+
+.admin-quotes-secondary,
+.quote-filter-actions a {
+    border-color: var(--border);
+    background: rgba(255, 255, 255, 0.035);
+    color: var(--text);
+}
+
+.admin-quotes-secondary:hover,
+.admin-quotes-secondary:focus-visible,
+.quote-filter-actions a:hover,
+.quote-filter-actions a:focus-visible {
+    border-color: rgba(201, 169, 98, 0.55);
+    color: var(--accent);
+    outline: none;
+}
+
+.admin-quotes-alert {
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    font-weight: 750;
+}
+
+.admin-quotes-alert.is-success {
+    border: 1px solid rgba(52, 211, 153, 0.45);
+    background: rgba(52, 211, 153, 0.12);
+    color: #86efac;
+}
+
+.admin-quotes-alert.is-error {
+    border: 1px solid rgba(248, 113, 113, 0.5);
+    background: rgba(248, 113, 113, 0.12);
+    color: #fecaca;
+}
+
+.quote-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.85rem;
+}
+
+.quote-stat,
+.quote-filter,
+.quote-form,
+.quote-detail-panel,
+.quote-pricing-panel,
+.quote-note-panel,
+.quote-share-panel,
+.quote-danger-panel,
+.quotes-table-wrap {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+}
+
+.quote-stat {
+    padding: 1rem;
+}
+
+.quote-stat span {
+    display: block;
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.quote-stat strong {
+    display: block;
+    margin-top: 0.35rem;
+    color: var(--text);
+    font-size: 1.45rem;
+}
+
+.quote-filter {
+    display: grid;
+    grid-template-columns: minmax(260px, 2fr) minmax(180px, 1fr) minmax(220px, 1.2fr) auto;
+    gap: 0.85rem;
+    align-items: end;
+    padding: 1rem;
+}
+
+.quote-filter-field,
+.quote-form-field {
+    display: grid;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+.quote-filter-field label,
+.quote-form-field label {
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 850;
+    text-transform: uppercase;
+}
+
+.quote-filter-field input,
+.quote-filter-field select,
+.quote-form-field input,
+.quote-form-field select,
+.quote-form-field textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #0a0d12;
+    color: var(--text);
+    font: inherit;
+}
+
+.quote-filter-field input,
+.quote-filter-field select,
+.quote-form-field input,
+.quote-form-field select {
+    min-height: 42px;
+    padding: 0 0.78rem;
+}
+
+.quote-form-field textarea {
+    min-height: 112px;
+    padding: 0.75rem 0.78rem;
+    resize: vertical;
+}
+
+.quote-filter-field input:focus,
+.quote-filter-field select:focus,
+.quote-form-field input:focus,
+.quote-form-field select:focus,
+.quote-form-field textarea:focus {
+    outline: none;
+    border-color: rgba(201, 169, 98, 0.7);
+    box-shadow: 0 0 0 3px rgba(201, 169, 98, 0.12);
+}
+
+.quote-filter-actions,
+.quote-form-actions,
+.quote-head-actions {
+    display: flex;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+}
+
+.quote-send-form {
+    margin: 0;
+}
+
+.quotes-table-wrap {
+    overflow-x: auto;
+}
+
+.quotes-table {
+    width: 100%;
+    min-width: 1120px;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.quotes-table th,
+.quotes-table td {
+    padding: 0.85rem 0.95rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+}
+
+.quotes-table th {
+    color: var(--muted);
+    font-size: 0.74rem;
+    font-weight: 850;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.quotes-table tbody tr {
+    transition: background 0.2s ease;
+}
+
+.quotes-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.quotes-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.quotes-code,
+.quotes-total {
+    color: var(--accent);
+    font-weight: 850;
+    white-space: nowrap;
+}
+
+.quotes-name {
+    color: var(--text);
+    font-weight: 800;
+}
+
+.quotes-meta,
+.quotes-muted {
+    color: var(--muted);
+    font-size: 0.84rem;
+}
+
+.quotes-meta span {
+    display: block;
+    margin-top: 0.15rem;
+}
+
+.quotes-status {
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+    border-radius: 999px;
+    padding: 0 0.68rem;
+    border: 1px solid transparent;
+    font-size: 0.76rem;
+    font-weight: 850;
+    white-space: nowrap;
+}
+
+.quotes-status-draft {
+    border-color: rgba(148, 163, 184, 0.34);
+    background: rgba(148, 163, 184, 0.13);
+    color: #cbd5e1;
+}
+
+.quotes-status-sent {
+    border-color: rgba(14, 165, 233, 0.36);
+    background: rgba(14, 165, 233, 0.14);
+    color: #38bdf8;
+}
+
+.quotes-status-accepted {
+    border-color: rgba(34, 197, 94, 0.38);
+    background: rgba(34, 197, 94, 0.14);
+    color: #4ade80;
+}
+
+.quotes-status-rejected {
+    border-color: rgba(239, 68, 68, 0.36);
+    background: rgba(239, 68, 68, 0.14);
+    color: #f87171;
+}
+
+.quotes-status-expired {
+    border-color: rgba(234, 179, 8, 0.4);
+    background: rgba(234, 179, 8, 0.16);
+    color: #facc15;
+}
+
+.quotes-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.72rem;
+    flex-wrap: wrap;
+}
+
+.quotes-actions a,
+.quotes-actions button {
+    border: 0;
+    background: transparent;
+    color: var(--accent);
+    cursor: pointer;
+    font: inherit;
+    font-weight: 850;
+    padding: 0;
+    text-decoration: none;
+}
+
+.quotes-actions button.is-danger {
+    color: #f87171;
+}
+
+.quotes-empty,
+.quotes-pagination {
+    color: var(--muted);
+}
+
+.quotes-empty {
+    padding: 1.8rem 1rem;
+    text-align: center;
+}
+
+.quotes-pagination {
+    display: flex;
+    justify-content: center;
+}
+
+.quote-form {
+    display: grid;
+    gap: 1rem;
+    padding: 1.15rem;
+}
+
+.quote-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.quote-form-field.is-wide {
+    grid-column: 1 / -1;
+}
+
+.quote-total-preview {
+    display: flex;
+    min-height: 72px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border: 1px solid rgba(201, 169, 98, 0.32);
+    border-radius: 8px;
+    background: rgba(201, 169, 98, 0.1);
+    padding: 0.85rem 1rem;
+}
+
+.quote-total-preview span {
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 850;
+    text-transform: uppercase;
+}
+
+.quote-total-preview strong {
+    color: var(--accent);
+    font-size: 1.3rem;
+    font-weight: 900;
+}
+
+.quote-detail-panel,
+.quote-pricing-panel,
+.quote-note-panel,
+.quote-share-panel,
+.quote-danger-panel {
+    padding: 1.15rem;
+}
+
+.quote-share-panel {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.quote-share-panel h2 {
+    margin: 0;
+    color: var(--text);
+    font-size: 1.05rem;
+}
+
+.quote-share-panel p {
+    margin: 0.35rem 0 0;
+    color: var(--muted);
+}
+
+.quote-share-url {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.quote-share-url input {
+    width: 100%;
+    min-height: 42px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #0a0d12;
+    color: var(--text);
+    font: inherit;
+    padding: 0 0.78rem;
+}
+
+.quote-profile {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-start;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.quote-profile h2 {
+    margin: 0.35rem 0 0.2rem;
+    color: var(--text);
+    font-size: 1.35rem;
+}
+
+.quote-profile p {
+    margin: 0;
+    color: var(--muted);
+}
+
+.quote-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin: 1rem 0 0;
+}
+
+.quote-detail-grid dt {
+    color: var(--muted);
+    font-size: 0.76rem;
+    font-weight: 850;
+    text-transform: uppercase;
+}
+
+.quote-detail-grid dd {
+    margin: 0.25rem 0 0;
+    color: var(--text);
+    overflow-wrap: anywhere;
+}
+
+.quote-section-title {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 0.9rem;
+}
+
+.quote-section-title h2,
+.quote-note-panel h2,
+.quote-danger-panel h2 {
+    margin: 0;
+    color: var(--text);
+    font-size: 1.05rem;
+}
+
+.quote-section-title span {
+    color: var(--accent);
+    font-size: 1.1rem;
+    font-weight: 900;
+}
+
+.quote-price-lines {
+    display: grid;
+    gap: 0.55rem;
+}
+
+.quote-price-lines div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid var(--border);
+    padding: 0.65rem 0;
+    color: var(--muted);
+}
+
+.quote-price-lines div:last-child {
+    border-bottom: 0;
+}
+
+.quote-price-lines strong {
+    color: var(--text);
+    white-space: nowrap;
+}
+
+.quote-price-lines .is-total {
+    margin-top: 0.35rem;
+    border: 1px solid rgba(201, 169, 98, 0.32);
+    border-radius: 8px;
+    background: rgba(201, 169, 98, 0.1);
+    padding: 0.85rem 1rem;
+}
+
+.quote-price-lines .is-total span,
+.quote-price-lines .is-total strong {
+    color: var(--accent);
+    font-weight: 900;
+}
+
+.quote-note-panel p,
+.quote-danger-panel p {
+    margin: 0.65rem 0 0;
+    color: #dbe3ef;
+    white-space: pre-line;
+}
+
+.quote-danger-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-color: rgba(248, 113, 113, 0.35);
+    background: rgba(248, 113, 113, 0.08);
+}
+
+.quote-danger-panel button {
+    min-height: 40px;
+    border: 1px solid rgba(248, 113, 113, 0.45);
+    border-radius: 8px;
+    background: rgba(248, 113, 113, 0.15);
+    color: #fecaca;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 850;
+    padding: 0 1rem;
+}
+
+.quote-danger-panel button:hover,
+.quote-danger-panel button:focus-visible {
+    border-color: #fca5a5;
+    color: #ffffff;
+    outline: none;
+}
+
+.lux-pag__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+}
+
+.lux-pag__btn,
+.lux-pag__num {
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 0 0.75rem;
+    color: var(--text);
+    font-size: 0.86rem;
+    text-decoration: none;
+}
+
+.lux-pag__btn:hover,
+.lux-pag__num:hover,
+.lux-pag__btn:focus-visible,
+.lux-pag__num:focus-visible {
+    border-color: rgba(201, 169, 98, 0.55);
+    color: var(--accent);
+    outline: none;
+}
+
+.lux-pag__btn--disabled {
+    color: var(--muted);
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+.lux-pag__num--current {
+    border-color: rgba(201, 169, 98, 0.55);
+    background: rgba(201, 169, 98, 0.12);
+    color: var(--accent);
+    font-weight: 850;
+}
+
+.lux-pag__dots {
+    padding: 0 0.25rem;
+    color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .admin-quotes-primary,
+    .admin-quotes-secondary,
+    .quote-filter-actions button,
+    .quote-filter-actions a,
+    .quotes-table tbody tr {
+        transition: none;
+    }
+}
+
+@media (max-width: 1120px) {
+    .quote-filter {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .quote-filter-field.is-wide {
+        grid-column: 1 / -1;
+    }
+
+    .quote-detail-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    .admin-quotes-head,
+    .quote-profile,
+    .quote-section-title,
+    .quote-danger-panel {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .quote-stats-grid,
+    .quote-filter,
+    .quote-form-grid,
+    .quote-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .quote-filter-actions,
+    .quote-form-actions,
+    .quote-head-actions,
+    .quote-share-url {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .admin-quotes-primary,
+    .admin-quotes-secondary,
+    .quote-filter-actions button,
+    .quote-filter-actions a,
+    .quote-danger-panel button {
+        width: 100%;
+    }
+}

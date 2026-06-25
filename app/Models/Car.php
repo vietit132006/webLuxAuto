@@ -93,6 +93,11 @@ class Car extends Model
         return $this->hasMany(StockMovement::class, 'car_id', 'car_id');
     }
 
+    public function quotes()
+    {
+        return $this->hasMany(Quote::class, 'car_id', 'car_id');
+    }
+
     // ========================
     // ACCESSORS
     // ========================

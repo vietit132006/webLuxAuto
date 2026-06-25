@@ -82,6 +82,11 @@ class Customer extends Model
         return $this->hasMany(CustomerInteraction::class, 'customer_id', 'customer_id');
     }
 
+    public function quotes(): HasMany
+    {
+        return $this->hasMany(Quote::class, 'customer_id', 'customer_id');
+    }
+
     public function statusLabel(): string
     {
         return self::STATUSES[$this->status] ?? $this->status;
