@@ -67,6 +67,21 @@
                 </div>
 
                 <div class="form-group">
+                    <label class="label" for="deposit_method">Phương thức cọc</label>
+                    <select id="deposit_method" name="deposit_method" class="select">
+                        <option value="">Chọn phương thức</option>
+                        @foreach($depositMethodOptions as $value => $label)
+                            <option value="{{ $value }}" @selected((string) old('deposit_method') === (string) $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="label" for="deposit_reference">Mã giao dịch</label>
+                    <input id="deposit_reference" type="text" name="deposit_reference" class="input" value="{{ old('deposit_reference') }}" maxlength="255">
+                </div>
+
+                <div class="form-group">
                     <label class="label" for="status">Trạng thái ban đầu</label>
                     <select id="status" name="status" class="select" required>
                         @foreach($statusOptions as $value => $label)
@@ -78,6 +93,11 @@
                 <div class="form-group">
                     <label class="label" for="note">Ghi chú lịch sử</label>
                     <textarea id="note" name="note" class="input" rows="3" placeholder="Ghi chú khi tạo đơn">{{ old('note') }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="label" for="deposit_note">Ghi chú đặt cọc</label>
+                    <textarea id="deposit_note" name="deposit_note" class="input" rows="3">{{ old('deposit_note') }}</textarea>
                 </div>
             </div>
 

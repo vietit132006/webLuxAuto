@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use InvalidArgumentException;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -47,6 +48,7 @@ class AdminOrderController extends Controller
         return view('admin.orders.create', [
             'cars' => $cars,
             'defaultDepositAmount' => $this->defaultDepositAmount(),
+            'depositMethodOptions' => Order::depositMethodOptions(),
             'statusOptions' => Order::statusOptions(),
             'users' => $users,
         ]);
@@ -60,16 +62,23 @@ class AdminOrderController extends Controller
             'status' => 'required|integer|in:0,1,2,3',
             'deposit_amount' => 'nullable|numeric|min:0',
             'deposit_date' => 'nullable|date',
+            'deposit_method' => ['nullable', Rule::in(array_keys(Order::depositMethodOptions()))],
+            'deposit_reference' => 'nullable|string|max:255',
+            'deposit_note' => 'nullable|string|max:1000',
             'note' => 'nullable|string|max:1000',
         ]);
 
         try {
             $order = DB::transaction(function () use ($request, $validated) {
                 $status = (int) $validated['status'];
+                if ($status === Order::STATUS_DEPOSITED) {
+                    $validated = array_merge($validated, $this->validatedRequiredDeposit($request));
+                }
+
                 $depositAmount = (float) ($validated['deposit_amount'] ?? $this->defaultDepositAmount());
                 $depositDate = $validated['deposit_date'] ?? null;
 
-                if (in_array($status, [Order::STATUS_DEPOSITED, Order::STATUS_COMPLETED], true) && !$depositDate) {
+                if ($status === Order::STATUS_COMPLETED && !$depositDate) {
                     $depositDate = now();
                 }
 
@@ -82,6 +91,12 @@ class AdminOrderController extends Controller
                     'total_price' => $car->price,
                     'deposit_amount' => $depositAmount,
                     'deposit_date' => $depositDate ? Carbon::parse($depositDate) : null,
+                    'deposit_method' => $validated['deposit_method'] ?? null,
+                    'deposit_reference' => $validated['deposit_reference'] ?? null,
+                    'deposit_note' => $validated['deposit_note'] ?? null,
+                    'deposit_confirmed_by' => $status === Order::STATUS_DEPOSITED
+                        ? $request->user()?->getKey()
+                        : null,
                     'status' => $status,
                 ]);
 
@@ -109,13 +124,30 @@ class AdminOrderController extends Controller
 
     public function show($id)
     {
-        $order = Order::with(['user', 'details.car', 'statusHistories.user'])
+        $order = Order::with(['user', 'details.car', 'statusHistories.user', 'depositConfirmer'])
             ->findOrFail($id);
 
         return view('admin.orders.show', [
             'order' => $order,
+            'depositMethodOptions' => Order::depositMethodOptions(),
             'statusOptions' => Order::statusOptions(),
         ]);
+    }
+
+    public function updateDeposit(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'deposit_amount' => 'required|numeric|gt:0',
+            'deposit_date' => 'required|date',
+            'deposit_method' => ['required', Rule::in(array_keys(Order::depositMethodOptions()))],
+            'deposit_reference' => 'nullable|string|max:255',
+            'deposit_note' => 'nullable|string|max:1000',
+        ]);
+
+        $order = Order::query()->findOrFail($id);
+        $order->update($this->depositPayload($validated, $request));
+
+        return back()->with('success', 'Đã cập nhật thông tin đặt cọc thành công!');
     }
 
     public function export(Request $request)
@@ -147,7 +179,16 @@ class AdminOrderController extends Controller
 
                 $updates = ['status' => $statusAfter];
 
-                if (in_array($statusAfter, [Order::STATUS_DEPOSITED, Order::STATUS_COMPLETED], true)) {
+                if ($statusAfter === Order::STATUS_DEPOSITED) {
+                    if (!$this->hasCompleteDepositInfo($order)) {
+                        $updates = array_merge(
+                            $updates,
+                            $this->depositPayload($this->validatedRequiredDeposit($request), $request)
+                        );
+                    } elseif (!$order->deposit_confirmed_by) {
+                        $updates['deposit_confirmed_by'] = $request->user()?->getKey();
+                    }
+                } elseif ($statusAfter === Order::STATUS_COMPLETED) {
                     if ((float) ($order->deposit_amount ?? 0) <= 0) {
                         $updates['deposit_amount'] = $this->defaultDepositAmount();
                     }
@@ -181,6 +222,43 @@ class AdminOrderController extends Controller
         }
 
         return back()->with('success', 'Đã cập nhật trạng thái đơn hàng thành công!');
+    }
+
+    private function validatedRequiredDeposit(Request $request): array
+    {
+        return $request->validate([
+            'deposit_amount' => 'required|numeric|gt:0',
+            'deposit_date' => 'required|date',
+            'deposit_method' => ['required', Rule::in(array_keys(Order::depositMethodOptions()))],
+            'deposit_reference' => 'nullable|string|max:255',
+            'deposit_note' => 'required|string|max:1000',
+        ], [], [
+            'deposit_amount' => 'tiền cọc',
+            'deposit_date' => 'ngày cọc',
+            'deposit_method' => 'phương thức thanh toán',
+            'deposit_reference' => 'mã giao dịch',
+            'deposit_note' => 'ghi chú đặt cọc',
+        ]);
+    }
+
+    private function depositPayload(array $validated, Request $request): array
+    {
+        return [
+            'deposit_amount' => (float) $validated['deposit_amount'],
+            'deposit_date' => Carbon::parse($validated['deposit_date']),
+            'deposit_method' => $validated['deposit_method'],
+            'deposit_reference' => $validated['deposit_reference'] ?? null,
+            'deposit_note' => $validated['deposit_note'] ?? null,
+            'deposit_confirmed_by' => $request->user()?->getKey(),
+        ];
+    }
+
+    private function hasCompleteDepositInfo(Order $order): bool
+    {
+        return (float) ($order->deposit_amount ?? 0) > 0
+            && $order->deposit_date
+            && filled($order->deposit_method)
+            && filled($order->deposit_note);
     }
 
     private function validatedFilters(Request $request): array
@@ -251,8 +329,18 @@ class AdminOrderController extends Controller
             'old_status' => $oldStatus === null ? null : (string) $oldStatus,
             'new_status' => (string) $newStatus,
             'user_id' => $request->user()?->getKey(),
-            'note' => ($useRequestNote ? $request->input('note') : null) ?: $fallbackNote,
+            'note' => $this->automaticStatusNote($order, $newStatus)
+                ?: (($useRequestNote ? $request->input('note') : null) ?: $fallbackNote),
         ]);
+    }
+
+    private function automaticStatusNote(Order $order, mixed $newStatus): ?string
+    {
+        if (Order::normalizeStatus($newStatus) !== Order::STATUS_DEPOSITED) {
+            return null;
+        }
+
+        return 'Khách đặt cọc ' . number_format((float) ($order->deposit_amount ?? 0), 0, ',', '.') . ' VNĐ';
     }
 
     private function defaultDepositAmount(): float

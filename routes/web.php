@@ -246,6 +246,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/orders/{id}', [AdminOrderController::class, 'show'])
             ->middleware('permission:orders.view')
             ->name('orders.show');
+        Route::patch('/orders/{id}/deposit', [AdminOrderController::class, 'updateDeposit'])
+            ->middleware('permission:orders.edit')
+            ->name('orders.updateDeposit');
         Route::post('/orders/{id}/status', [AdminOrderController::class, 'updateStatus'])
             ->middleware('permission:orders.edit')
             ->name('orders.updateStatus');

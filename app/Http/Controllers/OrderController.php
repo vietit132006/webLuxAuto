@@ -157,6 +157,10 @@ class OrderController extends Controller
                         $updates = [
                             'status' => Order::STATUS_DEPOSITED,
                             'deposit_date' => $order->deposit_date ?: now(),
+                            'deposit_method' => $order->deposit_method ?: Order::DEPOSIT_METHOD_CARD,
+                            'deposit_reference' => $order->deposit_reference
+                                ?: ($request->vnp_TransactionNo ?? $request->vnp_BankTranNo ?? $request->vnp_TxnRef),
+                            'deposit_note' => $order->deposit_note ?: 'Thanh toán cọc VNPay thành công.',
                         ];
 
                         if ((float) ($order->deposit_amount ?? 0) <= 0) {
@@ -217,8 +221,17 @@ class OrderController extends Controller
             'old_status' => $oldStatus === null ? null : (string) $oldStatus,
             'new_status' => (string) $newStatus,
             'user_id' => $request->user()?->getKey() ?? $order->user_id,
-            'note' => $note,
+            'note' => $this->automaticStatusNote($order, $newStatus) ?: $note,
         ]);
+    }
+
+    private function automaticStatusNote(Order $order, mixed $newStatus): ?string
+    {
+        if (Order::normalizeStatus($newStatus) !== Order::STATUS_DEPOSITED) {
+            return null;
+        }
+
+        return 'Khách đặt cọc ' . number_format((float) ($order->deposit_amount ?? 0), 0, ',', '.') . ' VNĐ';
     }
 
     private function defaultDepositAmount(): float
