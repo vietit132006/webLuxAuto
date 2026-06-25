@@ -6,8 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrderStatusHistory extends Model
 {
-    const UPDATED_AT = null;
-
     protected $fillable = [
         'order_id',
         'old_status',
@@ -20,6 +18,7 @@ class OrderStatusHistory extends Model
     {
         return [
             'created_at' => 'datetime',
+            'updated_at' => 'datetime',
         ];
     }
 

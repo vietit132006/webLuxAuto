@@ -153,9 +153,6 @@
                             @endforeach
                         </select>
 
-                        <label for="note" class="form-label">Ghi chú</label>
-                        <textarea id="note" name="note" class="form-control" rows="3" placeholder="Ghi chú cho lịch sử trạng thái"></textarea>
-
                         <button type="submit" class="btn-submit">Lưu trạng thái</button>
                     </form>
                 </section>

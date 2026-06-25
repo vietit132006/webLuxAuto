@@ -130,7 +130,6 @@ class AdminOrderController extends Controller
     {
         $validated = $request->validate([
             'status' => 'required|integer|in:0,1,2,3',
-            'note' => 'nullable|string|max:1000',
         ]);
 
         try {
@@ -166,7 +165,8 @@ class AdminOrderController extends Controller
                     $statusBefore,
                     $statusAfter,
                     $request,
-                    'Cập nhật trạng thái từ trang quản trị.'
+                    null,
+                    false
                 );
 
                 $this->stockMovementService->recordOrderStatusChange(
@@ -244,13 +244,14 @@ class AdminOrderController extends Controller
         mixed $oldStatus,
         mixed $newStatus,
         Request $request,
-        ?string $fallbackNote = null
+        ?string $fallbackNote = null,
+        bool $useRequestNote = true
     ): void {
         $order->statusHistories()->create([
             'old_status' => $oldStatus === null ? null : (string) $oldStatus,
             'new_status' => (string) $newStatus,
             'user_id' => $request->user()?->getKey(),
-            'note' => $request->input('note') ?: $fallbackNote,
+            'note' => ($useRequestNote ? $request->input('note') : null) ?: $fallbackNote,
         ]);
     }
 

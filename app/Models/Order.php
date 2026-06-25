@@ -10,6 +10,12 @@ class Order extends Model
     public const STATUS_DEPOSITED = 1;
     public const STATUS_COMPLETED = 2;
     public const STATUS_CANCELLED = 3;
+    public const STATUS_LABELS = [
+        self::STATUS_PENDING => 'Chờ xử lý',
+        self::STATUS_DEPOSITED => 'Đã cọc',
+        self::STATUS_COMPLETED => 'Hoàn tất',
+        self::STATUS_CANCELLED => 'Đã hủy',
+    ];
 
     protected $primaryKey = 'order_id';
 
@@ -54,12 +60,7 @@ class Order extends Model
 
     public static function statusOptions(): array
     {
-        return [
-            self::STATUS_PENDING => 'Chờ xử lý',
-            self::STATUS_DEPOSITED => 'Đã cọc',
-            self::STATUS_COMPLETED => 'Hoàn tất',
-            self::STATUS_CANCELLED => 'Đã hủy',
-        ];
+        return self::STATUS_LABELS;
     }
 
     public static function normalizeStatus(mixed $status): ?int
