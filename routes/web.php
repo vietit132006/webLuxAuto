@@ -4,6 +4,7 @@ use App\Http\Controllers\AccountSwitchController;
 use App\Http\Controllers\Admin\CarController as AdminCarController;
 use App\Http\Controllers\Admin\CarExcelController;
 use App\Http\Controllers\Admin\CarModelController;
+use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\StockMovementController;
 use App\Http\Controllers\Admin\TestDriveController;
@@ -231,6 +232,31 @@ Route::middleware('auth')->group(function () {
         Route::post('/orders/{id}/status', [AdminOrderController::class, 'updateStatus'])
             ->middleware('permission:orders.edit')
             ->name('orders.updateStatus');
+
+        Route::get('/customers', [CustomerController::class, 'index'])
+            ->middleware('permission:customers.view')
+            ->name('customers.index');
+        Route::get('/customers/create', [CustomerController::class, 'create'])
+            ->middleware('permission:customers.create')
+            ->name('customers.create');
+        Route::post('/customers', [CustomerController::class, 'store'])
+            ->middleware('permission:customers.create')
+            ->name('customers.store');
+        Route::get('/customers/{customer}', [CustomerController::class, 'show'])
+            ->middleware('permission:customers.view')
+            ->name('customers.show');
+        Route::get('/customers/{customer}/edit', [CustomerController::class, 'edit'])
+            ->middleware('permission:customers.edit')
+            ->name('customers.edit');
+        Route::put('/customers/{customer}', [CustomerController::class, 'update'])
+            ->middleware('permission:customers.edit')
+            ->name('customers.update');
+        Route::delete('/customers/{customer}', [CustomerController::class, 'destroy'])
+            ->middleware('permission:customers.delete')
+            ->name('customers.destroy');
+        Route::post('/customers/{customer}/interactions', [CustomerController::class, 'storeInteraction'])
+            ->middleware('permission:customers.edit')
+            ->name('customers.interactions.store');
 
         Route::get('/reports/sales', [AdminReportController::class, 'sales'])
             ->middleware('permission:reports.view')

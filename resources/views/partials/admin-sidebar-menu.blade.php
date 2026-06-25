@@ -50,7 +50,7 @@
             'label' => 'Bán hàng',
             'icon' => 'shopping_cart',
             'items' => [
-                ['label' => 'Khách hàng', 'route' => 'admin.reports.customers', 'active' => ['admin.reports.customers'], 'icon' => 'users', 'permission' => 'customers.view'],
+                ['label' => 'Khách hàng', 'route' => 'admin.customers.index', 'active' => ['admin.customers.*'], 'icon' => 'users', 'permission' => 'customers.view'],
                 ['label' => 'Đơn hàng', 'route' => 'admin.orders.index', 'active' => ['admin.orders.*'], 'icon' => 'shopping_cart', 'permission' => 'orders.view'],
                 ['label' => 'Lái thử', 'route' => 'admin.test_drives.index', 'active' => ['admin.test_drives.*'], 'icon' => 'calendar', 'permission' => 'test_drives.view'],
             ],
