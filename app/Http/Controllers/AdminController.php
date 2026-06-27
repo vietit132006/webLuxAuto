@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Brand;
 use App\Models\Car;
+use App\Models\Order;
+use App\Models\StockMovement;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Storage;
 use App\Models\CarModel;
+use App\Services\TestDriveService;
 
 class AdminController extends Controller
 {
@@ -15,20 +18,45 @@ class AdminController extends Controller
     // 1. Dashboard
     public function dashboard()
     {
-        $totalCars = Car::count();
-        $totalCarModels = CarModel::count();
-        $totalBrands = Brand::count();
+        $user = auth()->user();
+        $canViewCars = $user?->can('cars.view') ?? false;
+        $canViewReports = $user?->can('reports.view') ?? false;
+        $canViewInventory = $user?->can('inventory.view') ?? false;
+        $canViewInventoryHistory = $user?->can('inventory.history') ?? false;
+        $canViewTestDrives = $user?->can('test_drives.view') ?? false;
 
-        $recentCars = Car::with('brand')
+        $totalCars = $canViewCars ? Car::count() : null;
+        $totalCarModels = $canViewCars ? CarModel::count() : null;
+        $totalBrands = $canViewCars ? Brand::count() : null;
+        $totalRevenue = $canViewReports ? (float) Order::where('status', 2)->sum('total_price') : null;
+        $totalInventoryUnits = $canViewInventory ? (int) Car::sum('stock') : null;
+        $testDriveStats = $canViewTestDrives ? app(TestDriveService::class)->stats() : null;
+
+        $recentCars = $canViewCars ? Car::with('brand')
             ->orderBy('car_id', 'desc')
             ->take(5)
-            ->get();
+            ->get() : collect();
+
+        $recentStockMovements = $canViewInventoryHistory ? StockMovement::with(['car', 'user'])
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->take(10)
+            ->get() : collect();
 
         return view('admin.cars.dashboard', compact(
             'totalCars',
             'totalCarModels',
             'totalBrands',
-            'recentCars'
+            'totalRevenue',
+            'totalInventoryUnits',
+            'canViewCars',
+            'canViewReports',
+            'canViewInventory',
+            'canViewInventoryHistory',
+            'canViewTestDrives',
+            'recentCars',
+            'recentStockMovements',
+            'testDriveStats'
         ));
     }
 

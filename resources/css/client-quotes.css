@@ -1,0 +1,378 @@
+.client-quote-page {
+    width: min(1120px, calc(100% - 2rem));
+    display: grid;
+    gap: 1.1rem;
+    margin: 0 auto;
+}
+
+.client-quote-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 0.35fr);
+    gap: 1rem;
+    align-items: end;
+    border: 1px solid rgba(201, 169, 98, 0.28);
+    border-radius: 8px;
+    background:
+        linear-gradient(135deg, rgba(201, 169, 98, 0.12), transparent 48%),
+        linear-gradient(180deg, #151b25, #0e1219);
+    padding: clamp(1.2rem, 3vw, 2rem);
+}
+
+.client-quote-kicker {
+    display: inline-flex;
+    color: var(--accent);
+    font-size: 0.76rem;
+    font-weight: 850;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.client-quote-hero h1 {
+    margin: 0.35rem 0 0.25rem;
+    color: var(--text);
+    font-size: clamp(1.65rem, 5vw, 3rem);
+    letter-spacing: 0;
+}
+
+.client-quote-hero p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 1rem;
+}
+
+.client-quote-total {
+    border: 1px solid rgba(201, 169, 98, 0.32);
+    border-radius: 8px;
+    background: rgba(10, 13, 18, 0.66);
+    padding: 1rem;
+}
+
+.client-quote-total span,
+.client-quote-info dt,
+.client-quote-response-form label {
+    display: block;
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 850;
+    text-transform: uppercase;
+}
+
+.client-quote-total strong {
+    display: block;
+    margin-top: 0.35rem;
+    color: var(--accent);
+    font-size: clamp(1.3rem, 4vw, 2rem);
+    font-weight: 900;
+}
+
+.client-quote-alert {
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    font-weight: 750;
+}
+
+.client-quote-alert.is-success {
+    border: 1px solid rgba(52, 211, 153, 0.45);
+    background: rgba(52, 211, 153, 0.12);
+    color: #86efac;
+}
+
+.client-quote-alert.is-error {
+    border: 1px solid rgba(248, 113, 113, 0.5);
+    background: rgba(248, 113, 113, 0.12);
+    color: #fecaca;
+}
+
+.client-quote-status-panel,
+.client-quote-panel {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    padding: 1rem;
+}
+
+.client-quote-status-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.client-quote-status-panel p {
+    margin: 0.45rem 0 0;
+    color: var(--muted);
+}
+
+.client-quote-status-panel p span {
+    display: inline-block;
+    margin-left: 1rem;
+}
+
+.client-quote-status {
+    display: inline-flex;
+    min-height: 28px;
+    align-items: center;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    padding: 0 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 850;
+}
+
+.quotes-status-draft {
+    border-color: rgba(148, 163, 184, 0.34);
+    background: rgba(148, 163, 184, 0.13);
+    color: #cbd5e1;
+}
+
+.quotes-status-sent {
+    border-color: rgba(14, 165, 233, 0.36);
+    background: rgba(14, 165, 233, 0.14);
+    color: #38bdf8;
+}
+
+.quotes-status-accepted {
+    border-color: rgba(34, 197, 94, 0.38);
+    background: rgba(34, 197, 94, 0.14);
+    color: #4ade80;
+}
+
+.quotes-status-rejected {
+    border-color: rgba(239, 68, 68, 0.36);
+    background: rgba(239, 68, 68, 0.14);
+    color: #f87171;
+}
+
+.quotes-status-expired {
+    border-color: rgba(234, 179, 8, 0.4);
+    background: rgba(234, 179, 8, 0.16);
+    color: #facc15;
+}
+
+.client-quote-primary,
+.client-quote-secondary,
+.client-quote-danger {
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 0 1rem;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 850;
+    text-decoration: none;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.client-quote-primary {
+    background: var(--accent);
+    color: #0c0f14;
+}
+
+.client-quote-primary:hover,
+.client-quote-primary:focus-visible {
+    border-color: #d9bd78;
+    background: #d9bd78;
+    color: #0c0f14;
+    outline: none;
+}
+
+.client-quote-secondary {
+    border-color: var(--border);
+    background: rgba(255, 255, 255, 0.035);
+    color: var(--text);
+}
+
+.client-quote-secondary:hover,
+.client-quote-secondary:focus-visible {
+    border-color: rgba(201, 169, 98, 0.55);
+    color: var(--accent);
+    outline: none;
+}
+
+.client-quote-danger {
+    border-color: rgba(248, 113, 113, 0.45);
+    background: rgba(248, 113, 113, 0.15);
+    color: #fecaca;
+}
+
+.client-quote-danger:hover,
+.client-quote-danger:focus-visible {
+    border-color: #fca5a5;
+    color: #ffffff;
+    outline: none;
+}
+
+.client-quote-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.client-quote-panel h2,
+.client-quote-section-title h2 {
+    margin: 0;
+    color: var(--text);
+    font-size: 1.08rem;
+}
+
+.client-quote-info {
+    display: grid;
+    gap: 0.85rem;
+    margin: 1rem 0 0;
+}
+
+.client-quote-info dd {
+    margin: 0.25rem 0 0;
+    color: var(--text);
+    overflow-wrap: anywhere;
+}
+
+.client-quote-section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.85rem;
+}
+
+.client-quote-section-title span {
+    color: var(--accent);
+    font-weight: 900;
+}
+
+.client-quote-price-lines {
+    display: grid;
+    gap: 0.55rem;
+}
+
+.client-quote-price-lines div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid var(--border);
+    padding: 0.65rem 0;
+    color: var(--muted);
+}
+
+.client-quote-price-lines div:last-child {
+    border-bottom: 0;
+}
+
+.client-quote-price-lines strong {
+    color: var(--text);
+    white-space: nowrap;
+}
+
+.client-quote-price-lines .is-total {
+    margin-top: 0.35rem;
+    border: 1px solid rgba(201, 169, 98, 0.32);
+    border-radius: 8px;
+    background: rgba(201, 169, 98, 0.1);
+    padding: 0.85rem 1rem;
+}
+
+.client-quote-price-lines .is-total span,
+.client-quote-price-lines .is-total strong {
+    color: var(--accent);
+    font-weight: 900;
+}
+
+.client-quote-note,
+.client-quote-result p {
+    margin: 0.65rem 0 0;
+    color: #dbe3ef;
+    white-space: pre-line;
+}
+
+.client-quote-response-form {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.client-quote-response-form textarea {
+    width: 100%;
+    min-height: 112px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #0a0d12;
+    color: var(--text);
+    font: inherit;
+    padding: 0.75rem 0.78rem;
+    resize: vertical;
+}
+
+.client-quote-response-form textarea:focus {
+    outline: none;
+    border-color: rgba(201, 169, 98, 0.7);
+    box-shadow: 0 0 0 3px rgba(201, 169, 98, 0.12);
+}
+
+.client-quote-response-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.client-quote-result {
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.client-quote-result strong {
+    color: var(--text);
+}
+
+.client-quote-result.is-accepted {
+    border: 1px solid rgba(34, 197, 94, 0.38);
+    background: rgba(34, 197, 94, 0.12);
+}
+
+.client-quote-result.is-rejected,
+.client-quote-result.is-expired {
+    border: 1px solid rgba(248, 113, 113, 0.35);
+    background: rgba(248, 113, 113, 0.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .client-quote-primary,
+    .client-quote-secondary,
+    .client-quote-danger {
+        transition: none;
+    }
+}
+
+@media (max-width: 780px) {
+    .client-quote-page {
+        width: min(100% - 1rem, 1120px);
+    }
+
+    .client-quote-hero,
+    .client-quote-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .client-quote-status-panel,
+    .client-quote-section-title {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .client-quote-status-panel p span {
+        display: block;
+        margin: 0.25rem 0 0;
+    }
+
+    .client-quote-response-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .client-quote-primary,
+    .client-quote-secondary,
+    .client-quote-danger {
+        width: 100%;
+    }
+}

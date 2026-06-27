@@ -1,0 +1,55 @@
+/* Inline styles extracted from resources/views/admin/system/backup.blade.php */
+
+.admin-system-backup-inline-1 {
+    background: var(--accent);
+    color: #000;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    font-weight: 800;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.admin-system-backup-inline-2 {
+    text-align: left;
+    color: var(--muted);
+    font-size: 0.9rem;
+    padding-left: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.admin-system-backup-inline-3 {
+    font-weight: bold;
+    color: var(--accent);
+    margin-bottom: 1rem;
+}
+
+.admin-system-backup-inline-4 {
+    background: rgba(201, 169, 98, 0.1);
+    border: 1px solid var(--accent-dim);
+    padding: 1.5rem;
+    border-radius: 12px;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.admin-system-backup-inline-5 {
+    color: var(--muted);
+    max-width: 600px;
+    margin: 0 auto 2rem;
+}
+
+.admin-system-backup-inline-6 {
+    color: var(--text);
+    margin-bottom: 1rem;
+}
+
+.admin-system-backup-inline-7 {
+    font-size: 4rem;
+    margin-bottom: 2rem;
+}
+
+.admin-system-backup-inline-8 {
+    padding: 2rem;
+    text-align: center;
+}

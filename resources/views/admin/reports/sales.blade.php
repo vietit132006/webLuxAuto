@@ -2,28 +2,14 @@
 
 @section('title', 'Báo cáo doanh số')
 
+@push('styles')
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite('resources/css/admin-reports-sales.css')
+    @endif
+@endpush
+
+
 @section('content')
-<style>
-    .rep-head { margin-bottom: 1.5rem; }
-    .rep-title { font-size: 1.5rem; font-weight: 700; margin: 0 0 0.35rem; }
-    .rep-sub { color: var(--muted); font-size: 0.9rem; }
-    .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-    .stat-box { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.1rem; }
-    .stat-box .lbl { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
-    .stat-box .val { font-size: 1.5rem; font-weight: 800; color: var(--accent); margin-top: 0.35rem; }
-    .chart-row { display: flex; align-items: flex-end; gap: 0.5rem; height: 140px; margin-bottom: 2rem; padding: 1rem; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
-    .chart-bar { flex: 1; background: rgba(201, 169, 98, 0.25); border-radius: 6px 6px 0 0; position: relative; min-height: 4px; transition: 0.2s; }
-    .chart-bar:hover { background: rgba(201, 169, 98, 0.45); }
-    .chart-bar span { position: absolute; bottom: -1.4rem; left: 50%; transform: translateX(-50%); font-size: 0.65rem; color: var(--muted); white-space: nowrap; }
-    .filter-form { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; margin-bottom: 1rem; }
-    .filter-form label { font-size: 0.85rem; color: var(--muted); }
-    .filter-form input { padding: 0.45rem 0.65rem; border-radius: 6px; border: 1px solid var(--border); background: #0a0d12; color: var(--text); }
-    .filter-form button { padding: 0.45rem 1rem; border-radius: 6px; border: none; background: var(--accent); color: #0c0f14; font-weight: 600; cursor: pointer; }
-    .table-responsive { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); }
-    .admin-table { width: 100%; border-collapse: collapse; text-align: left; }
-    .admin-table th, .admin-table td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); }
-    .admin-table th { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; }
-</style>
 
 <div class="wrap">
     <div class="rep-head">
@@ -46,9 +32,9 @@
             @endphp
             <div class="stat-box">
                 <div class="lbl">{{ $label }}</div>
-                <div class="val" style="font-size: 1.1rem; color: var(--text);">
+                <div class="val admin-reports-sales-inline-7">
                     {{ $row->cnt ?? 0 }} đơn
-                    <span style="display: block; font-size: 0.85rem; color: var(--muted); font-weight: 500;">
+                    <span class="admin-reports-sales-inline-6">
                         {{ number_format($row->sum_price ?? 0, 0, ',', '.') }} đ
                     </span>
                 </div>
@@ -56,7 +42,7 @@
         @endforeach
     </div>
 
-    <h2 style="font-size: 1.1rem; margin-bottom: 0.75rem;">6 tháng gần đây (doanh thu hoàn tất)</h2>
+    <h2 class="admin-reports-sales-inline-5">6 tháng gần đây (doanh thu hoàn tất)</h2>
     @php $maxRev = max($chartData->pluck('revenue')->max(), 1); @endphp
     <div class="chart-row">
         @foreach($chartData as $row)
@@ -91,9 +77,9 @@
                     <tr>
                         <td>#{{ $order->order_id }}</td>
                         <td>{{ $order->user->name ?? '—' }}</td>
-                        <td style="color: var(--accent); font-weight: 600;">{{ number_format($order->total_price, 0, ',', '.') }} đ</td>
+                        <td class="admin-reports-sales-inline-4">{{ number_format($order->total_price, 0, ',', '.') }} đ</td>
                         <td>
-                            @if($order->status == 2) <span style="color: #4ade80;">Hoàn tất</span>
+                            @if($order->status == 2) <span class="admin-reports-sales-inline-3">Hoàn tất</span>
                             @elseif($order->status == 1) Đã cọc
                             @elseif($order->status == 3) Hủy
                             @else Chờ @endif
@@ -101,13 +87,13 @@
                         <td>{{ $order->created_at?->format('d/m/Y H:i') }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" style="text-align: center; color: var(--muted); padding: 2rem;">Không có đơn trong tháng này.</td></tr>
+                    <tr><td class="admin-reports-sales-inline-2" colspan="5">Không có đơn trong tháng này.</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
     @if($monthlyRows->hasPages())
-        <div style="margin-top: 1.5rem; display: flex; justify-content: center;">{{ $monthlyRows->links('pagination.lux') }}</div>
+        <div class="admin-reports-sales-inline-1">{{ $monthlyRows->links('pagination.lux') }}</div>
     @endif
 </div>
 @endsection

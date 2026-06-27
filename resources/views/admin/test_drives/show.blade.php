@@ -1,216 +1,292 @@
 @extends('layouts.admin')
 
-@section('title', 'Chi tiết lịch lái thử')
+@section('title', 'Chi tiết lịch lái thử ' . $booking->display_code)
+
+@push('styles')
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite('resources/css/admin-test-drives-show.css')
+    @endif
+@endpush
+
+@php
+    $carName = $booking->car ? trim(($booking->car->brand->name ?? '') . ' ' . $booking->car->name) : 'Chưa xác định';
+    $appointmentTime = $booking->appointment_time ? substr((string) $booking->appointment_time, 0, 5) : null;
+    $appointmentText = $booking->appointment_date
+        ? $booking->appointment_date->format('d/m/Y') . ($appointmentTime ? ' ' . $appointmentTime : '')
+        : 'Chưa đặt lịch';
+    $currentSalesPerson = old('sales_person', $booking->sales_person);
+    $timelineItems = collect([
+        [
+            'time' => $booking->created_at,
+            'title' => 'Khách gửi yêu cầu',
+            'meta' => $booking->user->name ?? 'Khách hàng',
+            'note' => $booking->subject,
+            'status' => 'pending',
+        ],
+    ])->merge($booking->statusHistories->map(function ($history) {
+        return [
+            'time' => $history->created_at,
+            'title' => match ($history->new_status) {
+                \App\Models\Ticket::STATUS_APPROVED => 'Admin duyệt',
+                \App\Models\Ticket::STATUS_COMPLETED => 'Hoàn thành',
+                \App\Models\Ticket::STATUS_REJECTED => 'Đã hủy',
+                default => \App\Models\Ticket::labelForTestDriveStatus($history->new_status),
+            },
+            'meta' => $history->changedBy->name ?? 'Hệ thống',
+            'note' => $history->note,
+            'status' => $history->new_status,
+        ];
+    }));
+@endphp
 
 @section('content')
-<div class="wrap" style="max-width: 1000px; margin: 0 auto; padding: 2rem 1rem;">
+<div class="test-drive-detail">
+    @if(session('success'))
+        <div class="flash-alert is-success">{{ session('success') }}</div>
+    @endif
 
-    <a href="{{ route('admin.test_drives.index') }}" style="color: var(--accent); text-decoration: none; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 5px; margin-bottom: 1.5rem; transition: 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
-        <svg style="width: 16px; height: 16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-        Quay lại danh sách
-    </a>
-
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
-        <h1 style="margin: 0; font-size: 2rem; color: var(--text);">
-            Chi tiết yêu cầu <span style="color: var(--accent);">#{{ $booking->ticket_id }}</span>
-        </h1>
-
-        @php
-            $badgeStyle = match($booking->status) {
-                'pending' => 'background: rgba(234, 179, 8, 0.1); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.3);',
-                'approved' => 'background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);',
-                'rejected' => 'background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3);',
-                'completed' => 'background: rgba(14, 165, 233, 0.1); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.3);',
-                default => 'background: rgba(100, 116, 139, 0.1); color: #94a3b8; border: 1px solid rgba(100, 116, 139, 0.3);',
-            };
-            $statusText = match($booking->status) {
-                'pending' => 'Chờ xử lý',
-                'approved' => 'Đã duyệt',
-                'rejected' => 'Đã huỷ',
-                'completed' => 'Hoàn thành',
-                default => ucfirst($booking->status),
-            };
-        @endphp
-        <span style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 16px; border-radius: 30px; font-size: 0.9rem; font-weight: bold; {{ $badgeStyle }}">
-            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: currentColor;"></span>
-            {{ $statusText }}
-        </span>
-    </div>
-
-@if(session('success'))
-        <div id="lux-toast-alert" style="padding: 1rem 1.5rem; margin-bottom: 2rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; border-radius: 8px; font-weight: bold; display: flex; align-items: center; gap: 10px; transition: opacity 0.5s ease, transform 0.5s ease;">
-            <svg style="width: 20px; height: 20px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-            {{ session('success') }}
-        </div>
+    @if(session('warning'))
+        <div class="flash-alert is-warning">{{ session('warning') }}</div>
     @endif
 
     @if($errors->any())
-        <div style="padding: 1rem 1.5rem; margin-bottom: 2rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; border-radius: 8px; font-weight: bold; display: flex; align-items: center; gap: 10px;">
-            <svg style="width: 20px; height: 20px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            {{ $errors->first() }}
-        </div>
+        <div class="flash-alert is-error">{{ $errors->first() }}</div>
     @endif
 
-    <div class="lux-grid">
-
-        <div class="lux-card">
-            <h2 style="margin: 0 0 1.5rem; font-size: 1.2rem; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
-                Thông tin yêu cầu
-            </h2>
-
-            <div class="info-group">
-                <div class="info-label">
-                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                    Khách hàng
-                </div>
-                <div class="info-value">{{ $booking->user->name ?? 'Khách vãng lai (ID: ' . $booking->user_id . ')' }}</div>
-                <div class="info-sub">{{ $booking->user->email ?? 'Không có email' }}</div>
-            </div>
-
-            <div class="info-group">
-                <div class="info-label">
-                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" /></svg>
-                    Dòng xe lái thử
-                </div>
-                <div class="info-value" style="color: var(--accent);">
-                    {{ $booking->car ? (($booking->car->brand->name ?? '') . ' ' . $booking->car->name) : 'Không xác định' }}
-                </div>
-                @if($booking->car)
-                    <div class="info-sub">Đời xe: {{ $booking->car->year ?? '—' }} • Tồn kho: {{ $booking->car->stock ?? 0 }} chiếc</div>
-                @endif
-            </div>
-
-            <div class="info-group">
-                <div class="info-label">
-                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" /></svg>
-                    Tiêu đề & Nội dung
-                </div>
-                <div class="info-value" style="margin-bottom: 0.5rem;">{{ $booking->subject }}</div>
-                <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; border: 1px solid var(--border); color: var(--muted); font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap;">{{ $booking->message }}</div>
-            </div>
-
-            <div style="margin-top: 1.5rem; font-size: 0.85rem; color: var(--muted); display: flex; align-items: center; gap: 5px;">
-                <svg style="width: 16px; height: 16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                Gửi lúc: <span style="color: var(--text);">{{ $booking->created_at?->format('H:i - d/m/Y') }}</span>
-            </div>
+    <div class="detail-header">
+        <div>
+            <a class="back-link" href="{{ route('admin.test_drives.index') }}">Quay lại danh sách</a>
+            <h1>{{ $booking->display_code }}</h1>
+            <p>Ngày tạo: {{ $booking->created_at?->format('d/m/Y H:i') }}</p>
         </div>
+        <span class="status-badge {{ $booking->test_drive_status_badge_class }}">{{ $booking->test_drive_status_label }}</span>
+    </div>
 
-        <div class="lux-card" style="height: fit-content;">
-            <h2 style="margin: 0 0 1.5rem; font-size: 1.2rem; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
-                Cập nhật tiến độ
-            </h2>
-
-            @if($booking->status === 'completed')
-                <div style="background: rgba(16, 185, 129, 0.05); border: 1px dashed rgba(16, 185, 129, 0.4); padding: 1.5rem; border-radius: 8px; text-align: center; color: var(--muted);">
-                    <svg style="width: 40px; height: 40px; color: #34d399; margin: 0 auto 10px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                    <p style="margin: 0; font-size: 0.95rem;">Lịch lái thử này đã hoàn tất. Quy trình đóng và không thể cập nhật thêm.</p>
+    <div class="detail-grid">
+        <main class="detail-main">
+            <section class="panel">
+                <h2 class="panel-title">Thông tin yêu cầu</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span>Khách hàng</span>
+                        <strong>{{ $booking->user->name ?? 'Khách vãng lai' }}</strong>
+                        <small>{{ $booking->user->email ?? 'Chưa có email' }}</small>
+                        <small>{{ $booking->user->phone ?? 'Chưa có SĐT' }}</small>
+                    </div>
+                    <div class="info-item">
+                        <span>Xe lái thử</span>
+                        <strong>{{ $carName }}</strong>
+                        <small>{{ $booking->car?->license_plate ?: 'Chưa có biển số' }}</small>
+                        @if($booking->car?->vin)
+                            <small>VIN {{ $booking->car->vin }}</small>
+                        @endif
+                    </div>
+                    <div class="info-item">
+                        <span>Lịch hẹn</span>
+                        <strong>{{ $appointmentText }}</strong>
+                        <small>{{ $booking->showroom ?: 'Chưa chọn showroom' }}</small>
+                    </div>
+                    <div class="info-item">
+                        <span>Nhân viên phụ trách</span>
+                        <strong>{{ $booking->sales_person ?: 'Chưa phân công' }}</strong>
+                    </div>
                 </div>
-            @else
-                <form method="post" action="{{ route('admin.test_drives.updateStatus', $booking->ticket_id) }}">
-                    @csrf
-                    <div style="margin-bottom: 1.2rem;">
-                        <label style="display: block; font-size: 0.9rem; color: var(--text); font-weight: bold; margin-bottom: 0.5rem;">
-                            Chọn trạng thái mới
-                        </label>
-                        <select name="status" style="width: 100%; background: #0a0d12; border: 1px solid var(--border); color: var(--text); padding: 0.8rem 1rem; border-radius: 8px; outline: none; cursor: pointer; font-size: 0.95rem;">
-                            @foreach(['pending' => 'Chờ xử lý', 'approved' => 'Đã duyệt', 'rejected' => 'Đã huỷ', 'completed' => 'Hoàn thành'] as $k => $v)
-                                <option value="{{ $k }}" style="background: var(--bg);" @selected(old('status', $booking->status) === $k)>{{ $v }}</option>
-                            @endforeach
-                        </select>
+
+                <div class="request-box">
+                    <div class="request-title">{{ $booking->subject }}</div>
+                    <div class="request-message">{!! nl2br(e($booking->message)) !!}</div>
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2 class="panel-title">Timeline xử lý</h2>
+                <div class="timeline">
+                    @foreach($timelineItems as $item)
+                        <div class="timeline-item">
+                            <div class="timeline-date">
+                                <strong>{{ $item['time']?->format('d/m') ?? '--/--' }}</strong>
+                                <span>{{ $item['time']?->format('H:i') ?? '--:--' }}</span>
+                            </div>
+                            <div class="timeline-marker {{ \App\Models\Ticket::badgeClassForTestDriveStatus($item['status']) }}"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-title">{{ $item['title'] }}</div>
+                                <div class="timeline-meta">{{ $item['meta'] }}</div>
+                                @if($item['note'])
+                                    <p>{{ $item['note'] }}</p>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2 class="panel-title">Ghi chú nội bộ</h2>
+                <div class="note-list">
+                    @forelse($booking->notes as $note)
+                        <div class="note-message">
+                            <div class="note-avatar">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($note->user->name ?? 'A', 0, 1)) }}</div>
+                            <div class="note-bubble">
+                                <div class="note-head">
+                                    <strong>{{ $note->user->name ?? 'Admin' }}</strong>
+                                    <span>{{ $note->created_at?->format('d/m/Y H:i') }}</span>
+                                </div>
+                                <p>{!! nl2br(e($note->note)) !!}</p>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="empty-state">Chưa có ghi chú nội bộ.</div>
+                    @endforelse
+                </div>
+
+                @can('test_drives.edit')
+                    <form class="note-form" method="post" action="{{ route('admin.test_drives.notes.store', $booking->ticket_id) }}">
+                        @csrf
+                        <textarea name="note" rows="3" placeholder="Ví dụ: Khách thích màu trắng, muốn lái bản Turbo, đã gọi xác nhận..." required>{{ old('note') }}</textarea>
+                        <button class="btn-primary" type="submit">Thêm ghi chú</button>
+                    </form>
+                @endcan
+            </section>
+
+            <section class="panel">
+                <h2 class="panel-title">Tài liệu</h2>
+
+                @can('test_drives.edit')
+                    <form class="file-form" method="post" action="{{ route('admin.test_drives.files.store', $booking->ticket_id) }}" enctype="multipart/form-data">
+                        @csrf
+                        <input type="file" name="documents[]" accept=".pdf,.jpg,.jpeg,.png,.webp" multiple required>
+                        <button class="btn-primary" type="submit">Upload</button>
+                    </form>
+                @endcan
+
+                <div class="file-list">
+                    @forelse($booking->files as $file)
+                        <div class="file-row">
+                            <div>
+                                <strong>{{ $file->file_name }}</strong>
+                                <span>{{ $file->uploadedBy->name ?? 'Admin' }} · {{ $file->created_at?->format('d/m/Y H:i') }}</span>
+                            </div>
+                            <div class="file-actions">
+                                <a href="{{ route('admin.test_drives.files.view', [$booking->ticket_id, $file]) }}" target="_blank" rel="noopener">Xem</a>
+                                <a href="{{ route('admin.test_drives.files.download', [$booking->ticket_id, $file]) }}">Download</a>
+                                @can('test_drives.delete')
+                                    <form method="post" action="{{ route('admin.test_drives.files.destroy', [$booking->ticket_id, $file]) }}" onsubmit="return confirm('Xóa tài liệu này?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit">Xóa</button>
+                                    </form>
+                                @endcan
+                            </div>
+                        </div>
+                    @empty
+                        <div class="empty-state">Chưa có tài liệu.</div>
+                    @endforelse
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2 class="panel-title">Nhật ký thao tác</h2>
+                <div class="activity-list">
+                    @forelse($booking->activityLogs as $log)
+                        <div class="activity-item">
+                            <div class="activity-main">
+                                <strong>{{ $log->user->name ?? 'Hệ thống' }}</strong>
+                                <span>{{ $log->action_label }}</span>
+                                <small>{{ $log->created_at?->format('d/m/Y H:i') }}</small>
+                            </div>
+                            <div class="activity-detail">
+                                @if($log->old_value || $log->new_value)
+                                    <span>{{ $log->old_value ?: 'N/A' }}</span>
+                                    <b>→</b>
+                                    <span>{{ $log->new_value ?: 'N/A' }}</span>
+                                @else
+                                    <span>{{ $log->description ?: 'Đã ghi nhận thao tác' }}</span>
+                                @endif
+                            </div>
+                        </div>
+                    @empty
+                        <div class="empty-state">Chưa có nhật ký thao tác.</div>
+                    @endforelse
+                </div>
+            </section>
+        </main>
+
+        <aside class="detail-side">
+            <section class="panel">
+                <h2 class="panel-title">Thông tin lịch hẹn</h2>
+                @can('test_drives.edit')
+                    <form class="side-form" method="post" action="{{ route('admin.test_drives.updateAppointment', $booking->ticket_id) }}">
+                        @csrf
+                        @method('PUT')
+                        <div class="form-field">
+                            <label for="appointment-date">Ngày hẹn</label>
+                            <input id="appointment-date" type="date" name="appointment_date" value="{{ old('appointment_date', $booking->appointment_date?->format('Y-m-d')) }}">
+                        </div>
+                        <div class="form-field">
+                            <label for="appointment-time">Giờ hẹn</label>
+                            <input id="appointment-time" type="time" name="appointment_time" value="{{ old('appointment_time', $appointmentTime) }}">
+                        </div>
+                        <div class="form-field">
+                            <label for="showroom">Showroom</label>
+                            <input id="showroom" type="text" name="showroom" value="{{ old('showroom', $booking->showroom) }}" maxlength="255" placeholder="Lux Auto Quận 1">
+                        </div>
+                        <div class="form-field">
+                            <label for="sales-person">Nhân viên phụ trách</label>
+                            <select id="sales-person" name="sales_person">
+                                <option value="">Chưa phân công</option>
+                                @if($currentSalesPerson && !in_array($currentSalesPerson, $salesPeople, true))
+                                    <option value="{{ $currentSalesPerson }}" selected>{{ $currentSalesPerson }}</option>
+                                @endif
+                                @foreach($salesPeople as $person)
+                                    <option value="{{ $person }}" @selected($currentSalesPerson === $person)>{{ $person }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <button class="btn-primary" type="submit">Lưu lịch hẹn</button>
+                    </form>
+                @else
+                    <div class="readonly-list">
+                        <div><span>Ngày giờ</span><strong>{{ $appointmentText }}</strong></div>
+                        <div><span>Showroom</span><strong>{{ $booking->showroom ?: 'N/A' }}</strong></div>
+                        <div><span>Nhân viên</span><strong>{{ $booking->sales_person ?: 'N/A' }}</strong></div>
                     </div>
+                @endcan
+            </section>
 
-                    <button type="submit" style="width: 100%; padding: 0.9rem; border-radius: 8px; background: var(--accent); color: #000; border: none; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(201, 169, 98, 0.2);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-                        Lưu Trạng Thái
-                    </button>
-
-                    <div style="margin-top: 1.5rem; padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 8px; font-size: 0.85rem; color: var(--muted); border-left: 3px solid var(--border);">
-                        <strong>Quy trình chuẩn:</strong><br>
-                        • <span style="color: #facc15;">Chờ xử lý</span> → Duyệt hoặc Hủy.<br>
-                        • <span style="color: #34d399;">Đã duyệt</span> → Đợi khách đến lái → Hoàn thành.
+            <section class="panel">
+                <h2 class="panel-title">Cập nhật trạng thái</h2>
+                @can('test_drives.edit')
+                    @if(count($nextStatusOptions) > 0)
+                        <form class="side-form" method="post" action="{{ route('admin.test_drives.updateStatus', $booking->ticket_id) }}">
+                            @csrf
+                            <div class="form-field">
+                                <label for="status">Trạng thái mới</label>
+                                <select id="status" name="status" required>
+                                    @foreach($nextStatusOptions as $value => $label)
+                                        <option value="{{ $value }}" @selected(old('status') === $value)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="form-field">
+                                <label for="status-note">Ghi chú</label>
+                                <textarea id="status-note" name="note" rows="3" maxlength="1000">{{ old('note') }}</textarea>
+                            </div>
+                            <button class="btn-primary" type="submit">Lưu trạng thái</button>
+                        </form>
+                    @else
+                        <div class="closed-state">
+                            <strong>{{ $booking->test_drive_status_label }}</strong>
+                            <span>Không còn trạng thái hợp lệ tiếp theo.</span>
+                        </div>
+                    @endif
+                @else
+                    <div class="closed-state">
+                        <strong>{{ $booking->test_drive_status_label }}</strong>
+                        <span>Bạn không có quyền cập nhật.</span>
                     </div>
-                </form>
-            @endif
-        </div>
-
+                @endcan
+            </section>
+        </aside>
     </div>
 </div>
-
-<style>
-    .lux-grid {
-        display: grid;
-        grid-template-columns: 1.8fr 1fr;
-        gap: 1.5rem;
-    }
-    .lux-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    }
-    .info-group {
-        margin-bottom: 1.2rem;
-        padding-bottom: 1.2rem;
-        border-bottom: 1px dashed var(--border);
-    }
-    .info-group:last-of-type {
-        border-bottom: none;
-        margin-bottom: 0;
-        padding-bottom: 0;
-    }
-    .info-label {
-        font-size: 0.8rem;
-        color: var(--muted);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 0.5rem;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-weight: bold;
-    }
-    .info-label svg {
-        width: 16px;
-        height: 16px;
-        color: var(--accent);
-    }
-    .info-value {
-        font-size: 1.1rem;
-        color: var(--text);
-        font-weight: 500;
-    }
-    .info-sub {
-        font-size: 0.85rem;
-        color: var(--muted);
-        margin-top: 4px;
-    }
-
-    /* Đảm bảo hiển thị tốt trên điện thoại */
-    @media (max-width: 900px) {
-        .lux-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-</style>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // Tìm thông báo theo ID
-        const alertBox = document.getElementById('lux-toast-alert');
-
-        if (alertBox) {
-            // Hẹn giờ 2 giây (2000 milliseconds)
-            setTimeout(function() {
-                // Bước 1: Làm mờ và trượt nhẹ lên trên
-                alertBox.style.opacity = '0';
-                alertBox.style.transform = 'translateY(-10px)';
-
-                // Bước 2: Đợi 0.5s cho hiệu ứng mờ kết thúc rồi xóa hẳn khỏi giao diện
-                setTimeout(function() {
-                    alertBox.remove();
-                }, 500); // 500ms này khớp với thời gian transition trong CSS
-
-            }, 2000);
-        }
-    });
-</script>
 @endsection

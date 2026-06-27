@@ -2,6 +2,13 @@
 
 @section('title', 'Cập nhật model xe')
 
+@push('styles')
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite('resources/css/admin-car-models-edit.css')
+    @endif
+@endpush
+
+
 @section('content')
     @include('admin.car_models._style')
 
@@ -21,10 +28,10 @@
 
         @if ($errors->any())
             <div class="flash-alert flash-error">
-                <div style="margin-bottom:6px;">Vui lòng kiểm tra lại thông tin:</div>
-                <ul style="margin:0;padding-left:18px;">
+                <div class="admin-car-models-edit-inline-4">Vui lòng kiểm tra lại thông tin:</div>
+                <ul class="admin-car-models-edit-inline-3">
                     @foreach ($errors->all() as $error)
-                        <li style="margin:3px 0;">{{ $error }}</li>
+                        <li class="admin-car-models-edit-inline-2">{{ $error }}</li>
                     @endforeach
                 </ul>
             </div>
@@ -169,7 +176,7 @@
                 </div>
 
                 @if ($carModel->cars_count > 0)
-                    <div class="flash-alert flash-success" style="margin-top:1.2rem;margin-bottom:0;">
+                    <div class="flash-alert flash-success admin-car-models-edit-inline-1">
                         Model này đang được {{ $carModel->cars_count }} xe sử dụng. Bạn có thể sửa thông tin, nhưng không thể xóa model.
                     </div>
                 @endif

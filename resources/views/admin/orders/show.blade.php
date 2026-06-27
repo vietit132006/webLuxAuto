@@ -1,218 +1,124 @@
 @extends('layouts.admin')
-@section('title', 'Chi tiết đơn hàng #' . $order->order_id)
+@section('title', 'Chi tiết đơn hàng ' . $order->display_code)
+
+@push('styles')
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite('resources/css/admin-orders-show.css')
+    @endif
+@endpush
+
+@php
+    $depositAmount = (float) ($order->deposit_amount ?? 0);
+    $depositDateInput = old('deposit_date', $order->deposit_date ? $order->deposit_date->format('Y-m-d\TH:i') : '');
+    $depositMethod = old('deposit_method', $order->deposit_method);
+    $depositReference = old('deposit_reference', $order->deposit_reference);
+    $depositNote = old('deposit_note', $order->deposit_note);
+    $needsDepositInfo = $depositAmount <= 0 || !$order->deposit_date || blank($order->deposit_method) || blank($order->deposit_note);
+    $needsDepositForStatus = $needsDepositInfo && \App\Models\Order::normalizeStatus($order->status) !== \App\Models\Order::STATUS_DEPOSITED;
+    $selectedStatus = (string) old('status', $order->status);
+    $showStatusDepositFields = $needsDepositForStatus && $selectedStatus === (string) \App\Models\Order::STATUS_DEPOSITED;
+@endphp
 
 @section('content')
-<style>
-    .order-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2rem;
-    }
-    .order-id {
-        font-size: 1.8rem;
-        font-weight: 800;
-        color: var(--accent);
-    }
-    .order-date {
-        color: var(--muted);
-        font-size: 0.95rem;
-    }
-
-    .order-grid {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 2rem;
-    }
-
-    .panel {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-    }
-    .panel-title {
-        font-size: 1.2rem;
-        font-weight: 700;
-        margin-bottom: 1.5rem;
-        border-bottom: 1px solid var(--border);
-        padding-bottom: 0.8rem;
-    }
-
-    .info-group {
-        margin-bottom: 1.2rem;
-    }
-    .info-label {
-        font-size: 0.85rem;
-        color: var(--muted);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 0.3rem;
-    }
-    .info-value {
-        font-weight: 600;
-        color: var(--text);
-    }
-
-    .car-item {
-        display: flex;
-        gap: 1.5rem;
-        align-items: center;
-        padding: 1rem;
-        background: rgba(255, 255, 255, 0.02);
-        border-radius: 10px;
-    }
-    .car-img {
-        width: 150px;
-        height: 100px;
-        object-fit: cover;
-        border-radius: 8px;
-    }
-    .car-info { flex: 1; }
-    .car-name { font-size: 1.2rem; font-weight: 700; color: var(--text); }
-    .car-price { color: var(--accent); font-weight: 700; font-size: 1.1rem; }
-
-    .status-badge {
-        padding: 0.5rem 1rem;
-        border-radius: 50px;
-        font-weight: bold;
-        font-size: 0.9rem;
-    }
-    .badge-0 { background: rgba(234, 179, 8, 0.1); color: #facc15; }
-    .badge-1 { background: rgba(59, 130, 246, 0.1); color: #60a5fa; }
-    .badge-2 { background: rgba(16, 185, 129, 0.1); color: #34d399; }
-    .badge-3 { background: rgba(239, 68, 68, 0.1); color: #f87171; }
-
-    .action-btns {
-        display: flex;
-        gap: 1rem;
-        margin-top: 1rem;
-    }
-    .btn {
-        padding: 0.6rem 1.2rem;
-        border-radius: 8px;
-        font-weight: bold;
-        cursor: pointer;
-        border: none;
-        transition: 0.2s;
-    }
-    .btn-confirm { background: #34d399; color: #000; }
-    .btn-cancel { background: #f87171; color: #fff; }
-    .btn-back { background: var(--border); color: var(--text); }
-</style>
-
 <div class="wrap">
     @if(session('success'))
-        <style>
-            .flash-alert {
-                background-color: #d1fae5;
-                color: #065f46;
-                padding: 1rem 1.5rem;
-                border-radius: 8px;
-                margin-bottom: 1.5rem;
-                border: 1px solid #34d399;
-                font-weight: 600;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-            .btn-close-alert {
-                background: none;
-                border: none;
-                color: inherit;
-                font-size: 1.5rem;
-                line-height: 1;
-                cursor: pointer;
-                padding: 0 0 0 1rem;
-            }
-        </style>
-        <div id="success-alert" class="flash-alert">
-            <span>✅ {{ session('success') }}</span>
-            <button type="button" class="btn-close-alert" onclick="this.parentElement.remove()">&times;</button>
+        <div class="flash-alert">
+            <span>{{ session('success') }}</span>
+            <button type="button" class="btn-close-alert" onclick="this.parentElement.remove()" aria-label="Đóng">&times;</button>
         </div>
     @endif
 
-    @if($errors->has('status'))
-        <style>
-            .error-alert {
-                background-color: #fee2e2;
-                color: #991b1b;
-                padding: 1rem 1.5rem;
-                border-radius: 8px;
-                margin-bottom: 1.5rem;
-                border: 1px solid #f87171;
-                font-weight: 600;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-        </style>
+    @if($errors->any())
         <div class="error-alert">
-            <span>❌ {{ $errors->first('status') }}</span>
-            <button type="button" class="btn-close-alert" onclick="this.parentElement.remove()">&times;</button>
+            <div>
+                @foreach($errors->all() as $error)
+                    <div>{{ $error }}</div>
+                @endforeach
+            </div>
+            <button type="button" class="btn-close-alert" onclick="this.parentElement.remove()" aria-label="Đóng">&times;</button>
         </div>
     @endif
 
     <div class="order-header">
         <div>
-            <div class="order-id">Đơn hàng #{{ $order->order_id }}</div>
-            <div class="order-date">Đặt lúc: {{ $order->created_at->format('H:i - d/m/Y') }}</div>
+            <a href="{{ route('admin.orders.index') }}" class="back-link">Quay lại danh sách</a>
+            <h1 class="order-id">{{ $order->display_code }}</h1>
+            <div class="order-date">Ngày tạo: {{ $order->created_at ? $order->created_at->format('H:i - d/m/Y') : 'N/A' }}</div>
         </div>
-        <div>
-            @if($order->status == 0) <span class="status-badge badge-0">⏳ Chờ xử lý</span>
-            @elseif($order->status == 1) <span class="status-badge badge-1">💸 Đã cọc</span>
-            @elseif($order->status == 2) <span class="status-badge badge-2">✅ Hoàn tất</span>
-            @elseif($order->status == 3) <span class="status-badge badge-3">❌ Đã hủy</span>
-            @endif
-        </div>
+        <span class="status-badge {{ $order->status_badge_class }}">{{ $order->status_label }}</span>
     </div>
 
     <div class="order-grid">
         <div class="main-content">
-            <div class="panel">
-                <h3 class="panel-title">Sản phẩm trong đơn hàng</h3>
-                @foreach($order->details as $detail)
-                    <div class="car-item">
-                        @if($detail->car && $detail->car->image)
-                            <img src="{{ asset('storage/' . $detail->car->image) }}" class="car-img">
-                        @else
-                            <div style="width: 150px; height: 100px; background: #0a0d12; border-radius: 8px;"></div>
-                        @endif
-                        <div class="car-info">
-                            <div class="car-name">{{ $detail->car->name ?? 'Xe đã bị xóa' }}</div>
-                            <div class="car-price">{{ number_format($detail->price, 0, ',', '.') }} đ</div>
-                            <div style="color: var(--muted); font-size: 0.9rem; margin-top: 5px;">Số lượng: {{ $detail->quantity }}</div>
+            <section class="panel">
+                <h2 class="panel-title">Danh sách xe</h2>
+
+                <div class="car-list">
+                    @forelse($order->details as $detail)
+                        <div class="car-item">
+                            @if($detail->car && $detail->car->image)
+                                <img src="{{ asset('storage/' . $detail->car->image) }}" class="car-img" alt="{{ $detail->car->name }}">
+                            @else
+                                <div class="car-img-placeholder">NO IMAGE</div>
+                            @endif
+
+                            <div class="car-info">
+                                <div class="car-name">{{ $detail->car->name ?? 'Xe đã bị xóa' }}</div>
+                                <div class="car-meta">Số lượng: {{ $detail->quantity }}</div>
+                            </div>
+
+                            <div class="car-price">{{ number_format((float) $detail->price, 0, ',', '.') }} đ</div>
                         </div>
-                    </div>
-                @endforeach
-            </div>
-
-            <div class="panel">
-                <h3 class="panel-title">Thao tác nhanh</h3>
-                <div class="action-btns">
-                    <a href="{{ route('admin.orders.index') }}" class="btn btn-back">← Quay lại danh sách</a>
-                    
-                    @if($order->status != 2 && $order->status != 3)
-                        <form action="{{ route('admin.orders.updateStatus', $order->order_id) }}" method="POST" style="display:inline;">
-                            @csrf
-                            <input type="hidden" name="status" value="2">
-                            <button type="submit" class="btn btn-confirm">Xác nhận hoàn tất</button>
-                        </form>
-
-                        <form action="{{ route('admin.orders.updateStatus', $order->order_id) }}" method="POST" style="display:inline;">
-                            @csrf
-                            <input type="hidden" name="status" value="3">
-                            <button type="submit" class="btn btn-cancel">Hủy đơn hàng</button>
-                        </form>
-                    @endif
+                    @empty
+                        <div class="empty-state">Đơn hàng chưa có xe.</div>
+                    @endforelse
                 </div>
-            </div>
+            </section>
+
+            <section class="panel">
+                <h2 class="panel-title">Lịch sử trạng thái</h2>
+
+                <div class="history-table-wrap">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Thời gian</th>
+                                <th>Trạng thái cũ</th>
+                                <th>Trạng thái mới</th>
+                                <th>Người cập nhật</th>
+                                <th>Ghi chú</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($order->statusHistories as $history)
+                                <tr>
+                                    <td>{{ $history->created_at ? $history->created_at->format('H:i - d/m/Y') : 'N/A' }}</td>
+                                    <td>{{ \App\Models\Order::labelForStatus($history->old_status) }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ \App\Models\Order::normalizeStatus($history->new_status) ?? 'unknown' }}">
+                                            {{ \App\Models\Order::labelForStatus($history->new_status) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="history-user">{{ $history->user->name ?? 'Hệ thống' }}</div>
+                                        <div class="history-email">{{ $history->user->email ?? '' }}</div>
+                                    </td>
+                                    <td>{{ $history->note ?? 'N/A' }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="empty-cell">Chưa có lịch sử trạng thái.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </div>
 
         <div class="sidebar-content">
-            <div class="panel">
-                <h3 class="panel-title">Thông tin khách hàng</h3>
+            <section class="panel">
+                <h2 class="panel-title">Khách hàng</h2>
                 <div class="info-group">
                     <div class="info-label">Họ tên</div>
                     <div class="info-value">{{ $order->user->name ?? 'Khách ẩn danh' }}</div>
@@ -225,24 +131,172 @@
                     <div class="info-label">Số điện thoại</div>
                     <div class="info-value">{{ $order->user->phone ?? 'N/A' }}</div>
                 </div>
-            </div>
+            </section>
 
-            <div class="panel">
-                <h3 class="panel-title">Tổng kết thanh toán</h3>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 0.8rem;">
-                    <span style="color: var(--muted);">Giá trị xe:</span>
-                    <span style="font-weight: 600;">{{ number_format($order->total_price, 0, ',', '.') }} đ</span>
+            <section class="panel">
+                <h2 class="panel-title">Thanh toán</h2>
+                <div class="summary-row">
+                    <span>Tổng tiền</span>
+                    <strong>{{ number_format((float) $order->total_price, 0, ',', '.') }} đ</strong>
                 </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem;">
-                    <span style="color: var(--muted);">Số tiền đã cọc:</span>
-                    <span style="font-weight: 600; color: #34d399;">{{ $order->status >= 1 ? '20.000.000' : '0' }} đ</span>
+                <div class="summary-row">
+                    <span>Tiền cọc</span>
+                    <strong>{{ number_format($depositAmount, 0, ',', '.') }} đ</strong>
                 </div>
-                <div style="border-top: 1px solid var(--border); padding-top: 1rem; display: flex; justify-content: space-between;">
-                    <span style="font-weight: 700; font-size: 1.1rem;">Tổng cộng:</span>
-                    <span style="font-weight: 800; font-size: 1.3rem; color: var(--accent);">{{ number_format($order->total_price, 0, ',', '.') }} đ</span>
+                <div class="summary-total">
+                    <span>Còn lại phải thanh toán</span>
+                    <strong>{{ number_format((float) $order->remaining_amount, 0, ',', '.') }} đ</strong>
                 </div>
-            </div>
+            </section>
+
+            <section class="panel">
+                <h2 class="panel-title">Thông tin đặt cọc</h2>
+                <div class="info-group">
+                    <div class="info-label">Tiền cọc</div>
+                    <div class="info-value">{{ number_format($depositAmount, 0, ',', '.') }} đ</div>
+                </div>
+                <div class="info-group">
+                    <div class="info-label">Ngày cọc</div>
+                    <div class="info-value">{{ $order->deposit_date ? $order->deposit_date->format('H:i - d/m/Y') : 'N/A' }}</div>
+                </div>
+                <div class="info-group">
+                    <div class="info-label">Phương thức thanh toán</div>
+                    <div class="info-value">{{ $order->deposit_method_label }}</div>
+                </div>
+                <div class="info-group">
+                    <div class="info-label">Mã giao dịch</div>
+                    <div class="info-value">{{ $order->deposit_reference ?: 'N/A' }}</div>
+                </div>
+                <div class="info-group">
+                    <div class="info-label">Ghi chú</div>
+                    <div class="info-value note-value">{!! $order->deposit_note ? nl2br(e($order->deposit_note)) : 'N/A' !!}</div>
+                </div>
+                <div class="info-group">
+                    <div class="info-label">Người xác nhận</div>
+                    <div class="info-value">{{ $order->depositConfirmer->name ?? 'N/A' }}</div>
+                </div>
+
+                @can('orders.edit')
+                    <form action="{{ route('admin.orders.updateDeposit', $order->order_id) }}" method="POST" class="deposit-update-form">
+                        @csrf
+                        @method('PATCH')
+
+                        <div class="deposit-form-grid">
+                            <div class="form-field">
+                                <label for="deposit_amount_update" class="form-label">Tiền cọc</label>
+                                <input id="deposit_amount_update" type="number" name="deposit_amount" class="form-control" min="0" step="1000" value="{{ old('deposit_amount', $depositAmount > 0 ? (int) $depositAmount : '') }}" required>
+                            </div>
+
+                            <div class="form-field">
+                                <label for="deposit_date_update" class="form-label">Ngày cọc</label>
+                                <input id="deposit_date_update" type="datetime-local" name="deposit_date" class="form-control" value="{{ $depositDateInput }}" required>
+                            </div>
+
+                            <div class="form-field">
+                                <label for="deposit_method_update" class="form-label">Phương thức</label>
+                                <select id="deposit_method_update" name="deposit_method" class="form-control" required>
+                                    <option value="">Chọn phương thức</option>
+                                    @foreach($depositMethodOptions as $value => $label)
+                                        <option value="{{ $value }}" @selected((string) $depositMethod === (string) $value)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="form-field">
+                                <label for="deposit_reference_update" class="form-label">Mã giao dịch</label>
+                                <input id="deposit_reference_update" type="text" name="deposit_reference" class="form-control" value="{{ $depositReference }}" maxlength="255">
+                            </div>
+
+                            <div class="form-field form-field-wide">
+                                <label for="deposit_note_update" class="form-label">Ghi chú</label>
+                                <textarea id="deposit_note_update" name="deposit_note" class="form-control" rows="3">{{ $depositNote }}</textarea>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-submit">Lưu thông tin cọc</button>
+                    </form>
+                @endcan
+            </section>
+
+            @can('orders.edit')
+                <section class="panel">
+                    <h2 class="panel-title">Cập nhật trạng thái</h2>
+                    <form action="{{ route('admin.orders.updateStatus', $order->order_id) }}" method="POST" class="status-update-form" data-status-deposit-form data-deposited-value="{{ \App\Models\Order::STATUS_DEPOSITED }}">
+                        @csrf
+                        <label for="status" class="form-label">Trạng thái</label>
+                        <select id="status" name="status" class="form-control" data-status-select>
+                            @foreach($statusOptions as $value => $label)
+                                <option value="{{ $value }}" @selected($selectedStatus === (string) $value)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+
+                        @if($needsDepositForStatus)
+                            <div class="deposit-status-fields{{ $showStatusDepositFields ? '' : ' is-hidden' }}" data-deposit-status-fields>
+                                <div class="form-field">
+                                    <label for="status_deposit_amount" class="form-label">Tiền cọc</label>
+                                    <input id="status_deposit_amount" type="number" name="deposit_amount" class="form-control" min="0" step="1000" value="{{ old('deposit_amount', $depositAmount > 0 ? (int) $depositAmount : '') }}" data-required-when-deposited>
+                                </div>
+
+                                <div class="form-field">
+                                    <label for="status_deposit_date" class="form-label">Ngày cọc</label>
+                                    <input id="status_deposit_date" type="datetime-local" name="deposit_date" class="form-control" value="{{ old('deposit_date', $order->deposit_date ? $order->deposit_date->format('Y-m-d\TH:i') : '') }}" data-required-when-deposited>
+                                </div>
+
+                                <div class="form-field">
+                                    <label for="status_deposit_method" class="form-label">Phương thức</label>
+                                    <select id="status_deposit_method" name="deposit_method" class="form-control" data-required-when-deposited>
+                                        <option value="">Chọn phương thức</option>
+                                        @foreach($depositMethodOptions as $value => $label)
+                                            <option value="{{ $value }}" @selected((string) old('deposit_method', $order->deposit_method) === (string) $value)>{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div class="form-field">
+                                    <label for="status_deposit_reference" class="form-label">Mã giao dịch</label>
+                                    <input id="status_deposit_reference" type="text" name="deposit_reference" class="form-control" value="{{ old('deposit_reference', $order->deposit_reference) }}" maxlength="255">
+                                </div>
+
+                                <div class="form-field form-field-wide">
+                                    <label for="status_deposit_note" class="form-label">Ghi chú đặt cọc</label>
+                                    <textarea id="status_deposit_note" name="deposit_note" class="form-control" rows="3" data-required-when-deposited>{{ old('deposit_note', $order->deposit_note) }}</textarea>
+                                </div>
+                            </div>
+                        @endif
+
+                        <button type="submit" class="btn-submit">Lưu trạng thái</button>
+                    </form>
+                </section>
+            @endcan
         </div>
     </div>
 </div>
 @endsection
+
+@push('scripts')
+    <script>
+        (() => {
+            document.querySelectorAll('[data-status-deposit-form]').forEach((form) => {
+                const select = form.querySelector('[data-status-select]');
+                const fields = form.querySelector('[data-deposit-status-fields]');
+
+                if (!select || !fields) {
+                    return;
+                }
+
+                const requiredControls = fields.querySelectorAll('[data-required-when-deposited]');
+
+                const syncDepositFields = () => {
+                    const shouldShow = select.value === form.dataset.depositedValue;
+                    fields.classList.toggle('is-hidden', !shouldShow);
+                    requiredControls.forEach((control) => {
+                        control.required = shouldShow;
+                    });
+                };
+
+                select.addEventListener('change', syncDepositFields);
+                syncDepositFields();
+            });
+        })();
+    </script>
+@endpush

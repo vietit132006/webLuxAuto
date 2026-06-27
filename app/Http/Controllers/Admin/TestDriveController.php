@@ -2,88 +2,143 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\TestDrivesExport;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\ExportTestDrivesRequest;
+use App\Http\Requests\Admin\StoreTestDriveFileRequest;
+use App\Http\Requests\Admin\StoreTestDriveNoteRequest;
+use App\Http\Requests\Admin\TestDriveIndexRequest;
+use App\Http\Requests\Admin\UpdateTestDriveAppointmentRequest;
+use App\Http\Requests\Admin\UpdateTestDriveStatusRequest;
+use App\Models\TestDriveFile;
 use App\Models\Ticket;
+use App\Services\TestDriveNotificationService;
+use App\Services\TestDriveService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TestDriveController extends Controller
 {
-    private const STATUSES = ['pending', 'approved', 'rejected', 'completed'];
+    public function __construct(
+        private readonly TestDriveService $testDriveService,
+        private readonly TestDriveNotificationService $notificationService
+    ) {
+    }
 
-    public function index(Request $request): View
+    public function index(TestDriveIndexRequest $request): View
     {
-        $status = $request->query('status');
-        if ($status !== null && !in_array($status, self::STATUSES, true)) {
-            $status = null;
-        }
-
-        $bookings = Ticket::query()
-            ->where('ticket_type', 'test_drive')
-            ->when($status, fn ($q) => $q->where('status', $status))
-            ->with(['user', 'car.brand'])
-            ->orderByRaw("FIELD(status, 'pending', 'approved', 'rejected', 'completed')")
-            ->orderByDesc('created_at')
+        $filters = $request->filters();
+        $bookings = $this->testDriveService
+            ->query($filters)
             ->paginate(20)
             ->withQueryString();
 
-        return view('admin.test_drives.index', compact('bookings', 'status'));
+        return view('admin.test_drives.index', [
+            'bookings' => $bookings,
+            'filters' => $filters,
+            'salesPeople' => $this->testDriveService->salesPeopleOptions(),
+            'stats' => $this->testDriveService->stats($filters),
+            'statusOptions' => Ticket::testDriveStatusOptions(),
+        ]);
     }
 
     public function show(int $id): View
     {
-        $booking = Ticket::query()
-            ->where('ticket_type', 'test_drive')
-            ->with(['user', 'car.brand'])
-            ->findOrFail($id);
+        $booking = $this->testDriveService->findForShow($id);
 
-        return view('admin.test_drives.show', compact('booking'));
-    }
-
-    public function updateStatus(Request $request, int $id): RedirectResponse
-    {
-        $data = $request->validate([
-            'status' => 'required|string|in:' . implode(',', self::STATUSES),
+        return view('admin.test_drives.show', [
+            'booking' => $booking,
+            'nextStatusOptions' => $booking->nextTestDriveStatusOptions(),
+            'salesPeople' => $this->testDriveService->salesPeopleOptions(),
+            'statusOptions' => Ticket::testDriveStatusOptions(),
         ]);
-
-        $booking = Ticket::query()
-            ->where('ticket_type', 'test_drive')
-            ->findOrFail($id);
-
-        if ($booking->status === 'completed') {
-            return back()->withErrors(['status' => 'Lịch lái thử đã hoàn tất, không thể cập nhật.']);
-        }
-
-        $next = $data['status'];
-        if (!$this->isValidTransition((string) $booking->status, $next)) {
-            return back()->withErrors(['status' => 'Chuyển trạng thái không hợp lệ.']);
-        }
-
-        $booking->update(['status' => $next]);
-
-        return back()->with('success', 'Đã cập nhật trạng thái lịch lái thử.');
     }
 
-    private function isValidTransition(string $from, string $to): bool
+    public function updateStatus(UpdateTestDriveStatusRequest $request, int $id): RedirectResponse
     {
-        if ($from === $to) {
-            return true;
+        $booking = $this->testDriveService->findForShow($id);
+        [$updatedBooking, $changed, $shouldNotify] = $this->testDriveService->updateStatus(
+            $booking,
+            $request->validated(),
+            $request->user()
+        );
+
+        $redirect = back()->with(
+            'success',
+            $changed ? 'Đã cập nhật trạng thái lịch lái thử.' : 'Trạng thái lịch lái thử không thay đổi.'
+        );
+
+        if ($shouldNotify && !$this->notificationService->notifyStatusChanged($updatedBooking)) {
+            $redirect->with('warning', 'Trạng thái đã lưu, nhưng email thông báo chưa gửi được. Vui lòng kiểm tra cấu hình mail.');
         }
 
-        $allowed = [
-            'pending' => ['approved', 'rejected'],
-            'approved' => ['completed', 'rejected'],
-            'rejected' => [],
-            'completed' => [],
-        ];
+        return $redirect;
+    }
 
-        // Nếu dữ liệu cũ không theo chuẩn, cho phép admin đưa về pending
-        if (!array_key_exists($from, $allowed)) {
-            return $to === 'pending';
-        }
+    public function updateAppointment(UpdateTestDriveAppointmentRequest $request, int $id): RedirectResponse
+    {
+        $booking = $this->testDriveService->findForShow($id);
+        $this->testDriveService->updateAppointment($booking, $request->validated(), $request->user());
 
-        return in_array($to, $allowed[$from], true);
+        return back()->with('success', 'Đã cập nhật thông tin lịch hẹn.');
+    }
+
+    public function storeNote(StoreTestDriveNoteRequest $request, int $id): RedirectResponse
+    {
+        $booking = $this->testDriveService->findForShow($id);
+        $this->testDriveService->storeNote($booking, $request->validated('note'), $request->user());
+
+        return back()->with('success', 'Đã thêm ghi chú nội bộ.');
+    }
+
+    public function storeFiles(StoreTestDriveFileRequest $request, int $id): RedirectResponse
+    {
+        $booking = $this->testDriveService->findForShow($id);
+        $this->testDriveService->storeFiles($booking, $request->file('documents', []), $request->user());
+
+        return back()->with('success', 'Đã upload tài liệu lái thử.');
+    }
+
+    public function viewFile(int $id, TestDriveFile $file): StreamedResponse
+    {
+        $booking = $this->testDriveService->findForShow($id);
+        $this->ensureFileBelongsToBooking($booking, $file);
+
+        return Storage::disk('public')->response($file->file_path, $file->file_name);
+    }
+
+    public function downloadFile(int $id, TestDriveFile $file): StreamedResponse
+    {
+        $booking = $this->testDriveService->findForShow($id);
+        $this->ensureFileBelongsToBooking($booking, $file);
+
+        return Storage::disk('public')->download($file->file_path, $file->file_name);
+    }
+
+    public function destroyFile(int $id, TestDriveFile $file): RedirectResponse
+    {
+        $booking = $this->testDriveService->findForShow($id);
+        $this->ensureFileBelongsToBooking($booking, $file);
+        $this->testDriveService->deleteFile($booking, $file, request()->user());
+
+        return back()->with('success', 'Đã xóa tài liệu lái thử.');
+    }
+
+    public function export(ExportTestDrivesRequest $request)
+    {
+        $filename = 'test_drives_' . now()->format('Ymd_His') . '.xlsx';
+
+        return Excel::download(
+            new TestDrivesExport($this->testDriveService->query($request->filters())),
+            $filename
+        );
+    }
+
+    private function ensureFileBelongsToBooking(Ticket $booking, TestDriveFile $file): void
+    {
+        abort_unless((int) $file->ticket_id === (int) $booking->ticket_id, 404);
     }
 }
-

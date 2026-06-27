@@ -30,10 +30,18 @@ class AuthController extends Controller
             $request->session()->regenerate();
 
             $user = Auth::user();
+            if (!$user->status) {
+                Auth::logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return back()->with('error', 'Tài khoản của bạn đang bị khóa.');
+            }
+
             $request->session()->flash('show_save_login_prompt', true);
 
-            // Kiểm tra: Nếu là admin hoặc staff thì cho vào Dashboard
-            if (in_array($user->role, ['admin', 'staff'])) {
+            // Người dùng quản trị được chuyển vào Dashboard theo permission.
+            if ($user->canAccessAdmin()) {
                 return redirect()->route('admin.dashboard');
             }
 

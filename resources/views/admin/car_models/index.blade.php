@@ -2,6 +2,13 @@
 
 @section('title', 'Quản lý model xe')
 
+@push('styles')
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite('resources/css/admin-car-models-index.css')
+    @endif
+@endpush
+
+
 @section('content')
     @include('admin.car_models._style')
 
@@ -74,12 +81,12 @@
         <div class="model-card">
             @if ($carModels->isEmpty())
                 <div class="empty-state">
-                    <svg style="width:52px;height:52px;margin-bottom:12px;opacity:.35;" fill="none" viewBox="0 0 24 24"
+                    <svg class="admin-car-models-index-inline-8" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                             d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h7.5m0 0a1.5 1.5 0 003 0m-3 0a1.5 1.5 0 013 0m-3 0H6.75m13.5-7.5H3.75m16.5 0-2.25-4.5a2.25 2.25 0 00-2.012-1.244H8.012A2.25 2.25 0 006 6.75l-2.25 4.5" />
                     </svg>
-                    <div style="font-weight:800;color:var(--text);margin-bottom:6px;">Chưa có model xe</div>
+                    <div class="admin-car-models-index-inline-7">Chưa có model xe</div>
                     <div>Hãy thêm model đầu tiên để sử dụng khi tạo xe trong kho.</div>
                 </div>
             @else
@@ -91,8 +98,8 @@
                                 <th>Thông số chính</th>
                                 <th>Số chỗ</th>
                                 <th>Xuất xứ</th>
-                                <th style="text-align:center;">Xe đang dùng</th>
-                                <th style="text-align:right;width:190px;">Hành động</th>
+                                <th class="admin-car-models-index-inline-2">Xe đang dùng</th>
+                                <th class="admin-car-models-index-inline-6">Hành động</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -123,19 +130,19 @@
                                             @endif
 
                                             @if (!$model->engine && !$model->fuel_type && !$model->transmission && !$model->body_type && !$model->drive_type)
-                                                <span style="color:var(--muted);">Chưa cập nhật</span>
+                                                <span class="admin-car-models-index-inline-3">Chưa cập nhật</span>
                                             @endif
                                         </div>
                                     </td>
-                                    <td style="color:var(--text);font-weight:700;">
+                                    <td class="admin-car-models-index-inline-5">
                                         {{ $model->seats ? $model->seats . ' chỗ' : '-' }}
                                         @if ($model->doors)
-                                            <span style="color:var(--muted);font-weight:500;">/ {{ $model->doors }}
+                                            <span class="admin-car-models-index-inline-4">/ {{ $model->doors }}
                                                 cửa</span>
                                         @endif
                                     </td>
-                                    <td style="color:var(--muted);">{{ $model->origin ?? '-' }}</td>
-                                    <td style="text-align:center;">
+                                    <td class="admin-car-models-index-inline-3">{{ $model->origin ?? '-' }}</td>
+                                    <td class="admin-car-models-index-inline-2">
                                         <span class="count-badge">{{ $model->cars_count }}</span>
                                     </td>
                                     <td>
@@ -170,8 +177,8 @@
                                                     </svg>
                                                 </button>
                                             @else
-                                                <form action="{{ route('admin.car-models.destroy', $model->id) }}"
-                                                    method="POST" style="margin:0;"
+                                                <form class="admin-car-models-index-inline-1" action="{{ route('admin.car-models.destroy', $model->id) }}"
+                                                    method="POST"
                                                     onsubmit="return confirm('Bạn có chắc chắn muốn xóa model này không?');">
                                                     @csrf
                                                     @method('DELETE')

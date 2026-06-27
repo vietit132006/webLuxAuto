@@ -1,89 +1,127 @@
 @extends('layouts.admin')
-@section('title', 'Quản lý Người dùng')
+
+@section('title', 'Quản lý người dùng')
+
+@push('styles')
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite('resources/css/admin-users-index.css')
+    @endif
+@endpush
 
 @section('content')
-<div class="wrap">
-    <div class="header-actions" style="display: flex; justify-content: space-between; margin-bottom: 1.5rem;">
-        <h1 class="page-title" style="margin: 0; font-size: 1.5rem;">Quản lý Người dùng</h1>
-        <a href="{{ route('admin.users.create') }}" style="background: var(--accent); color: #000; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold;">+ Thêm thành viên</a>
+<div class="admin-users-page">
+    <div class="admin-users-header">
+        <div>
+            <h1>Quản lý người dùng</h1>
+            <p>Hệ thống / Người dùng</p>
+        </div>
+
+        @can('users.create')
+            <a class="admin-users-primary" href="{{ route('admin.users.create') }}">Thêm người dùng</a>
+        @endcan
     </div>
 
     @if(session('success'))
-        <div id="success-alert" style="background-color: #d1fae5; color: #065f46; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #34d399; font-weight: 600; transition: opacity 0.5s ease;">
-            ✅ {{ session('success') }}
-        </div>
-        <script>setTimeout(() => { document.getElementById('success-alert').style.opacity = '0'; setTimeout(() => document.getElementById('success-alert').remove(), 500); }, 2000);</script>
+        <div class="admin-users-alert is-success" id="success-alert">{{ session('success') }}</div>
+        <script>
+            setTimeout(() => {
+                const alert = document.getElementById('success-alert');
+                if (!alert) return;
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 500);
+            }, 2200);
+        </script>
     @endif
 
     @if(session('error'))
-        <div style="background-color: #fee2e2; color: #991b1b; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #f87171; font-weight: 600;">
-            ❌ {{ session('error') }}
-        </div>
+        <div class="admin-users-alert is-error">{{ session('error') }}</div>
     @endif
 
-    <form method="get" action="{{ route('admin.users.index') }}" style="margin-bottom: 1.5rem; display: flex; gap: 10px;">
-        <input type="search" name="q" value="{{ $search ?? '' }}" placeholder="Tìm tên hoặc email..." style="padding: 0.6rem 1rem; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); flex: 1; max-width: 300px;">
-        <button type="submit" style="padding: 0.6rem 1.2rem; border-radius: 8px; background: var(--accent); color: #000; font-weight: bold; border: none; cursor: pointer;">Tìm kiếm</button>
+    <form class="admin-users-filter" method="get" action="{{ route('admin.users.index') }}">
+        <input type="search" name="q" value="{{ $search ?? '' }}" placeholder="Tìm tên, email hoặc SĐT...">
+        <button type="submit">Tìm kiếm</button>
     </form>
 
-    <div class="table-responsive" style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;">
-        <table class="admin-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+    <div class="admin-users-table-wrap">
+        <table class="admin-users-table">
             <thead>
-                <tr style="background: rgba(255,255,255,0.05); color: var(--muted); text-transform: uppercase; font-size: 0.8rem;">
-                    <th style="padding: 1rem;">ID</th>
-                    <th style="padding: 1rem;">Họ Tên</th>
-                    <th style="padding: 1rem;">Email / SĐT</th>
-                    <th style="padding: 1rem;">Vai trò</th>
-                    <th style="padding: 1rem;">Trạng thái</th>
-                    <th style="padding: 1rem; text-align: right;">Hành động</th>
+                <tr>
+                    <th>ID</th>
+                    <th>Họ tên</th>
+                    <th>Email / SĐT</th>
+                    <th>Vai trò</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach ($users as $user)
-                <tr style="border-top: 1px solid var(--border);">
-                    <td style="padding: 1rem;">#{{ $user->user_id }}</td>
-                    <td style="padding: 1rem; font-weight: bold; color: var(--text);">{{ $user->name }}</td>
-                    <td style="padding: 1rem; color: var(--muted); font-size: 0.9rem;">
-                        {{ $user->email }}<br>
-                        {{ $user->phone ?? '---' }}
-                    </td>
-                    <td style="padding: 1rem;">
-                        @if($user->role == 'admin')
-                            <span style="background: rgba(239, 68, 68, 0.2); color: #f87171; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">Admin</span>
-                        @elseif($user->role == 'staff')
-                            <span style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">Nhân viên</span>
-                        @else
-                            <span style="background: rgba(156, 163, 175, 0.2); color: #9ca3af; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">Khách</span>
-                        @endif
-                    </td>
-                    <td style="padding: 1rem;">
-                        <span style="color: {{ $user->status ? '#34d399' : '#f87171' }}; font-weight: bold;">
-                            {{ $user->status ? 'Hoạt động' : 'Đã khóa' }}
-                        </span>
-                    </td>
-                    <td style="padding: 1rem; text-align: right;">
-                        <a href="{{ route('admin.users.edit', $user->user_id) }}" style="color: #facc15; margin-right: 10px;">Sửa</a>
-                        @if(auth()->id() != $user->user_id && $user->status && (auth()->user()->role === 'admin' || $user->role === 'customer'))
-                        <form action="{{ route('account-switch.switch') }}" method="POST" style="display: inline-block; margin-right: 10px;">
-                            @csrf
-                            <input type="hidden" name="user_id" value="{{ $user->user_id }}">
-                            <button type="submit" style="background: none; border: none; color: #34d399; cursor: pointer; padding: 0;">Chuyển</button>
-                        </form>
-                        @endif
-                        @if(auth()->id() != $user->user_id)
-                        <form action="{{ route('admin.users.destroy', $user->user_id) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('Khóa tài khoản này?');">
-                            @csrf @method('DELETE')
-                            <button type="submit" style="background: none; border: none; color: #f87171; cursor: pointer; padding: 0;">Xóa</button>
-                        </form>
-                        @endif
-                    </td>
-                </tr>
-                @endforeach
+                @forelse ($users as $user)
+                    @php
+                        $roleName = $user->adminRoleLabel();
+                        $isSuperAdmin = $user->hasRole('Super Admin');
+                    @endphp
+                    <tr>
+                        <td>#{{ $user->user_id }}</td>
+                        <td>
+                            <strong>{{ $user->name }}</strong>
+                            @if($isSuperAdmin)
+                                <span class="admin-users-badge is-gold">Super Admin</span>
+                            @endif
+                        </td>
+                        <td class="admin-users-muted">
+                            {{ $user->email }}<br>
+                            {{ $user->phone ?? '---' }}
+                        </td>
+                        <td>
+                            <span class="admin-users-badge">{{ $roleName }}</span>
+                        </td>
+                        <td>
+                            <span class="admin-users-status {{ $user->status ? 'is-active' : 'is-locked' }}">
+                                {{ $user->status ? 'Hoạt động' : 'Đã khóa' }}
+                            </span>
+                        </td>
+                        <td class="admin-users-actions">
+                            @can('users.edit')
+                                <a href="{{ route('admin.users.edit', $user->user_id) }}">Sửa</a>
+
+                                @if(auth()->id() != $user->user_id)
+                                    <form action="{{ route('admin.users.toggle-status', $user->user_id) }}" method="POST">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit">{{ $user->status ? 'Khóa' : 'Mở khóa' }}</button>
+                                    </form>
+                                @endif
+                            @endcan
+
+                            @if(auth()->id() != $user->user_id && $user->status && auth()->user()?->can('users.edit'))
+                                <form action="{{ route('account-switch.switch') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="user_id" value="{{ $user->user_id }}">
+                                    <button class="is-success" type="submit">Chuyển</button>
+                                </form>
+                            @endif
+
+                            @can('users.delete')
+                                @if(auth()->id() != $user->user_id)
+                                    <form action="{{ route('admin.users.destroy', $user->user_id) }}" method="POST" onsubmit="return confirm('Xóa người dùng này?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="is-danger" type="submit">Xóa</button>
+                                    </form>
+                                @endif
+                            @endcan
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" class="admin-users-empty">Chưa có người dùng.</td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
     </div>
 
-    <div style="margin-top: 1.5rem;">
+    <div class="admin-users-pagination">
         {{ $users->links() }}
     </div>
 </div>

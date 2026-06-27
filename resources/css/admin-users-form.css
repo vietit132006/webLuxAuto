@@ -1,0 +1,132 @@
+.admin-user-form-page {
+    display: grid;
+    gap: 1.25rem;
+    max-width: 900px;
+}
+
+.admin-user-form-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.admin-user-form-header h1 {
+    margin: 0;
+    color: var(--text);
+    font-size: 1.5rem;
+}
+
+.admin-user-form-header p {
+    margin: 0.25rem 0 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.admin-user-form {
+    display: grid;
+    gap: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    padding: 1.25rem;
+}
+
+.admin-user-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.admin-user-field label {
+    display: block;
+    margin-bottom: 0.45rem;
+    color: var(--text);
+    font-weight: 700;
+}
+
+.admin-user-field input,
+.admin-user-field select {
+    width: 100%;
+    min-height: 42px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #0c0f14;
+    color: var(--text);
+    padding: 0 0.8rem;
+}
+
+.admin-user-field input:focus,
+.admin-user-field select:focus {
+    border-color: rgba(201, 169, 98, 0.7);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(201, 169, 98, 0.12);
+}
+
+.admin-user-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.admin-user-primary,
+.admin-user-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    border-radius: 6px;
+    padding: 0 1rem;
+    border: 1px solid transparent;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.admin-user-primary {
+    background: var(--accent);
+    color: #0c0f14;
+}
+
+.admin-user-primary:hover,
+.admin-user-primary:focus-visible {
+    background: #d9bd78;
+    color: #0c0f14;
+    outline: none;
+}
+
+.admin-user-secondary {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+.admin-user-secondary:hover,
+.admin-user-secondary:focus-visible {
+    border-color: rgba(201, 169, 98, 0.55);
+    color: var(--accent);
+    outline: none;
+}
+
+.admin-user-alert {
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    font-weight: 700;
+}
+
+.admin-user-alert.is-error {
+    border: 1px solid rgba(248, 113, 113, 0.5);
+    background: rgba(248, 113, 113, 0.12);
+    color: #fecaca;
+}
+
+@media (max-width: 720px) {
+    .admin-user-form-header,
+    .admin-user-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .admin-user-grid {
+        grid-template-columns: 1fr;
+    }
+}

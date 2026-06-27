@@ -1,128 +1,31 @@
 @extends('layouts.admin')
-@section('title', 'Quản lý Đơn hàng')
+@section('title', 'Quản lý đơn hàng')
+
+@push('styles')
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite('resources/css/admin-orders-index.css')
+    @endif
+@endpush
 
 @section('content')
-<style>
-    .page-title {
-        margin: 0 0 1.5rem;
-        font-size: 1.75rem;
-        font-weight: 700;
-        color: var(--text);
-    }
-
-    /* --- CSS CHO BẢNG ADMIN --- */
-    .table-responsive {
-        overflow-x: auto;
-        border-radius: 12px;
-        border: 1px solid var(--border);
-        background: var(--surface);
-    }
-    .admin-table {
-        width: 100%;
-        border-collapse: collapse;
-        text-align: left;
-    }
-    .admin-table th, .admin-table td {
-        padding: 1rem;
-        border-bottom: 1px solid var(--border);
-        vertical-align: middle;
-    }
-    .admin-table th {
-        background: rgba(255, 255, 255, 0.02);
-        color: var(--muted);
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-    .admin-table tr:hover {
-        background: rgba(255, 255, 255, 0.02);
-    }
-
-    /* --- HUY HIỆU TRẠNG THÁI (BADGES) --- */
-    .badge {
-        padding: 0.35rem 0.75rem;
-        border-radius: 50px;
-        font-size: 0.8rem;
-        font-weight: bold;
-        display: inline-block;
-    }
-    .badge-0 { background: rgba(234, 179, 8, 0.1); color: #facc15; } /* Chờ thanh toán - Vàng */
-    .badge-1 { background: rgba(59, 130, 246, 0.1); color: #60a5fa; } /* Đã cọc - Xanh dương */
-    .badge-2 { background: rgba(16, 185, 129, 0.1); color: #34d399; } /* Hoàn tất - Xanh lá */
-    .badge-3 { background: rgba(239, 68, 68, 0.1); color: #f87171; }  /* Đã hủy - Đỏ */
-
-    /* Form cập nhật trạng thái */
-    .status-form {
-        display: flex;
-        gap: 5px;
-    }
-    .status-select {
-        background: #0a0d12;
-        color: var(--text);
-        border: 1px solid var(--border);
-        padding: 0.4rem;
-        border-radius: 6px;
-        font-size: 0.85rem;
-    }
-    .btn-update {
-        background: var(--accent);
-        color: #000;
-        border: none;
-        padding: 0.4rem 0.8rem;
-        border-radius: 6px;
-        font-weight: bold;
-        cursor: pointer;
-        font-size: 0.85rem;
-    }
-    .btn-update:hover { background: #e4d08a; }
-</style>
+@php
+    $filters = $filters ?? [];
+@endphp
 
 <div class="wrap">
-    <h1 class="page-title">Quản lý Giao dịch & Đơn hàng</h1>
-
-    {{-- @if(session('success'))
-        <div style="background: #d1fae5; color: #065f46; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-weight: bold;">
-            ✅ {{ session('success') }}
+    <div class="orders-header">
+        <h1 class="page-title">Quản lý đơn hàng</h1>
+        <div class="orders-actions">
+            @can('orders.create')
+                <a href="{{ route('admin.orders.create') }}" class="btn-action btn-primary">Tạo đơn</a>
+            @endcan
+            <a href="{{ route('admin.orders.export', request()->query()) }}" class="btn-action btn-secondary">Export Excel</a>
         </div>
-    @endif --}}
-    @if(session('success'))
-        <style>
-            .flash-alert {
-                background-color: #d1fae5;
-                color: #065f46;
-                padding: 1rem 1.5rem;
-                border-radius: 8px;
-                margin-bottom: 1.5rem;
-                border: 1px solid #34d399;
-                font-weight: 600;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                transition: opacity 0.5s ease, transform 0.5s ease;
-            }
-            .flash-alert.hide {
-                opacity: 0;
-                transform: translateY(-10px);
-                pointer-events: none;
-            }
-            .btn-close-alert {
-                background: none;
-                border: none;
-                color: #065f46;
-                font-size: 1.5rem;
-                line-height: 1;
-                cursor: pointer;
-                padding: 0 0 0 1rem;
-                transition: transform 0.2s;
-            }
-            .btn-close-alert:hover {
-                transform: scale(1.2);
-                color: #047857;
-            }
-        </style>
+    </div>
 
+    @if(session('success'))
         <div id="success-alert" class="flash-alert">
-            <span>✅ {{ session('success') }}</span>
+            <span>{{ session('success') }}</span>
             <button type="button" class="btn-close-alert" onclick="closeAlert()" aria-label="Đóng">&times;</button>
         </div>
 
@@ -130,91 +33,192 @@
             function closeAlert() {
                 const alertBox = document.getElementById('success-alert');
                 if (alertBox) {
-                    alertBox.classList.add('hide'); // Thêm class ẩn để chạy hiệu ứng mờ dần
-                    setTimeout(() => {
-                        alertBox.remove(); // Xóa hẳn thẻ HTML khỏi trang sau khi mờ xong
-                    }, 500);
+                    alertBox.classList.add('hide');
+                    setTimeout(() => alertBox.remove(), 500);
                 }
             }
 
-            // Tự động gọi hàm đóng sau 2 giây (2000 ms)
-            setTimeout(() => {
-                closeAlert();
-            }, 2000);
+            setTimeout(() => closeAlert(), 2500);
         </script>
-    @endif  
+    @endif
+
+    @if($errors->any())
+        <div class="error-alert">
+            <div>
+                @foreach($errors->all() as $error)
+                    <div>{{ $error }}</div>
+                @endforeach
+            </div>
+            <button type="button" class="btn-close-alert is-error" onclick="this.parentElement.remove()" aria-label="Đóng">&times;</button>
+        </div>
+    @endif
+
+    <div class="order-stats-grid">
+        <div class="order-stat-card">
+            <span>Tổng đơn hàng</span>
+            <strong>{{ number_format($orderStats['total_orders'] ?? 0) }}</strong>
+        </div>
+        <div class="order-stat-card order-stat-card-wide">
+            <span>Tổng giá trị đơn</span>
+            <strong>{{ number_format((float) ($orderStats['total_value'] ?? 0), 0, ',', '.') }} đ</strong>
+        </div>
+        <div class="order-stat-card">
+            <span>Đơn chờ xử lý</span>
+            <strong>{{ number_format($orderStats['pending'] ?? 0) }}</strong>
+        </div>
+        <div class="order-stat-card">
+            <span>Đơn đã cọc</span>
+            <strong>{{ number_format($orderStats['deposited'] ?? 0) }}</strong>
+        </div>
+        <div class="order-stat-card">
+            <span>Đơn hoàn tất</span>
+            <strong>{{ number_format($orderStats['completed'] ?? 0) }}</strong>
+        </div>
+        <div class="order-stat-card">
+            <span>Đơn hủy</span>
+            <strong>{{ number_format($orderStats['cancelled'] ?? 0) }}</strong>
+        </div>
+    </div>
+
+    <form method="GET" action="{{ route('admin.orders.index') }}" class="filter-panel">
+        <div class="filter-grid">
+            <div class="filter-field filter-field-search">
+                <label for="order-q">Tìm kiếm</label>
+                <input id="order-q" type="search" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Mã đơn, khách hàng, email, SĐT, tên xe">
+            </div>
+
+            <div class="filter-field">
+                <label for="order-status">Trạng thái</label>
+                <select id="order-status" name="status">
+                    <option value="">Tất cả</option>
+                    @foreach($statusOptions as $value => $label)
+                        <option value="{{ $value }}" @selected((string)($filters['status'] ?? '') === (string)$value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="filter-field">
+                <label for="deposit-filter">Tiền cọc</label>
+                <select id="deposit-filter" name="deposit_filter">
+                    <option value="">Tất cả</option>
+                    @foreach($depositFilterOptions as $value => $label)
+                        <option value="{{ $value }}" @selected((string)($filters['deposit_filter'] ?? '') === (string)$value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="filter-field">
+                <label for="date-from">Từ ngày</label>
+                <input id="date-from" type="date" name="date_from" value="{{ $filters['date_from'] ?? '' }}">
+            </div>
+
+            <div class="filter-field">
+                <label for="date-to">Đến ngày</label>
+                <input id="date-to" type="date" name="date_to" value="{{ $filters['date_to'] ?? '' }}">
+            </div>
+
+            <div class="filter-field">
+                <label for="price-from">Giá từ</label>
+                <input id="price-from" type="number" name="price_from" min="0" step="1000000" value="{{ $filters['price_from'] ?? '' }}" placeholder="0">
+            </div>
+
+            <div class="filter-field">
+                <label for="price-to">Giá đến</label>
+                <input id="price-to" type="number" name="price_to" min="0" step="1000000" value="{{ $filters['price_to'] ?? '' }}" placeholder="5000000000">
+            </div>
+
+            <div class="filter-field">
+                <label for="order-sort">Sắp xếp</label>
+                <select id="order-sort" name="sort">
+                    @foreach($sortOptions as $value => $label)
+                        <option value="{{ $value }}" @selected((string)($filters['sort'] ?? 'latest') === (string)$value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+
+        <div class="filter-actions">
+            <button type="submit" class="btn-filter">Lọc</button>
+            <a href="{{ route('admin.orders.index') }}" class="btn-reset">Xóa lọc</a>
+        </div>
+    </form>
 
     <div class="table-responsive">
         <table class="admin-table">
             <thead>
                 <tr>
-                    <th>Mã Đơn</th>
+                    <th>Mã đơn</th>
                     <th>Khách hàng</th>
                     <th>Xe đặt mua</th>
-                    <th>Giá trị xe</th>
+                    <th>Tổng tiền</th>
+                    <th>Tiền cọc</th>
                     <th>Trạng thái</th>
-                    <th>Ngày đặt</th>
-                    <th width="200">Cập nhật trạng thái</th>
+                    <th>Ngày tạo</th>
+                    <th>Thao tác</th>
+                    <th>Cập nhật</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse ($orders as $order)
-                <tr>
-                    <td style="font-weight: bold; color: var(--accent);">#{{ $order->order_id }}</td>
+                    <tr>
+                        <td class="order-code">{{ $order->display_code }}</td>
 
-                    <td>
-                        <div style="font-weight: bold; color: var(--text);">{{ $order->user->name ?? 'Khách ẩn danh' }}</div>
-                        <div style="font-size: 0.85rem; color: var(--muted);">{{ $order->user->email ?? '' }}</div>
-                    </td>
+                        <td>
+                            <div class="customer-name">{{ $order->user->name ?? 'Khách ẩn danh' }}</div>
+                            <div class="customer-email">{{ $order->user->email ?? '' }}</div>
+                        </td>
 
-                    <td>
-                        @foreach($order->details as $detail)
-                            <div style="font-weight: 600;">{{ $detail->car->name ?? 'Xe đã bị xóa' }}</div>
-                        @endforeach
-                    </td>
+                        <td>
+                            @forelse($order->details as $detail)
+                                <div class="car-line">
+                                    <span>{{ $detail->car->name ?? 'Xe đã bị xóa' }}</span>
+                                    <small>x{{ $detail->quantity }}</small>
+                                </div>
+                            @empty
+                                <span class="muted">Không có xe</span>
+                            @endforelse
+                        </td>
 
-                    <td style="color: #34d399; font-weight: bold;">
-                        {{ number_format($order->total_price, 0, ',', '.') }} đ
-                    </td>
+                        <td class="money-cell">{{ number_format((float) $order->total_price, 0, ',', '.') }} đ</td>
+                        <td>{{ number_format((float) ($order->deposit_amount ?? 0), 0, ',', '.') }} đ</td>
 
-                    <td>
-                        @if($order->status == 0) <span class="badge badge-0">⏳ Chờ xử lý</span>
-                        @elseif($order->status == 1) <span class="badge badge-1">💸 Đã cọc</span>
-                        @elseif($order->status == 2) <span class="badge badge-2">✅ Giao xe (Hoàn tất)</span>
-                        @elseif($order->status == 3) <span class="badge badge-3">❌ Đã hủy</span>
-                        @endif
-                    </td>
+                        <td>
+                            <span class="badge {{ $order->status_badge_class }}">{{ $order->status_label }}</span>
+                        </td>
 
-                    <td style="font-size: 0.9rem; color: var(--muted);">
-                        {{ $order->created_at ? $order->created_at->format('H:i - d/m/Y') : 'N/A' }}
-                    </td>
+                        <td class="date-cell">{{ $order->created_at ? $order->created_at->format('H:i - d/m/Y') : 'N/A' }}</td>
 
-                    <td>
-                        <form action="{{ route('admin.orders.updateStatus', $order->order_id) }}" method="POST" class="status-form">
-                            @csrf
-                            <select name="status" class="status-select">
-                                <option value="0" {{ $order->status == 0 ? 'selected' : '' }}>Chờ xử lý</option>
-                                <option value="1" {{ $order->status == 1 ? 'selected' : '' }}>Đã cọc</option>
-                                <option value="2" {{ $order->status == 2 ? 'selected' : '' }}>Hoàn tất</option>
-                                <option value="3" {{ $order->status == 3 ? 'selected' : '' }}>Hủy đơn</option>
-                            </select>
-                            <button type="submit" class="btn-update">Lưu</button>
-                        </form>
-                    </td>
-                </tr>
+                        <td>
+                            <a href="{{ route('admin.orders.show', $order->order_id) }}" class="btn-detail">Xem chi tiết</a>
+                        </td>
+
+                        <td>
+                            @can('orders.edit')
+                                <form action="{{ route('admin.orders.updateStatus', $order->order_id) }}" method="POST" class="status-form">
+                                    @csrf
+                                    <select name="status" class="status-select" aria-label="Trạng thái đơn hàng {{ $order->display_code }}">
+                                        @foreach($statusOptions as $value => $label)
+                                            <option value="{{ $value }}" @selected((string)$order->status === (string)$value)>{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                    <button type="submit" class="btn-update">Lưu</button>
+                                </form>
+                            @else
+                                <span class="muted">Không có quyền</span>
+                            @endcan
+                        </td>
+                    </tr>
                 @empty
-                <tr>
-                    <td colspan="7" style="text-align: center; padding: 3rem; color: var(--muted);">
-                        Chưa có đơn hàng nào trong hệ thống.
-                    </td>
-                </tr>
+                    <tr>
+                        <td class="empty-cell" colspan="9">Chưa có đơn hàng nào phù hợp.</td>
+                    </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
 
     @if ($orders->hasPages())
-        <div style="margin-top: 2rem; display: flex; justify-content: center;">
+        <div class="pagination-wrap">
             {{ $orders->links('pagination.lux') }}
         </div>
     @endif

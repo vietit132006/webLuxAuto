@@ -2,21 +2,14 @@
 
 @section('title', 'Báo cáo tồn kho')
 
+@push('styles')
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite('resources/css/admin-reports-inventory.css')
+    @endif
+@endpush
+
+
 @section('content')
-<style>
-    .rep-title { font-size: 1.5rem; font-weight: 700; margin: 0 0 1rem; }
-    .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-    .stat-box { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; }
-    .stat-box .lbl { color: var(--muted); font-size: 0.8rem; }
-    .stat-box .val { font-size: 1.35rem; font-weight: 800; color: var(--accent); }
-    .table-responsive { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); }
-    .admin-table { width: 100%; border-collapse: collapse; }
-    .admin-table th, .admin-table td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); text-align: left; }
-    .admin-table th { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; }
-    .low { color: #fbbf24; font-weight: 600; }
-    .out { color: #f87171; font-weight: 600; }
-    .ok { color: #4ade80; }
-</style>
 
 <div class="wrap">
     <h1 class="rep-title">Báo cáo tồn kho</h1>
@@ -49,9 +42,9 @@
             <tbody>
                 @foreach($cars as $car)
                     <tr>
-                        <td style="font-weight: 600;">{{ $car->name }}</td>
+                        <td class="admin-reports-inventory-inline-5">{{ $car->name }}</td>
                         <td>{{ $car->brand->name ?? '—' }}</td>
-                        <td style="color: var(--accent);">{{ number_format($car->price, 0, ',', '.') }} đ</td>
+                        <td class="admin-reports-inventory-inline-4">{{ number_format($car->price, 0, ',', '.') }} đ</td>
                         <td>
                             @if($car->stock <= 0)
                                 <span class="out">0</span>
@@ -67,11 +60,11 @@
         </table>
     </div>
     @if($cars->hasPages())
-        <div style="margin-top: 1.5rem; display: flex; justify-content: center;">{{ $cars->links('pagination.lux') }}</div>
+        <div class="admin-reports-inventory-inline-3">{{ $cars->links('pagination.lux') }}</div>
     @endif
 
-    <p style="margin-top: 1.5rem;">
-        <a href="{{ route('admin.reports.inventory_check') }}" style="color: var(--accent); font-weight: 600;">→ Đi tới kiểm tra &amp; ghi nhận tồn</a>
+    <p class="admin-reports-inventory-inline-2">
+        <a class="admin-reports-inventory-inline-1" href="{{ route('admin.reports.inventory_check') }}">→ Đi tới kiểm tra &amp; ghi nhận tồn</a>
     </p>
 </div>
 @endsection

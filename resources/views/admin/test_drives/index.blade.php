@@ -1,115 +1,195 @@
 @extends('layouts.admin')
-@section('title', 'Quản lý Đặt Lịch Lái Thử')
+
+@section('title', 'Quản lý lịch lái thử')
+
+@push('styles')
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite('resources/css/admin-test-drives-index.css')
+    @endif
+@endpush
+
+@php
+    $filters = $filters ?? [];
+    $stats = $stats ?? [];
+@endphp
 
 @section('content')
-<div class="wrap">
-    <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+<div class="test-drive-page">
+    <div class="test-drive-header">
         <div>
-            <h1 style="margin: 0; font-size: 1.8rem; color: var(--text); display: flex; align-items: center; gap: 10px;">
-                <svg style="width: 28px; height: 28px; color: var(--accent);" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                Quản lý lái thử
-            </h1>
-            <p style="color: var(--muted); margin-top: 0.5rem; margin-bottom: 0;">Theo dõi và xử lý các yêu cầu trải nghiệm xe từ khách hàng.</p>
+            <h1>Quản lý lịch lái thử</h1>
+            <p>Bán hàng / Lái thử</p>
         </div>
 
-        <form method="get" action="{{ route('admin.test_drives.index') }}" style="display: flex; align-items: center; gap: 10px; background: #0a0d12; padding: 6px; border-radius: 8px; border: 1px solid var(--border);">
-            <select name="status" style="background: transparent; border: none; color: var(--text); padding: 5px 10px; outline: none; cursor: pointer;">
-                <option value="" style="background: var(--bg);">Tất cả trạng thái</option>
-                @foreach(['pending' => 'Chờ xử lý', 'approved' => 'Đã duyệt', 'rejected' => 'Đã huỷ', 'completed' => 'Hoàn thành'] as $k => $v)
-                    <option value="{{ $k }}" style="background: var(--bg);" @selected(($status ?? '') === $k)>{{ $v }}</option>
-                @endforeach
-            </select>
-            <button type="submit" style="padding: 6px 16px; border-radius: 6px; background: var(--accent); color: #000; border: none; font-weight: bold; cursor: pointer; transition: 0.2s;">
-                Lọc
-            </button>
-        </form>
+        @can('test_drives.export')
+            <a class="btn-action btn-secondary" href="{{ route('admin.test_drives.export', request()->query()) }}">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+                </svg>
+                Export Excel
+            </a>
+        @endcan
     </div>
 
     @if(session('success'))
-        <div style="padding: 1rem; margin-bottom: 1.5rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; border-radius: 8px; font-weight: bold; display: flex; align-items: center; gap: 10px;">
-            <svg style="width: 20px; height: 20px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            {{ session('success') }}
-        </div>
+        <div class="flash-alert is-success">{{ session('success') }}</div>
     @endif
 
-    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-        <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
-                <thead style="background: rgba(0,0,0,0.2); color: var(--muted); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em;">
-                    <tr>
-                        <th style="padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border);">Mã vé</th>
-                        <th style="padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border);">Khách hàng</th>
-                        <th style="padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border);">Xe yêu cầu</th>
-                        <th style="padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border);">Ngày tạo</th>
-                        <th style="padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border);">Trạng thái</th>
-                        <th style="padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border); text-align: right;">Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($bookings as $b)
-                        <tr style="border-bottom: 1px solid var(--border); transition: 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
-                            <td style="padding: 1rem 1.5rem;">
-                                <span style="background: #0a0d12; color: var(--accent); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border); font-family: monospace; font-weight: bold;">
-                                    #{{ $b->ticket_id }}
-                                </span>
-                            </td>
-                            <td style="padding: 1rem 1.5rem;">
-                                <div style="font-weight: bold; color: var(--text);">{{ $b->user->name ?? '—' }}</div>
-                                <div style="font-size: 0.8rem; color: var(--muted); margin-top: 2px;">{{ $b->user->email ?? '' }}</div>
-                            </td>
-                            <td style="padding: 1rem 1.5rem;">
-                                <div style="font-weight: bold; color: var(--text);">{{ $b->car ? (($b->car->brand->name ?? '') . ' ' . $b->car->name) : '—' }}</div>
-                                <div style="font-size: 0.8rem; color: var(--muted); margin-top: 2px;">{{ Str::limit($b->subject, 30) }}</div>
-                            </td>
-                            <td style="padding: 1rem 1.5rem; color: var(--muted);">
-                                {{ $b->created_at?->format('d/m/Y H:i') }}
-                            </td>
-                            <td style="padding: 1rem 1.5rem;">
-                                @php
-                                    $badgeStyle = match($b->status) {
-                                        'pending' => 'background: rgba(234, 179, 8, 0.1); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.3);',
-                                        'approved' => 'background: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);',
-                                        'rejected' => 'background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3);',
-                                        'completed' => 'background: rgba(14, 165, 233, 0.1); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.3);',
-                                        default => 'background: rgba(100, 116, 139, 0.1); color: #94a3b8; border: 1px solid rgba(100, 116, 139, 0.3);',
-                                    };
-                                    $statusText = match($b->status) {
-                                        'pending' => 'Chờ xử lý',
-                                        'approved' => 'Đã duyệt',
-                                        'rejected' => 'Đã huỷ',
-                                        'completed' => 'Hoàn thành',
-                                        default => ucfirst($b->status),
-                                    };
-                                @endphp
-                                <span style="display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; {{ $badgeStyle }}">
-                                    {{ $statusText }}
-                                </span>
-                            </td>
-                            <td style="padding: 1rem 1.5rem; text-align: right;">
-                                <a href="{{ route('admin.test_drives.show', $b->ticket_id) }}" style="display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); color: var(--text); font-size: 0.8rem; transition: 0.2s; text-decoration: none;" onmouseover="this.style.borderColor='var(--accent)'; this.style.color='var(--accent)';" onmouseout="this.style.borderColor='var(--border)'; this.style.color='var(--text)';">
-                                    Chi tiết
-                                    <svg style="width: 14px; height: 14px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
-                                </a>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" style="padding: 4rem 1rem; text-align: center; color: var(--muted);">
-                                <svg style="width: 48px; height: 48px; opacity: 0.2; margin: 0 auto 10px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                <p style="font-size: 1rem; color: var(--text); margin: 0 0 5px;">Chưa có yêu cầu lái thử nào.</p>
-                                <p style="font-size: 0.85rem; margin: 0;">Khi khách hàng đặt lịch, danh sách sẽ hiển thị tại đây.</p>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+    @if(session('warning'))
+        <div class="flash-alert is-warning">{{ session('warning') }}</div>
+    @endif
+
+    @if($errors->any())
+        <div class="flash-alert is-error">{{ $errors->first() }}</div>
+    @endif
+
+    <div class="test-drive-stats">
+        <div class="stat-card">
+            <span>Tổng lịch lái</span>
+            <strong>{{ number_format($stats['total'] ?? 0) }}</strong>
+        </div>
+        <div class="stat-card">
+            <span>Đã duyệt</span>
+            <strong>{{ number_format($stats['approved'] ?? 0) }}</strong>
+        </div>
+        <div class="stat-card">
+            <span>Hoàn thành</span>
+            <strong>{{ number_format($stats['completed'] ?? 0) }}</strong>
+        </div>
+        <div class="stat-card">
+            <span>Đã hủy</span>
+            <strong>{{ number_format($stats['rejected'] ?? 0) }}</strong>
+        </div>
+        <div class="stat-card">
+            <span>Tỷ lệ hoàn thành</span>
+            <strong>{{ number_format($stats['completion_rate'] ?? 0, 1) }}%</strong>
+        </div>
+        <div class="stat-card">
+            <span>Chuyển đổi đơn hàng</span>
+            <strong>{{ number_format($stats['conversion_rate'] ?? 0, 1) }}%</strong>
         </div>
     </div>
 
+    <form class="filter-panel" method="get" action="{{ route('admin.test_drives.index') }}">
+        <div class="filter-grid">
+            <div class="filter-field is-wide">
+                <label for="test-drive-q">Tìm kiếm</label>
+                <input id="test-drive-q" name="q" type="search" value="{{ $filters['q'] ?? '' }}" placeholder="Tên khách, email, SĐT, xe, biển số, VIN, mã lịch">
+            </div>
+
+            <div class="filter-field">
+                <label for="test-drive-status">Trạng thái</label>
+                <select id="test-drive-status" name="status">
+                    <option value="">Tất cả</option>
+                    @foreach($statusOptions as $value => $label)
+                        <option value="{{ $value }}" @selected(($filters['status'] ?? '') === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="filter-field">
+                <label for="test-drive-sales-person">Nhân viên</label>
+                <select id="test-drive-sales-person" name="sales_person">
+                    <option value="">Tất cả</option>
+                    @foreach($salesPeople as $person)
+                        <option value="{{ $person }}" @selected(($filters['sales_person'] ?? '') === $person)>{{ $person }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="filter-field">
+                <label for="created-from">Tạo từ</label>
+                <input id="created-from" name="created_from" type="date" value="{{ $filters['created_from'] ?? '' }}">
+            </div>
+
+            <div class="filter-field">
+                <label for="created-to">Tạo đến</label>
+                <input id="created-to" name="created_to" type="date" value="{{ $filters['created_to'] ?? '' }}">
+            </div>
+
+            <div class="filter-field">
+                <label for="appointment-from">Hẹn từ</label>
+                <input id="appointment-from" name="appointment_from" type="date" value="{{ $filters['appointment_from'] ?? '' }}">
+            </div>
+
+            <div class="filter-field">
+                <label for="appointment-to">Hẹn đến</label>
+                <input id="appointment-to" name="appointment_to" type="date" value="{{ $filters['appointment_to'] ?? '' }}">
+            </div>
+        </div>
+
+        <div class="filter-actions">
+            <button class="btn-action btn-primary" type="submit">Lọc</button>
+            <a class="btn-action btn-secondary" href="{{ route('admin.test_drives.index') }}">Xóa lọc</a>
+        </div>
+    </form>
+
+    <div class="table-wrap">
+        <table class="test-drive-table">
+            <thead>
+                <tr>
+                    <th>Mã lịch</th>
+                    <th>Khách hàng</th>
+                    <th>Xe</th>
+                    <th>Lịch hẹn</th>
+                    <th>Phụ trách</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày tạo</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($bookings as $booking)
+                    @php
+                        $carName = $booking->car ? trim(($booking->car->brand->name ?? '') . ' ' . $booking->car->name) : null;
+                        $appointment = $booking->appointment_date
+                            ? $booking->appointment_date->format('d/m/Y') . ($booking->appointment_time ? ' ' . substr((string) $booking->appointment_time, 0, 5) : '')
+                            : null;
+                    @endphp
+                    <tr>
+                        <td>
+                            <span class="code-pill">{{ $booking->display_code }}</span>
+                        </td>
+                        <td>
+                            <div class="main-text">{{ $booking->user->name ?? 'Khách vãng lai' }}</div>
+                            <div class="sub-text">{{ $booking->user->email ?? '' }}</div>
+                            <div class="sub-text">{{ $booking->user->phone ?? '' }}</div>
+                        </td>
+                        <td>
+                            <div class="main-text">{{ $carName ?: 'Chưa xác định' }}</div>
+                            <div class="sub-text">
+                                {{ $booking->car?->license_plate ?: 'Chưa có biển số' }}
+                                @if($booking->car?->vin)
+                                    <span>VIN {{ $booking->car->vin }}</span>
+                                @endif
+                            </div>
+                        </td>
+                        <td>
+                            <div class="main-text">{{ $appointment ?: 'Chưa đặt lịch' }}</div>
+                            <div class="sub-text">{{ $booking->showroom ?: 'Chưa chọn showroom' }}</div>
+                        </td>
+                        <td>
+                            <div class="main-text">{{ $booking->sales_person ?: 'Chưa phân công' }}</div>
+                        </td>
+                        <td>
+                            <span class="status-badge {{ $booking->test_drive_status_badge_class }}">{{ $booking->test_drive_status_label }}</span>
+                        </td>
+                        <td class="date-cell">{{ $booking->created_at?->format('d/m/Y H:i') }}</td>
+                        <td>
+                            <a class="btn-detail" href="{{ route('admin.test_drives.show', $booking->ticket_id) }}">Chi tiết</a>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td class="empty-cell" colspan="8">Chưa có lịch lái thử phù hợp.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
     @if($bookings->hasPages())
-        <div style="margin-top: 2rem; display: flex; justify-content: center;">
+        <div class="pagination-wrap">
             {{ $bookings->links('pagination.lux') }}
         </div>
     @endif

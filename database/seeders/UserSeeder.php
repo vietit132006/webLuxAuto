@@ -9,7 +9,7 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        User::updateOrCreate(
+        $admin = User::updateOrCreate(
             ['email' => 'admin@gmail.com'],
             [
                 'name' => 'Admin',
@@ -18,5 +18,7 @@ class UserSeeder extends Seeder
                 'status' => 1,
             ]
         );
+
+        $admin->syncRoles(['Super Admin']);
     }
 }

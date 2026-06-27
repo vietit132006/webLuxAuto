@@ -1,0 +1,56 @@
+/* Inline styles extracted from resources/views/admin/system/2fa.blade.php */
+
+.admin-system-2fa-inline-1 {
+    font-size: 0.9rem;
+    color: var(--muted);
+}
+
+.admin-system-2fa-inline-2 {
+    color: #f87171;
+}
+
+.admin-system-2fa-inline-3 {
+    color: #4ade80;
+}
+
+.admin-system-2fa-inline-4 {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: var(--text);
+}
+
+.admin-system-2fa-inline-5 {
+    flex: 1;
+}
+
+.admin-system-2fa-inline-6 {
+    font-size: 2rem;
+}
+
+.admin-system-2fa-inline-7 {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+}
+
+.admin-system-2fa-inline-8 {
+    color: var(--muted);
+    margin-bottom: 2rem;
+}
+
+.admin-system-2fa-inline-9 {
+    background: #d1fae5;
+    color: #065f46;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-weight: bold;
+}
+
+.admin-system-2fa-inline-10 {
+    padding: 2rem;
+}

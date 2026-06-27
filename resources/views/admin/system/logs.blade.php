@@ -1,45 +1,14 @@
 @extends('layouts.admin')
 @section('title', 'Nhật ký hệ thống')
 
+@push('styles')
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite('resources/css/admin-system-logs.css')
+    @endif
+@endpush
+
+
 @section('content')
-<style>
-    .log-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 1rem;
-    }
-    .log-table th, .log-table td {
-        padding: 1rem;
-        border-bottom: 1px solid var(--border);
-        text-align: left;
-    }
-    .log-table th {
-        color: var(--muted);
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-    .log-action {
-        font-weight: 600;
-        color: var(--accent);
-    }
-    .log-user {
-        display: flex;
-        align-items: center;
-        gap: 0.8rem;
-    }
-    .log-avatar {
-        width: 32px;
-        height: 32px;
-        background: #0ea5e9;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #fff;
-        font-size: 0.8rem;
-    }
-</style>
 
 <div class="wrap">
     <div class="panel">
@@ -48,7 +17,7 @@
         </div>
         <div class="panel-body">
             @if($logs->isEmpty())
-                <div style="padding: 4rem; text-align: center; color: var(--muted);">
+                <div class="admin-system-logs-inline-5">
                     Chưa có nhật ký hoạt động nào được ghi lại.
                 </div>
             @else
@@ -63,15 +32,15 @@
                     <tbody>
                         @foreach($logs as $log)
                         <tr>
-                            <td style="color: var(--muted); font-size: 0.9rem;">
+                            <td class="admin-system-logs-inline-4">
                                 {{ $log->created_at ? \Carbon\Carbon::parse($log->created_at)->format('H:i:s - d/m/Y') : 'N/A' }}
                             </td>
                             <td>
                                 <div class="log-user">
                                     <div class="log-avatar">👤</div>
                                     <div>
-                                        <div style="font-weight: bold; color: var(--text);">{{ $log->user->name ?? 'Hệ thống' }}</div>
-                                        <div style="font-size: 0.8rem; color: var(--muted);">{{ $log->user->email ?? '' }}</div>
+                                        <div class="admin-system-logs-inline-3">{{ $log->user->name ?? 'Hệ thống' }}</div>
+                                        <div class="admin-system-logs-inline-2">{{ $log->user->email ?? '' }}</div>
                                     </div>
                                 </div>
                             </td>
@@ -83,7 +52,7 @@
                     </tbody>
                 </table>
 
-                <div style="margin-top: 2rem; display: flex; justify-content: center;">
+                <div class="admin-system-logs-inline-1">
                     {{ $logs->links('pagination.lux') }}
                 </div>
             @endif

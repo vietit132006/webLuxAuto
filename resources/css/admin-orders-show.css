@@ -1,0 +1,385 @@
+.order-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.back-link {
+    display: inline-flex;
+    margin-bottom: 0.45rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.back-link:hover {
+    color: var(--accent);
+}
+
+.order-id {
+    margin: 0;
+    color: var(--accent);
+    font-size: 1.85rem;
+    font-weight: 800;
+}
+
+.order-date {
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+.order-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+    gap: 1.25rem;
+    align-items: start;
+}
+
+.panel {
+    margin-bottom: 1.25rem;
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+}
+
+.panel-title {
+    margin: 0 0 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    font-size: 1.05rem;
+    font-weight: 800;
+}
+
+.car-list {
+    display: grid;
+    gap: 0.8rem;
+}
+
+.car-item {
+    display: grid;
+    grid-template-columns: 132px minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.85rem;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.car-img,
+.car-img-placeholder {
+    width: 132px;
+    height: 88px;
+    border-radius: 8px;
+}
+
+.car-img {
+    object-fit: cover;
+}
+
+.car-img-placeholder {
+    display: grid;
+    place-items: center;
+    background: #0a0d12;
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+.car-info {
+    min-width: 0;
+}
+
+.car-name {
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 800;
+    overflow-wrap: anywhere;
+}
+
+.car-meta,
+.history-email {
+    margin-top: 0.25rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+.car-price {
+    color: #34d399;
+    font-size: 1rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.info-group {
+    margin-bottom: 1rem;
+}
+
+.info-label {
+    margin-bottom: 0.3rem;
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.info-value,
+.history-user {
+    color: var(--text);
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.summary-row,
+.summary-total {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.55rem 0;
+    color: var(--muted);
+}
+
+.summary-row strong,
+.summary-total strong {
+    color: var(--text);
+    text-align: right;
+}
+
+.summary-total {
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+    color: var(--text);
+    font-weight: 800;
+}
+
+.summary-total strong {
+    color: var(--accent);
+}
+
+.status-update-form,
+.deposit-update-form {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.deposit-update-form {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+.deposit-form-grid,
+.deposit-status-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+}
+
+.deposit-status-fields {
+    margin-top: 0.25rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid var(--border);
+}
+
+.deposit-status-fields.is-hidden {
+    display: none;
+}
+
+.form-field {
+    display: grid;
+    gap: 0.4rem;
+}
+
+.form-field-wide {
+    grid-column: 1 / -1;
+}
+
+.form-label {
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.form-control {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #0a0d12;
+    color: var(--text);
+    padding: 0.65rem 0.75rem;
+}
+
+.form-control:focus {
+    border-color: var(--accent);
+    outline: none;
+}
+
+textarea.form-control {
+    min-height: 90px;
+    resize: vertical;
+}
+
+.note-value {
+    line-height: 1.55;
+    white-space: normal;
+}
+
+.btn-submit {
+    min-height: 42px;
+    border: 0;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #111827;
+    cursor: pointer;
+    font-weight: 800;
+}
+
+.history-table-wrap {
+    overflow-x: auto;
+}
+
+.history-table {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: collapse;
+}
+
+.history-table th,
+.history-table td {
+    padding: 0.8rem;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+}
+
+.history-table th {
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.badge,
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 0.28rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.status-badge {
+    min-height: 36px;
+    padding-inline: 0.95rem;
+}
+
+.badge-0 {
+    background: rgba(234, 179, 8, 0.12);
+    color: #facc15;
+}
+
+.badge-1 {
+    background: rgba(59, 130, 246, 0.12);
+    color: #60a5fa;
+}
+
+.badge-2 {
+    background: rgba(16, 185, 129, 0.12);
+    color: #34d399;
+}
+
+.badge-3 {
+    background: rgba(239, 68, 68, 0.12);
+    color: #f87171;
+}
+
+.badge-unknown {
+    background: rgba(148, 163, 184, 0.12);
+    color: #cbd5e1;
+}
+
+.flash-alert,
+.error-alert {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+.flash-alert {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #34d399;
+}
+
+.error-alert {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #f87171;
+}
+
+.btn-close-alert {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font-size: 1.4rem;
+    line-height: 1;
+}
+
+.empty-state,
+.empty-cell {
+    padding: 1.5rem;
+    color: var(--muted);
+    text-align: center;
+}
+
+@media (max-width: 1080px) {
+    .order-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 680px) {
+    .order-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .car-item {
+        grid-template-columns: 96px minmax(0, 1fr);
+    }
+
+    .car-img,
+    .car-img-placeholder {
+        width: 96px;
+        height: 72px;
+    }
+
+    .car-price {
+        grid-column: 1 / -1;
+    }
+
+    .deposit-form-grid,
+    .deposit-status-fields {
+        grid-template-columns: 1fr;
+    }
+
+    .form-field-wide {
+        grid-column: auto;
+    }
+}

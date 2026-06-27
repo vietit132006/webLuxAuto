@@ -1,0 +1,141 @@
+input:focus, textarea:focus { border-color: var(--accent) !important; outline: none; }
+    a:hover { border-color: var(--muted) !important; }
+
+/* Inline styles extracted from resources/views/client/tickets/create.blade.php */
+
+.client-tickets-create-inline-1 {
+    width: 100%;
+    padding: 1rem;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: 0.2s;
+    box-shadow: 0 4px 15px rgba(201, 169, 98, 0.2);
+}
+
+.client-tickets-create-inline-2 {
+    color: #ef4444;
+    font-size: 0.85rem;
+    margin-top: 5px;
+    display: block;
+}
+
+.client-tickets-create-inline-3 {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #0a0d12;
+    color: var(--text);
+    font-size: 1rem;
+    transition: border-color 0.2s;
+    resize: vertical;
+}
+
+.client-tickets-create-inline-4 {
+    color: #ef4444;
+}
+
+.client-tickets-create-inline-5 {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--muted);
+}
+
+.client-tickets-create-inline-6 {
+    margin-bottom: 2rem;
+}
+
+.client-tickets-create-inline-7 {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #0a0d12;
+    color: var(--text);
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.client-tickets-create-inline-8 {
+    margin-bottom: 1.5rem;
+}
+
+.client-tickets-create-inline-9 {
+    color: #ef4444;
+    font-size: 0.85rem;
+    margin: -0.75rem 0 1rem;
+    display: block;
+}
+
+.client-tickets-create-inline-10 {
+    color: var(--muted);
+    margin-top: 0.35rem;
+}
+
+.client-tickets-create-inline-11 {
+    font-weight: 700;
+    color: var(--text);
+}
+
+.client-tickets-create-inline-12 {
+    margin-bottom: 1.25rem;
+    padding: 0.9rem 1rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+}
+
+.client-tickets-create-inline-13 {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid #ef4444;
+    color: #ef4444;
+    border-radius: 8px;
+}
+
+.client-tickets-create-inline-14 {
+    background: var(--surface);
+    padding: 2rem;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.client-tickets-create-inline-15 {
+    padding: 0.6rem 1.2rem;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-weight: 500;
+    transition: 0.2s;
+}
+
+.client-tickets-create-inline-16 {
+    color: var(--accent);
+}
+
+.client-tickets-create-inline-17 {
+    margin: 0;
+    font-size: 2rem;
+    color: #f8fafc;
+}
+
+.client-tickets-create-inline-18 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+
+.client-tickets-create-inline-19 {
+    max-width: 1200px;
+    padding: 3rem 1.25rem;
+}

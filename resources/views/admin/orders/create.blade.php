@@ -1,75 +1,23 @@
 @extends('layouts.admin')
-@section('title', 'Tạo đơn hàng mới (Bán hàng)')
+@section('title', 'Tạo đơn hàng mới')
+
+@push('styles')
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite('resources/css/admin-orders-create.css')
+    @endif
+@endpush
 
 @section('content')
-<style>
-    .form-wrap {
-        max-width: 800px;
-        margin: 0 auto;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 2rem;
-    }
-    .form-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin-bottom: 2rem;
-        color: var(--text);
-        text-align: center;
-    }
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
-    .label {
-        display: block;
-        margin-bottom: 0.5rem;
-        color: var(--muted);
-        font-weight: 600;
-        font-size: 0.9rem;
-    }
-    .input, .select {
-        width: 100%;
-        padding: 0.8rem;
-        background: #0a0d12;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        color: var(--text);
-        font-size: 1rem;
-    }
-    .input:focus, .select:focus {
-        border-color: var(--accent);
-        outline: none;
-    }
-    .btn-submit {
-        background: var(--accent);
-        color: #000;
-        border: none;
-        padding: 1rem 2rem;
-        border-radius: 8px;
-        font-weight: 800;
-        width: 100%;
-        cursor: pointer;
-        font-size: 1rem;
-        margin-top: 1rem;
-        transition: 0.2s;
-    }
-    .btn-submit:hover { background: #e4d08a; }
-
-    .error-msg {
-        color: #f87171;
-        font-size: 0.85rem;
-        margin-top: 0.3rem;
-    }
-</style>
-
 <div class="wrap">
     <div class="form-wrap">
-        <h1 class="form-title">Tạo đơn hàng mới (Bán hàng)</h1>
+        <div class="form-header">
+            <a href="{{ route('admin.orders.index') }}" class="back-link">Quay lại danh sách</a>
+            <h1 class="form-title">Tạo đơn hàng mới</h1>
+        </div>
 
         @if($errors->any())
-            <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #f87171; color: #f87171; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
-                <ul style="margin: 0; padding-left: 1.5rem;">
+            <div class="error-box">
+                <ul>
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
@@ -80,39 +28,80 @@
         <form action="{{ route('admin.orders.store') }}" method="POST">
             @csrf
 
-            <div class="form-group">
-                <label class="label">Chọn khách hàng</label>
-                <select name="user_id" class="select" required>
-                    <option value="">-- Chọn khách hàng --</option>
-                    @foreach($users as $user)
-                        <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
-                    @endforeach
-                </select>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="label" for="user_id">Khách hàng</label>
+                    <select id="user_id" name="user_id" class="select" required>
+                        <option value="">Chọn khách hàng</option>
+                        @foreach($users as $user)
+                            <option value="{{ $user->user_id }}" @selected((string) old('user_id') === (string) $user->user_id)>
+                                {{ $user->name }} ({{ $user->email }})
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="label" for="car_id">Xe bán</label>
+                    <select id="car_id" name="car_id" class="select" required>
+                        <option value="">Chọn xe</option>
+                        @foreach($cars as $car)
+                            @php
+                                $stock = $car->stock_quantity ?? $car->stock ?? 0;
+                            @endphp
+                            <option value="{{ $car->car_id }}" @selected((string) old('car_id') === (string) $car->car_id)>
+                                {{ $car->name }} - {{ number_format((float) $car->price, 0, ',', '.') }} đ - Kho: {{ $stock }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="label" for="deposit_amount">Tiền cọc</label>
+                    <input id="deposit_amount" type="number" name="deposit_amount" class="input" min="0" step="1000" value="{{ old('deposit_amount', (int) $defaultDepositAmount) }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="label" for="deposit_date">Ngày cọc</label>
+                    <input id="deposit_date" type="datetime-local" name="deposit_date" class="input" value="{{ old('deposit_date') }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="label" for="deposit_method">Phương thức cọc</label>
+                    <select id="deposit_method" name="deposit_method" class="select">
+                        <option value="">Chọn phương thức</option>
+                        @foreach($depositMethodOptions as $value => $label)
+                            <option value="{{ $value }}" @selected((string) old('deposit_method') === (string) $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="label" for="deposit_reference">Mã giao dịch</label>
+                    <input id="deposit_reference" type="text" name="deposit_reference" class="input" value="{{ old('deposit_reference') }}" maxlength="255">
+                </div>
+
+                <div class="form-group">
+                    <label class="label" for="status">Trạng thái ban đầu</label>
+                    <select id="status" name="status" class="select" required>
+                        @foreach($statusOptions as $value => $label)
+                            <option value="{{ $value }}" @selected((string) old('status', 0) === (string) $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="label" for="note">Ghi chú lịch sử</label>
+                    <textarea id="note" name="note" class="input" rows="3" placeholder="Ghi chú khi tạo đơn">{{ old('note') }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="label" for="deposit_note">Ghi chú đặt cọc</label>
+                    <textarea id="deposit_note" name="deposit_note" class="input" rows="3">{{ old('deposit_note') }}</textarea>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label class="label">Chọn xe cần bán</label>
-                <select name="car_id" class="select" required>
-                    <option value="">-- Chọn xe --</option>
-                    @foreach($cars as $car)
-                        <option value="{{ $car->car_id }}">{{ $car->name }} - {{ number_format($car->price, 0, ',', '.') }} đ (Kho: {{ $car->stock }})</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label class="label">Trạng thái ban đầu</label>
-                <select name="status" class="select" required>
-                    <option value="0">⏳ Chờ xử lý</option>
-                    <option value="1">💸 Đã đặt cọc</option>
-                    <option value="2">✅ Hoàn tất (Giao xe)</option>
-                    <option value="3">❌ Hủy bỏ</option>
-                </select>
-                <p style="font-size: 0.8rem; color: var(--muted); margin-top: 5px;">* Nếu chọn "Hoàn tất", hệ thống sẽ tự động giảm tồn kho xe.</p>
-            </div>
-
-            <button type="submit" class="btn-submit">TẠO ĐƠN HÀNG</button>
-            <a href="{{ route('admin.orders.index') }}" style="display: block; text-align: center; margin-top: 1rem; color: var(--muted); text-decoration: none;">Hủy và quay lại</a>
+            <button type="submit" class="btn-submit">Tạo đơn hàng</button>
         </form>
     </div>
 </div>

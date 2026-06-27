@@ -1,10 +1,4 @@
-@extends('layouts.site')
-
-@section('title', $vehicle->title)
-
-@section('content')
-<style>
-    .vehicle-detail {
+.vehicle-detail {
         display: grid;
         grid-template-columns: 1fr;
         gap: 1.5rem;
@@ -102,44 +96,9 @@
         color: #86efac;
         font-size: 0.9375rem;
     }
-</style>
 
-<div class="wrap">
-    @if (session('success'))
-        <p class="flash-ok" role="status">{{ session('success') }}</p>
-    @endif
-    <div class="vehicle-detail">
-        <div class="vd-left">
-            <div class="vd-img">
-                @if ($vehicle->image_url)
-                    <img src="{{ $vehicle->image_url }}" alt="{{ $vehicle->title }}">
-                @endif
-            </div>
-        </div>
-        <div class="vd-right">
-            <h1 class="vd-head">{{ $vehicle->title }}</h1>
-            <p class="vd-meta">Đời {{ $vehicle->year }}@if ($vehicle->mileage_km) · {{ number_format($vehicle->mileage_km, 0, ',', '.') }} km @endif</p>
-            <p class="vd-price">{{ number_format($vehicle->price, 0, ',', '.') }} đ</p>
-            <div class="vd-specs">
-                <div>Nhiên liệu: <strong>{{ $vehicle->fuel_type }}</strong></div>
-                <div>Hộp số: <strong>{{ $vehicle->transmission }}</strong></div>
-                @if ($vehicle->color)
-                    <div>Màu: <strong>{{ $vehicle->color }}</strong></div>
-                @endif
-            </div>
-            @if ($vehicle->description)
-                <div class="vd-desc">{{ $vehicle->description }}</div>
-            @endif
-            <div class="vd-actions">
-                <a href="{{ route('vehicles.edit', $vehicle) }}" class="btn-edit">Sửa</a>
-                <form action="{{ route('vehicles.destroy', $vehicle) }}" method="post" style="display:inline;" onsubmit="return confirm('Xóa xe này? Hành động không hoàn tác.');">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn-del">Xoá</button>
-                </form>
-                <a href="{{ route('vehicles.index') }}">← Quay lại danh sách</a>
-            </div>
-        </div>
-    </div>
-</div>
-@endsection
+/* Inline styles extracted from resources/views/vehicles/show.blade.php */
+
+.vehicles-show-inline-1 {
+    display:inline;
+}

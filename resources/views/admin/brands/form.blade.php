@@ -1,27 +1,34 @@
 @extends('layouts.admin')
 @section('title', isset($brand) ? 'Sửa hãng xe' : 'Thêm hãng xe')
 
+@push('styles')
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite('resources/css/admin-brands-form.css')
+    @endif
+@endpush
+
+
 @section('content')
-<div class="wrap" style="max-width: 500px; background: var(--surface); padding: 2rem; border-radius: 12px; border: 1px solid var(--border);">
-    <h1 style="margin-top: 0; margin-bottom: 1.5rem;">{{ isset($brand) ? 'Sửa Hãng Xe: ' . $brand->name : 'Thêm Hãng Xe Mới' }}</h1>
+<div class="wrap admin-brands-form-inline-8">
+    <h1 class="admin-brands-form-inline-7">{{ isset($brand) ? 'Sửa Hãng Xe: ' . $brand->name : 'Thêm Hãng Xe Mới' }}</h1>
 
     <form method="POST" action="{{ isset($brand) ? route('admin.brands.update', $brand->brand_id) : route('admin.brands.store') }}">
         @csrf
         @if(isset($brand)) @method('PUT') @endif
 
-        <div style="margin-bottom: 1rem;">
-            <label style="display: block; margin-bottom: 0.5rem; color: var(--text);">Tên hãng xe (*)</label>
-            <input type="text" name="name" value="{{ old('name', $brand->name ?? '') }}" required style="width: 100%; padding: 0.8rem; border-radius: 6px; background: #0c0f14; border: 1px solid var(--border); color: #fff;">
+        <div class="admin-brands-form-inline-6">
+            <label class="admin-brands-form-inline-4">Tên hãng xe (*)</label>
+            <input class="admin-brands-form-inline-3" type="text" name="name" value="{{ old('name', $brand->name ?? '') }}" required>
         </div>
 
-        <div style="margin-bottom: 1.5rem;">
-            <label style="display: block; margin-bottom: 0.5rem; color: var(--text);">Quốc gia (Tùy chọn)</label>
-            <input type="text" name="country" value="{{ old('country', $brand->country ?? '') }}" placeholder="Ví dụ: Đức, Nhật Bản..." style="width: 100%; padding: 0.8rem; border-radius: 6px; background: #0c0f14; border: 1px solid var(--border); color: #fff;">
+        <div class="admin-brands-form-inline-5">
+            <label class="admin-brands-form-inline-4">Quốc gia (Tùy chọn)</label>
+            <input class="admin-brands-form-inline-3" type="text" name="country" value="{{ old('country', $brand->country ?? '') }}" placeholder="Ví dụ: Đức, Nhật Bản...">
         </div>
 
         <div>
-            <button type="submit" style="background: var(--accent); color: #000; padding: 0.8rem 1.5rem; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">Lưu Thông Tin</button>
-            <a href="{{ route('admin.brands.index') }}" style="color: var(--muted); margin-left: 15px;">Hủy</a>
+            <button class="admin-brands-form-inline-2" type="submit">Lưu Thông Tin</button>
+            <a class="admin-brands-form-inline-1" href="{{ route('admin.brands.index') }}">Hủy</a>
         </div>
     </form>
 </div>

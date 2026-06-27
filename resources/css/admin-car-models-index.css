@@ -1,0 +1,41 @@
+/* Inline styles extracted from resources/views/admin/car_models/index.blade.php */
+
+.admin-car-models-index-inline-1 {
+    margin:0;
+}
+
+.admin-car-models-index-inline-2 {
+    text-align:center;
+}
+
+.admin-car-models-index-inline-3 {
+    color:var(--muted);
+}
+
+.admin-car-models-index-inline-4 {
+    color:var(--muted);
+    font-weight:500;
+}
+
+.admin-car-models-index-inline-5 {
+    color:var(--text);
+    font-weight:700;
+}
+
+.admin-car-models-index-inline-6 {
+    text-align:right;
+    width:190px;
+}
+
+.admin-car-models-index-inline-7 {
+    font-weight:800;
+    color:var(--text);
+    margin-bottom:6px;
+}
+
+.admin-car-models-index-inline-8 {
+    width:52px;
+    height:52px;
+    margin-bottom:12px;
+    opacity:.35;
+}

@@ -2,29 +2,14 @@
 
 @section('title', 'So sánh xe')
 
+@push('styles')
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+        @vite('resources/css/client-compare.css')
+    @endif
+@endpush
+
+
 @section('content')
-<style>
-    .cmp-head { margin-bottom: 1.5rem; }
-    .cmp-head h1 { font-size: clamp(1.35rem, 3vw, 1.75rem); margin: 0 0 0.5rem; }
-    .cmp-head p { color: var(--muted); margin: 0; }
-    .cmp-toolbar { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin-bottom: 1.25rem; }
-    .cmp-toolbar a, .cmp-toolbar button {
-        display: inline-flex; align-items: center; padding: 0.55rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.9rem;
-        cursor: pointer; border: none; font-family: inherit;
-    }
-    .btn-gold { background: var(--accent); color: #0c0f14; text-decoration: none; }
-    .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
-    .cmp-table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); }
-    .cmp-table { width: 100%; border-collapse: collapse; min-width: 640px; }
-    .cmp-table th, .cmp-table td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
-    .cmp-table th { width: 140px; color: var(--muted); font-size: 0.8rem; text-transform: uppercase; }
-    .cmp-car { min-width: 180px; }
-    .cmp-car img { width: 100%; max-height: 120px; object-fit: cover; border-radius: 8px; background: #0a0d12; }
-    .cmp-car h3 { margin: 0.5rem 0 0.25rem; font-size: 1rem; }
-    .cmp-car .meta { font-size: 0.8rem; color: var(--muted); }
-    .cmp-price { color: var(--accent); font-weight: 800; font-size: 1.05rem; }
-    .cmp-empty { text-align: center; padding: 3rem 1.5rem; color: var(--muted); border: 1px dashed var(--border); border-radius: 12px; }
-</style>
 
 @if(empty($ids))
 <script>
@@ -46,12 +31,12 @@
     <div class="cmp-toolbar">
         <a href="{{ route('cars.index') }}" class="btn-gold">← Chọn thêm xe</a>
         <button type="button" class="btn-ghost" id="cmp-clear">Xóa danh sách so sánh</button>
-        <span id="cmp-count" style="color: var(--muted); font-size: 0.9rem;"></span>
+        <span class="client-compare-inline-4" id="cmp-count"></span>
     </div>
 
     @if($cars->isEmpty())
         <div class="cmp-empty">
-            Chưa có xe nào để so sánh. Vào <a href="{{ route('cars.index') }}" style="color: var(--accent);">danh sách xe</a> và bấm « Thêm so sánh ».
+            Chưa có xe nào để so sánh. Vào <a class="client-compare-inline-3" href="{{ route('cars.index') }}">danh sách xe</a> và bấm « Thêm so sánh ».
         </div>
     @else
         <div class="cmp-table-wrap">
@@ -64,11 +49,11 @@
                                 @if($car->image)
                                     <img src="{{ asset('storage/' . $car->image) }}" alt="">
                                 @else
-                                    <div style="height:100px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:0.85rem;">Chưa có ảnh</div>
+                                    <div class="client-compare-inline-2">Chưa có ảnh</div>
                                 @endif
                                 <h3>{{ $car->brand->name ?? '' }} {{ $car->name }}</h3>
                                 <div class="meta">Đời {{ $car->year ?? '—' }}</div>
-                                <a href="{{ route('cars.show_public', $car->car_id) }}" style="font-size: 0.85rem; color: var(--accent); font-weight: 600;">Chi tiết →</a>
+                                <a class="client-compare-inline-1" href="{{ route('cars.show_public', $car->car_id) }}">Chi tiết →</a>
                             </td>
                         @endforeach
                     </tr>

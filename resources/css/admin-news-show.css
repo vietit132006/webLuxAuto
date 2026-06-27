@@ -1,0 +1,134 @@
+.detail-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+    }
+    .detail-title {
+        margin: 0;
+        font-size: 1.5rem;
+        color: var(--accent);
+    }
+    .btn-group {
+        display: flex;
+        gap: 10px;
+    }
+    .btn-back {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text);
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        border: 1px solid var(--border);
+        transition: 0.2s;
+    }
+    .btn-back:hover { background: rgba(255, 255, 255, 0.1); }
+
+    .btn-edit-main {
+        background: var(--accent);
+        color: #000;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: 0.2s;
+    }
+    .btn-edit-main:hover { background: #e4d08a; }
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    /* Cột trái: Thông tin & Ảnh */
+    .info-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+    }
+    .info-img {
+        width: 100%;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        border: 1px solid var(--border);
+    }
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px dashed var(--border);
+    }
+    .info-label { color: var(--muted); font-size: 0.9rem; }
+    .info-value { color: var(--text); font-weight: 600; text-align: right; }
+
+    /* Cột phải: Nội dung chi tiết */
+    .content-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 2.5rem;
+    }
+    .content-title {
+        font-size: 1.8rem;
+        color: var(--text);
+        margin-top: 0;
+        margin-bottom: 1rem;
+        line-height: 1.4;
+    }
+    .content-summary {
+        font-size: 1.1rem;
+        color: var(--accent);
+        font-style: italic;
+        margin-bottom: 2rem;
+        padding-left: 1rem;
+        border-left: 3px solid var(--accent);
+    }
+    .content-body {
+        font-size: 1.05rem;
+        color: #d1d5db;
+        line-height: 1.8;
+    }
+
+/* Inline styles extracted from resources/views/admin/news/show.blade.php */
+
+.admin-news-show-inline-1 {
+    border: none;
+    margin-bottom: 0;
+}
+
+.admin-news-show-inline-2 {
+    color: #f87171;
+}
+
+.admin-news-show-inline-3 {
+    color: #34d399;
+}
+
+.admin-news-show-inline-4 {
+    word-break: break-all;
+    color: #60a5fa;
+}
+
+.admin-news-show-inline-5 {
+    width: 100%;
+    height: 200px;
+    background: #0a0d12;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    border: 1px dashed var(--border);
+}
+
+.admin-news-show-inline-6 {
+    max-width: 1200px;
+}
