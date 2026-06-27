@@ -74,6 +74,38 @@
                     </div>
                 </div>
             @endif
+
+            @if($canViewTestDrives && $testDriveStats)
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fa-solid fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-label">Tổng lịch lái</div>
+                        <div class="stat-value">{{ number_format($testDriveStats['total'] ?? 0) }}</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-label">Hoàn thành</div>
+                        <div class="stat-value">{{ number_format($testDriveStats['completed'] ?? 0) }}</div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fa-solid fa-percent"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-label">Chuyển đổi đơn hàng</div>
+                        <div class="stat-value">{{ number_format($testDriveStats['conversion_rate'] ?? 0, 1) }}%</div>
+                    </div>
+                </div>
+            @endif
         </div>
 
         <div class="main-grid">
@@ -169,6 +201,13 @@
                         <a href="{{ route('admin.reports.reviews') }}" class="action-btn">
                             <i class="fa-solid fa-star"></i>
                             Đánh giá
+                        </a>
+                    @endcan
+
+                    @can('test_drives.view')
+                        <a href="{{ route('admin.test_drives.index') }}" class="action-btn">
+                            <i class="fa-solid fa-calendar-check"></i>
+                            Lịch lái thử
                         </a>
                     @endcan
 

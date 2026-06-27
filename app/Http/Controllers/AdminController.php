@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Storage;
 use App\Models\CarModel;
+use App\Services\TestDriveService;
 
 class AdminController extends Controller
 {
@@ -22,12 +23,14 @@ class AdminController extends Controller
         $canViewReports = $user?->can('reports.view') ?? false;
         $canViewInventory = $user?->can('inventory.view') ?? false;
         $canViewInventoryHistory = $user?->can('inventory.history') ?? false;
+        $canViewTestDrives = $user?->can('test_drives.view') ?? false;
 
         $totalCars = $canViewCars ? Car::count() : null;
         $totalCarModels = $canViewCars ? CarModel::count() : null;
         $totalBrands = $canViewCars ? Brand::count() : null;
         $totalRevenue = $canViewReports ? (float) Order::where('status', 2)->sum('total_price') : null;
         $totalInventoryUnits = $canViewInventory ? (int) Car::sum('stock') : null;
+        $testDriveStats = $canViewTestDrives ? app(TestDriveService::class)->stats() : null;
 
         $recentCars = $canViewCars ? Car::with('brand')
             ->orderBy('car_id', 'desc')
@@ -50,8 +53,10 @@ class AdminController extends Controller
             'canViewReports',
             'canViewInventory',
             'canViewInventoryHistory',
+            'canViewTestDrives',
             'recentCars',
-            'recentStockMovements'
+            'recentStockMovements',
+            'testDriveStats'
         ));
     }
 

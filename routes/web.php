@@ -348,12 +348,33 @@ Route::middleware('auth')->group(function () {
         Route::get('/test-drives', [TestDriveController::class, 'index'])
             ->middleware('permission:test_drives.view')
             ->name('test_drives.index');
+        Route::get('/test-drives/export', [TestDriveController::class, 'export'])
+            ->middleware('permission:test_drives.export')
+            ->name('test_drives.export');
         Route::get('/test-drives/{id}', [TestDriveController::class, 'show'])
             ->middleware('permission:test_drives.view')
             ->name('test_drives.show');
+        Route::put('/test-drives/{id}/appointment', [TestDriveController::class, 'updateAppointment'])
+            ->middleware('permission:test_drives.edit')
+            ->name('test_drives.updateAppointment');
         Route::post('/test-drives/{id}/status', [TestDriveController::class, 'updateStatus'])
             ->middleware('permission:test_drives.edit')
             ->name('test_drives.updateStatus');
+        Route::post('/test-drives/{id}/notes', [TestDriveController::class, 'storeNote'])
+            ->middleware('permission:test_drives.edit')
+            ->name('test_drives.notes.store');
+        Route::post('/test-drives/{id}/files', [TestDriveController::class, 'storeFiles'])
+            ->middleware('permission:test_drives.edit')
+            ->name('test_drives.files.store');
+        Route::get('/test-drives/{id}/files/{file}/view', [TestDriveController::class, 'viewFile'])
+            ->middleware('permission:test_drives.view')
+            ->name('test_drives.files.view');
+        Route::get('/test-drives/{id}/files/{file}/download', [TestDriveController::class, 'downloadFile'])
+            ->middleware('permission:test_drives.view')
+            ->name('test_drives.files.download');
+        Route::delete('/test-drives/{id}/files/{file}', [TestDriveController::class, 'destroyFile'])
+            ->middleware('permission:test_drives.delete')
+            ->name('test_drives.files.destroy');
 
         Route::get('/stock-movements', [StockMovementController::class, 'index'])
             ->middleware('permission:inventory.history')

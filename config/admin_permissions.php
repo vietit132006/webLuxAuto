@@ -44,6 +44,8 @@ $permissions = [
     'tickets.reply' => 'Trả lời hỗ trợ',
     'test_drives.view' => 'Xem lịch lái thử',
     'test_drives.edit' => 'Cập nhật lịch lái thử',
+    'test_drives.delete' => 'Xóa tài liệu lái thử',
+    'test_drives.export' => 'Xuất Excel lịch lái thử',
 ];
 
 $allPermissions = array_keys($permissions);
@@ -82,6 +84,8 @@ return [
                 'quotes.delete',
                 'test_drives.view',
                 'test_drives.edit',
+                'test_drives.delete',
+                'test_drives.export',
             ],
         ],
         'marketing' => [
@@ -160,6 +164,8 @@ return [
                 'quotes.delete',
                 'test_drives.view',
                 'test_drives.edit',
+                'test_drives.delete',
+                'test_drives.export',
             ],
         ],
         'Marketing' => [

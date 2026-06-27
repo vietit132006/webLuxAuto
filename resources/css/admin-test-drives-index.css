@@ -1,209 +1,345 @@
-/* Inline styles extracted from resources/views/admin/test_drives/index.blade.php */
+.test-drive-page {
+    padding: 2rem 1rem;
+}
 
-.admin-test-drives-index-inline-1 {
-    margin-top: 2rem;
+.test-drive-header {
     display: flex;
-    justify-content: center;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
 }
 
-.admin-test-drives-index-inline-2 {
-    font-size: 0.85rem;
+.test-drive-header h1 {
     margin: 0;
-}
-
-.admin-test-drives-index-inline-3 {
-    font-size: 1rem;
     color: var(--text);
-    margin: 0 0 5px;
+    font-size: 1.8rem;
+    font-weight: 850;
 }
 
-.admin-test-drives-index-inline-4 {
-    width: 48px;
-    height: 48px;
-    opacity: 0.2;
-    margin: 0 auto 10px;
-}
-
-.admin-test-drives-index-inline-5 {
-    padding: 4rem 1rem;
-    text-align: center;
+.test-drive-header p {
+    margin: 0.4rem 0 0;
     color: var(--muted);
+    font-size: 0.95rem;
 }
 
-.admin-test-drives-index-inline-6 {
-    width: 14px;
-    height: 14px;
-}
-
-.admin-test-drives-index-inline-7 {
+.btn-action,
+.btn-detail {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 6px 12px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-size: 0.8rem;
-    transition: 0.2s;
+    justify-content: center;
+    gap: 0.45rem;
+    min-height: 38px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 800;
     text-decoration: none;
+    transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+    white-space: nowrap;
 }
 
-.admin-test-drives-index-inline-8 {
-    padding: 1rem 1.5rem;
-    text-align: right;
+.btn-action {
+    padding: 0.55rem 0.9rem;
 }
 
-.admin-test-drives-index-inline-9 {
-    padding: 1rem 1.5rem;
+.btn-action svg {
+    width: 17px;
+    height: 17px;
 }
 
-.admin-test-drives-index-inline-10 {
-    padding: 1rem 1.5rem;
-    color: var(--muted);
+.btn-primary {
+    background: var(--accent);
+    color: #111827;
 }
 
-.admin-test-drives-index-inline-11 {
-    font-size: 0.8rem;
-    color: var(--muted);
-    margin-top: 2px;
-}
-
-.admin-test-drives-index-inline-12 {
-    font-weight: bold;
+.btn-secondary,
+.btn-detail {
+    background: #0a0d12;
+    border-color: var(--border);
     color: var(--text);
 }
 
-.admin-test-drives-index-inline-13 {
-    background: #0a0d12;
+.btn-secondary:hover,
+.btn-detail:hover {
+    border-color: var(--accent);
     color: var(--accent);
-    padding: 4px 8px;
-    border-radius: 4px;
+}
+
+.btn-detail {
+    min-height: 34px;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.84rem;
+}
+
+.flash-alert {
+    margin-bottom: 1rem;
+    padding: 0.85rem 1rem;
+    border-radius: 8px;
+    font-weight: 800;
+}
+
+.flash-alert.is-success {
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.32);
+    color: #34d399;
+}
+
+.flash-alert.is-warning {
+    background: rgba(234, 179, 8, 0.12);
+    border: 1px solid rgba(234, 179, 8, 0.32);
+    color: #facc15;
+}
+
+.flash-alert.is-error {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.32);
+    color: #f87171;
+}
+
+.test-drive-stats {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+.stat-card {
+    min-height: 88px;
+    padding: 0.95rem;
     border: 1px solid var(--border);
-    font-family: monospace;
-    font-weight: bold;
+    border-radius: 8px;
+    background: var(--surface);
 }
 
-.admin-test-drives-index-inline-14 {
-    border-bottom: 1px solid var(--border);
-    transition: 0.2s;
-}
-
-.admin-test-drives-index-inline-15 {
-    padding: 1.2rem 1.5rem;
-    border-bottom: 1px solid var(--border);
-    text-align: right;
-}
-
-.admin-test-drives-index-inline-16 {
-    padding: 1.2rem 1.5rem;
-    border-bottom: 1px solid var(--border);
-}
-
-.admin-test-drives-index-inline-17 {
-    background: rgba(0,0,0,0.2);
+.stat-card span {
+    display: block;
     color: var(--muted);
+    font-size: 0.76rem;
+    font-weight: 850;
+    line-height: 1.35;
     text-transform: uppercase;
-    font-size: 0.8rem;
-    letter-spacing: 0.05em;
 }
 
-.admin-test-drives-index-inline-18 {
+.stat-card strong {
+    display: block;
+    margin-top: 0.45rem;
+    color: var(--text);
+    font-size: 1.42rem;
+    font-weight: 900;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+}
+
+.filter-panel {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.85rem;
+}
+
+.filter-field {
+    display: grid;
+    gap: 0.4rem;
+}
+
+.filter-field.is-wide {
+    grid-column: span 2;
+}
+
+.filter-field label {
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 850;
+    text-transform: uppercase;
+}
+
+.filter-field input,
+.filter-field select {
     width: 100%;
+    min-height: 38px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #0a0d12;
+    color: var(--text);
+    padding: 0.5rem 0.65rem;
+}
+
+.filter-field input:focus,
+.filter-field select:focus {
+    border-color: var(--accent);
+    outline: none;
+}
+
+.filter-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 0.9rem;
+}
+
+.table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+}
+
+.test-drive-table {
+    width: 100%;
+    min-width: 1180px;
     border-collapse: collapse;
     text-align: left;
-    font-size: 0.9rem;
 }
 
-.admin-test-drives-index-inline-19 {
-    overflow-x: auto;
+.test-drive-table th,
+.test-drive-table td {
+    padding: 0.9rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
 }
 
-.admin-test-drives-index-inline-20 {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-}
-
-.admin-test-drives-index-inline-21 {
-    width: 20px;
-    height: 20px;
-}
-
-.admin-test-drives-index-inline-22 {
-    padding: 1rem;
-    margin-bottom: 1.5rem;
-    background: rgba(16, 185, 129, 0.1);
-    border: 1px solid rgba(16, 185, 129, 0.3);
-    color: #34d399;
-    border-radius: 8px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.admin-test-drives-index-inline-23 {
-    padding: 6px 16px;
-    border-radius: 6px;
-    background: var(--accent);
-    color: #000;
-    border: none;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.admin-test-drives-index-inline-24 {
-    background: var(--bg);
-}
-
-.admin-test-drives-index-inline-25 {
-    background: transparent;
-    border: none;
-    color: var(--text);
-    padding: 5px 10px;
-    outline: none;
-    cursor: pointer;
-}
-
-.admin-test-drives-index-inline-26 {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: #0a0d12;
-    padding: 6px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-}
-
-.admin-test-drives-index-inline-27 {
+.test-drive-table th {
+    background: rgba(255, 255, 255, 0.03);
     color: var(--muted);
-    margin-top: 0.5rem;
-    margin-bottom: 0;
+    font-size: 0.78rem;
+    font-weight: 850;
+    text-transform: uppercase;
 }
 
-.admin-test-drives-index-inline-28 {
-    width: 28px;
-    height: 28px;
-    color: var(--accent);
+.test-drive-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.025);
 }
 
-.admin-test-drives-index-inline-29 {
-    margin: 0;
-    font-size: 1.8rem;
-    color: var(--text);
-    display: flex;
+.code-pill {
+    display: inline-flex;
     align-items: center;
-    gap: 10px;
+    min-height: 30px;
+    padding: 0.25rem 0.55rem;
+    border: 1px solid rgba(201, 169, 98, 0.35);
+    border-radius: 8px;
+    background: rgba(201, 169, 98, 0.08);
+    color: var(--accent);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-weight: 850;
 }
 
-.admin-test-drives-index-inline-30 {
+.main-text {
+    color: var(--text);
+    font-weight: 800;
+    overflow-wrap: anywhere;
+}
+
+.sub-text {
+    margin-top: 0.22rem;
+    color: var(--muted);
+    font-size: 0.84rem;
+}
+
+.sub-text span {
+    margin-left: 0.35rem;
+}
+
+.date-cell {
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 0.28rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 850;
+    white-space: nowrap;
+}
+
+.badge-pending {
+    background: rgba(234, 179, 8, 0.12);
+    color: #facc15;
+}
+
+.badge-approved {
+    background: rgba(59, 130, 246, 0.12);
+    color: #60a5fa;
+}
+
+.badge-completed {
+    background: rgba(16, 185, 129, 0.12);
+    color: #34d399;
+}
+
+.badge-rejected {
+    background: rgba(239, 68, 68, 0.12);
+    color: #f87171;
+}
+
+.badge-unknown {
+    background: rgba(148, 163, 184, 0.12);
+    color: #cbd5e1;
+}
+
+.empty-cell {
+    padding: 2.5rem;
+    color: var(--muted);
+    text-align: center;
+}
+
+.pagination-wrap {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-bottom: 2rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+@media (max-width: 1080px) {
+    .test-drive-stats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .filter-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .filter-field.is-wide {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 680px) {
+    .test-drive-page {
+        padding: 1.25rem 0.75rem;
+    }
+
+    .test-drive-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .test-drive-stats,
+    .filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-field.is-wide {
+        grid-column: auto;
+    }
+
+    .filter-actions {
+        width: 100%;
+    }
+
+    .filter-actions .btn-action,
+    .test-drive-header .btn-action {
+        flex: 1;
+        width: 100%;
+    }
 }
