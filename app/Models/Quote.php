@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 
 class Quote extends Model
@@ -96,6 +97,11 @@ class Quote extends Model
     public function testDrive(): BelongsTo
     {
         return $this->belongsTo(Ticket::class, 'test_drive_id', 'ticket_id');
+    }
+
+    public function order(): HasOne
+    {
+        return $this->hasOne(Order::class, 'quote_id', 'quote_id');
     }
 
     public function statusLabel(): string

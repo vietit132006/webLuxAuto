@@ -68,6 +68,21 @@
     color: var(--text);
 }
 
+.admin-quotes-disabled {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(148, 163, 184, 0.24);
+    border-radius: 8px;
+    background: rgba(148, 163, 184, 0.09);
+    color: var(--muted);
+    cursor: not-allowed;
+    font: inherit;
+    font-weight: 850;
+    padding: 0 1rem;
+}
+
 .admin-quotes-secondary:hover,
 .admin-quotes-secondary:focus-visible,
 .quote-filter-actions a:hover,
@@ -211,6 +226,18 @@
 
 .quote-send-form {
     margin: 0;
+}
+
+.quote-disabled-action {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.quote-disabled-action span {
+    max-width: 220px;
+    color: var(--muted);
+    font-size: 0.76rem;
+    line-height: 1.35;
 }
 
 .quotes-table-wrap {
@@ -713,6 +740,7 @@
 
     .admin-quotes-primary,
     .admin-quotes-secondary,
+    .admin-quotes-disabled,
     .quote-filter-actions button,
     .quote-filter-actions a,
     .quote-danger-panel button {

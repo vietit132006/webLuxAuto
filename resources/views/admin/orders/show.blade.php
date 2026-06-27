@@ -133,6 +133,24 @@
                 </div>
             </section>
 
+            @if($order->quote)
+                <section class="panel source-panel">
+                    <h2 class="panel-title">Nguồn tạo đơn</h2>
+                    <div class="info-group">
+                        <div class="info-label">Báo giá</div>
+                        <div class="info-value">
+                            @can('quotes.view')
+                                <a class="order-source-link" href="{{ route('admin.quotes.show', $order->quote) }}">
+                                    Từ báo giá {{ $order->quote->quote_code }}
+                                </a>
+                            @else
+                                Từ báo giá {{ $order->quote->quote_code }}
+                            @endcan
+                        </div>
+                    </div>
+                </section>
+            @endif
+
             <section class="panel">
                 <h2 class="panel-title">Thanh toán</h2>
                 <div class="summary-row">

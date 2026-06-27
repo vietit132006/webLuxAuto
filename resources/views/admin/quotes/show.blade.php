@@ -26,11 +26,34 @@
                 </form>
                 <a class="admin-quotes-primary" href="{{ route('admin.quotes.edit', $quote) }}">Sửa báo giá</a>
             @endcan
+            @if($quote->order)
+                @can('orders.view')
+                    <a class="admin-quotes-primary" href="{{ route('admin.orders.show', $quote->order->order_id) }}">Xem đơn hàng</a>
+                @endcan
+            @else
+                @can('orders.create')
+                    @if($quote->status === \App\Models\Quote::STATUS_ACCEPTED)
+                        <form class="quote-send-form" action="{{ route('admin.quotes.createOrder', $quote) }}" method="post">
+                            @csrf
+                            <button class="admin-quotes-primary" type="submit">Tạo đơn hàng</button>
+                        </form>
+                    @else
+                        <div class="quote-disabled-action">
+                            <button class="admin-quotes-disabled" type="button" disabled>Tạo đơn hàng</button>
+                            <span>Chỉ có thể tạo đơn khi khách đồng ý báo giá</span>
+                        </div>
+                    @endif
+                @endcan
+            @endif
         </div>
     </div>
 
     @if(session('success'))
         <div class="admin-quotes-alert is-success">{{ session('success') }}</div>
+    @endif
+
+    @if($errors->any())
+        <div class="admin-quotes-alert is-error">{{ $errors->first() }}</div>
     @endif
 
     @if(session('quote_public_url'))
@@ -125,6 +148,19 @@
             </div>
         </dl>
     </section>
+
+    @if($quote->order)
+        <section class="quote-source-panel">
+            <div>
+                <span>Đơn hàng liên quan</span>
+                <strong>{{ $quote->order->display_code }}</strong>
+                <p>Đơn hàng được tạo từ báo giá {{ $quote->quote_code }}.</p>
+            </div>
+            @can('orders.view')
+                <a class="admin-quotes-secondary" href="{{ route('admin.orders.show', $quote->order->order_id) }}">Xem chi tiết đơn hàng</a>
+            @endcan
+        </section>
+    @endif
 
     <section class="quote-pricing-panel">
         <div class="quote-section-title">

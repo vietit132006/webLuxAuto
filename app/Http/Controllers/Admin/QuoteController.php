@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Car;
 use App\Models\Customer;
+use App\Models\Order;
+use App\Models\OrderDetail;
 use App\Models\Quote;
 use App\Models\Ticket;
 use App\Models\User;
@@ -15,6 +17,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class QuoteController extends Controller
@@ -153,7 +156,7 @@ class QuoteController extends Controller
 
     public function show(Quote $quote): View
     {
-        $quote->load(['customer', 'car.modelInfo.brand', 'user', 'testDrive']);
+        $quote->load(['customer', 'car.modelInfo.brand', 'user', 'testDrive', 'order']);
 
         return view('admin.quotes.show', compact('quote'));
     }
@@ -196,6 +199,85 @@ class QuoteController extends Controller
             ->route('admin.quotes.show', $quote)
             ->with('success', 'Đã tạo link báo giá để gửi cho khách hàng.')
             ->with('quote_public_url', $quote->publicUrl());
+    }
+
+    public function createOrderFromQuote(Request $request, Quote $quote): RedirectResponse
+    {
+        [$order, $created, $quoteCode] = DB::transaction(function () use ($quote, $request): array {
+            $lockedQuote = Quote::query()
+                ->with(['customer', 'car'])
+                ->whereKey($quote->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($lockedQuote->status !== Quote::STATUS_ACCEPTED) {
+                throw ValidationException::withMessages([
+                    'quote' => 'Chỉ có thể tạo đơn khi khách đồng ý báo giá.',
+                ]);
+            }
+
+            $existingOrder = Order::query()
+                ->where('quote_id', $lockedQuote->quote_id)
+                ->first();
+
+            if ($existingOrder) {
+                return [$existingOrder, false, $lockedQuote->quote_code];
+            }
+
+            if (!$lockedQuote->customer) {
+                throw ValidationException::withMessages([
+                    'customer' => 'Báo giá chưa có khách hàng hợp lệ để tạo đơn hàng.',
+                ]);
+            }
+
+            if (!$lockedQuote->car) {
+                throw ValidationException::withMessages([
+                    'car' => 'Báo giá chưa có xe hợp lệ để tạo đơn hàng.',
+                ]);
+            }
+
+            $customerUser = $this->customerUserForQuote($lockedQuote);
+
+            if (!$customerUser) {
+                throw ValidationException::withMessages([
+                    'customer' => 'Chưa tìm thấy tài khoản khách hàng trùng email/SĐT với khách hàng trong báo giá.',
+                ]);
+            }
+
+            $order = Order::create([
+                'quote_id' => $lockedQuote->quote_id,
+                'user_id' => $customerUser->user_id,
+                'total_price' => $lockedQuote->total_price,
+                'deposit_amount' => 0,
+                'status' => Order::STATUS_PENDING,
+            ]);
+
+            OrderDetail::create([
+                'order_id' => $order->order_id,
+                'car_id' => $lockedQuote->car_id,
+                'quantity' => 1,
+                'price' => $lockedQuote->total_price,
+            ]);
+
+            $order->statusHistories()->create([
+                'old_status' => null,
+                'new_status' => (string) Order::STATUS_PENDING,
+                'user_id' => $request->user()?->getKey(),
+                'note' => 'Tạo đơn hàng từ báo giá ' . $lockedQuote->quote_code . '.',
+            ]);
+
+            return [$order, true, $lockedQuote->quote_code];
+        });
+
+        if (!$created) {
+            return redirect()
+                ->route('admin.orders.show', $order->order_id)
+                ->with('success', 'Báo giá ' . $quoteCode . ' đã có đơn hàng ' . $order->display_code . '.');
+        }
+
+        return redirect()
+            ->route('admin.orders.show', $order->order_id)
+            ->with('success', 'Đã tạo đơn hàng ' . $order->display_code . ' từ báo giá ' . $quoteCode . ' thành công.');
     }
 
     public function pdf(Quote $quote, QuotePdfService $quotePdf): Response
@@ -397,6 +479,44 @@ class QuoteController extends Controller
 
         return $query
             ->orderByDesc('updated_at')
+            ->first();
+    }
+
+    private function customerUserForQuote(Quote $quote): ?User
+    {
+        $email = trim((string) $quote->customer?->email);
+        $phone = trim((string) $quote->customer?->phone);
+
+        if ($email === '' && $phone === '') {
+            return null;
+        }
+
+        $query = User::query()
+            ->where('role', 'customer')
+            ->where(function ($userQuery) use ($email, $phone): void {
+                if ($email !== '') {
+                    $userQuery->where('email', $email);
+                }
+
+                if ($phone !== '') {
+                    if ($email === '') {
+                        $userQuery->where('phone', $phone);
+                    } else {
+                        $userQuery->orWhere('phone', $phone);
+                    }
+                }
+            });
+
+        if ($email !== '') {
+            $query->orderByRaw('CASE WHEN email = ? THEN 0 ELSE 1 END', [$email]);
+        }
+
+        if ($phone !== '') {
+            $query->orderByRaw('CASE WHEN phone = ? THEN 0 ELSE 1 END', [$phone]);
+        }
+
+        return $query
+            ->orderByDesc('user_id')
             ->first();
     }
 

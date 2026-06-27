@@ -135,7 +135,7 @@ class AdminOrderController extends Controller
 
     public function show($id)
     {
-        $order = Order::with(['user', 'details.car', 'statusHistories.user', 'depositConfirmer'])
+        $order = Order::with(['user', 'details.car', 'statusHistories.user', 'depositConfirmer', 'quote'])
             ->findOrFail($id);
 
         return view('admin.orders.show', [

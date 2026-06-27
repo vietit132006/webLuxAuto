@@ -293,6 +293,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/quotes/{quote}/send', [QuoteController::class, 'send'])
             ->middleware('permission:quotes.edit')
             ->name('quotes.send');
+        Route::post('/quotes/{quote}/create-order', [QuoteController::class, 'createOrderFromQuote'])
+            ->middleware('permission:orders.create')
+            ->name('quotes.createOrder');
         Route::get('/quotes/{quote}', [QuoteController::class, 'show'])
             ->middleware('permission:quotes.view')
             ->name('quotes.show');

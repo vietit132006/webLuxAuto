@@ -135,6 +135,18 @@
     overflow-wrap: anywhere;
 }
 
+.order-source-link {
+    color: var(--accent);
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.order-source-link:hover,
+.order-source-link:focus-visible {
+    color: #d9bd78;
+    outline: none;
+}
+
 .summary-row,
 .summary-total {
     display: flex;
