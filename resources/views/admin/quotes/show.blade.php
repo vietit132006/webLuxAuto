@@ -89,6 +89,20 @@
                 <dt>Người lập</dt>
                 <dd>{{ $quote->user->name ?? 'Hệ thống' }}</dd>
             </div>
+            @if($quote->testDrive)
+                <div>
+                    <dt>Nguồn tạo</dt>
+                    <dd>
+                        @can('test_drives.view')
+                            <a class="quote-source-link" href="{{ route('admin.test_drives.show', $quote->testDrive->ticket_id) }}">
+                                Từ lịch lái thử {{ $quote->testDrive->display_code }}
+                            </a>
+                        @else
+                            Từ lịch lái thử {{ $quote->testDrive->display_code }}
+                        @endcan
+                    </dd>
+                </div>
+            @endif
             <div>
                 <dt>Ngày tạo</dt>
                 <dd>{{ $quote->created_at?->format('d/m/Y H:i') }}</dd>

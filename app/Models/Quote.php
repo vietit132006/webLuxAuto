@@ -31,6 +31,7 @@ class Quote extends Model
         'customer_id',
         'car_id',
         'user_id',
+        'test_drive_id',
         'vehicle_price',
         'discount_amount',
         'registration_fee',
@@ -90,6 +91,11 @@ class Quote extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
+    }
+
+    public function testDrive(): BelongsTo
+    {
+        return $this->belongsTo(Ticket::class, 'test_drive_id', 'ticket_id');
     }
 
     public function statusLabel(): string

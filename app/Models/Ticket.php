@@ -162,4 +162,11 @@ class Ticket extends Model
             ->orderByDesc('created_at')
             ->orderByDesc('id');
     }
+
+    public function quotes(): HasMany
+    {
+        return $this->hasMany(Quote::class, 'test_drive_id', 'ticket_id')
+            ->orderByDesc('created_at')
+            ->orderByDesc('quote_id');
+    }
 }

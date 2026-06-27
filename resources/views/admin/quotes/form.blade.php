@@ -14,6 +14,10 @@
     $amount = fn (string $field, $default = 0) => old($field, $quote->{$field} !== null ? $quote->{$field} : $default);
     $selectedCustomerId = (string) old('customer_id', $quote->customer_id);
     $selectedCarId = (string) old('car_id', $quote->car_id);
+    $selectedUserId = (string) old('user_id', $quote->user_id);
+    $backUrl = $isEdit
+        ? route('admin.quotes.show', $quote)
+        : ($sourceTestDrive ? route('admin.test_drives.show', $sourceTestDrive->ticket_id) : route('admin.quotes.index'));
 @endphp
 
 <div class="admin-quotes-page is-form">
@@ -23,11 +27,31 @@
             <p>Bán hàng / Báo giá</p>
         </div>
 
-        <a class="admin-quotes-secondary" href="{{ $isEdit ? route('admin.quotes.show', $quote) : route('admin.quotes.index') }}">Quay lại</a>
+        <a class="admin-quotes-secondary" href="{{ $backUrl }}">Quay lại</a>
     </div>
 
     @if($errors->any())
         <div class="admin-quotes-alert is-error">{{ $errors->first() }}</div>
+    @endif
+
+    @if($prefillWarning)
+        <div class="admin-quotes-alert is-warning">{{ $prefillWarning }}</div>
+    @endif
+
+    @if($sourceTestDrive)
+        <section class="quote-source-panel">
+            <div>
+                <span>Nguồn tạo</span>
+                <strong>Từ lịch lái thử {{ $sourceTestDrive->display_code }}</strong>
+                <p>
+                    {{ $sourceTestDrive->user->name ?? 'Khách vãng lai' }}
+                    · {{ $sourceTestDrive->car?->title ?? 'Xe chưa xác định' }}
+                </p>
+            </div>
+            @can('test_drives.view')
+                <a class="admin-quotes-secondary" href="{{ route('admin.test_drives.show', $sourceTestDrive->ticket_id) }}">Xem lịch lái thử</a>
+            @endcan
+        </section>
     @endif
 
     <form class="quote-form" method="post" action="{{ $isEdit ? route('admin.quotes.update', $quote) : route('admin.quotes.store') }}" data-quote-form data-mode="{{ $isEdit ? 'edit' : 'create' }}">
@@ -35,6 +59,7 @@
         @if($isEdit)
             @method('PUT')
         @endif
+        <input type="hidden" name="test_drive_id" value="{{ old('test_drive_id', $quote->test_drive_id) }}">
 
         <div class="quote-form-grid">
             <div class="quote-form-field">
@@ -87,6 +112,18 @@
             </div>
 
             <div class="quote-form-field">
+                <label for="user_id">Nhân viên phụ trách</label>
+                <select id="user_id" name="user_id">
+                    <option value="">Hệ thống / chưa phân công</option>
+                    @foreach($users as $user)
+                        <option value="{{ $user->user_id }}" @selected($selectedUserId === (string) $user->user_id)>
+                            {{ $user->name }}{{ $user->email ? ' - ' . $user->email : '' }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="quote-form-field">
                 <label for="vehicle_price">Giá xe</label>
                 <input id="vehicle_price" name="vehicle_price" type="number" min="0" step="1" value="{{ $amount('vehicle_price') }}" required data-quote-money="vehicle_price">
             </div>
@@ -134,7 +171,7 @@
 
         <div class="quote-form-actions">
             <button class="admin-quotes-primary" type="submit">Lưu báo giá</button>
-            <a class="admin-quotes-secondary" href="{{ $isEdit ? route('admin.quotes.show', $quote) : route('admin.quotes.index') }}">Hủy</a>
+            <a class="admin-quotes-secondary" href="{{ $backUrl }}">Hủy</a>
         </div>
     </form>
 </div>

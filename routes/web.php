@@ -351,6 +351,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/test-drives/export', [TestDriveController::class, 'export'])
             ->middleware('permission:test_drives.export')
             ->name('test_drives.export');
+        Route::get('/test-drives/{id}/quotes/create', [QuoteController::class, 'createFromTestDrive'])
+            ->middleware(['permission:test_drives.view', 'permission:quotes.create'])
+            ->name('test_drives.quotes.create');
         Route::get('/test-drives/{id}', [TestDriveController::class, 'show'])
             ->middleware('permission:test_drives.view')
             ->name('test_drives.show');
