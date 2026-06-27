@@ -9,6 +9,13 @@
 @endpush
 
 @section('content')
+@php
+    $quoteAvailableStock = $quote->car?->availableStock() ?? 0;
+    $quotePhysicalStock = $quote->car?->physicalStock() ?? 0;
+    $canCreateOrderFromQuote = $quote->status === \App\Models\Quote::STATUS_ACCEPTED
+        && $quote->car
+        && $quoteAvailableStock > 0;
+@endphp
 <div class="admin-quotes-page">
     <div class="admin-quotes-head">
         <div>
@@ -32,7 +39,7 @@
                 @endcan
             @else
                 @can('orders.create')
-                    @if($quote->status === \App\Models\Quote::STATUS_ACCEPTED)
+                    @if($canCreateOrderFromQuote)
                         <form class="quote-send-form" action="{{ route('admin.quotes.createOrder', $quote) }}" method="post">
                             @csrf
                             <button class="admin-quotes-primary" type="submit">Tạo đơn hàng</button>
@@ -40,7 +47,13 @@
                     @else
                         <div class="quote-disabled-action">
                             <button class="admin-quotes-disabled" type="button" disabled>Tạo đơn hàng</button>
-                            <span>Chỉ có thể tạo đơn khi khách đồng ý báo giá</span>
+                            <span>
+                                @if($quote->status !== \App\Models\Quote::STATUS_ACCEPTED)
+                                    Chỉ có thể tạo đơn khi khách đồng ý báo giá
+                                @elseif(!$quote->car || $quoteAvailableStock <= 0)
+                                    Xe trong báo giá hiện không còn tồn khả dụng để tạo đơn hàng.
+                                @endif
+                            </span>
                         </div>
                     @endif
                 @endcan
@@ -100,6 +113,19 @@
                 <dt>Xe báo giá</dt>
                 <dd>{{ $quote->car?->title ?? 'Xe đã xóa' }}</dd>
             </div>
+            @if($quote->car)
+                <div>
+                    <dt>Tồn khả dụng</dt>
+                    <dd>
+                        {{ number_format($quoteAvailableStock, 0, ',', '.') }}
+                        @if($quotePhysicalStock <= 0)
+                            <span class="quote-stock-warning">Hết hàng</span>
+                        @elseif($quoteAvailableStock <= 0)
+                            <span class="quote-stock-warning">Đã giữ hết</span>
+                        @endif
+                    </dd>
+                </div>
+            @endif
             <div>
                 <dt>VIN</dt>
                 <dd>{{ $quote->car?->vin ?: '---' }}</dd>

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 
@@ -102,6 +103,11 @@ class Quote extends Model
     public function order(): HasOne
     {
         return $this->hasOne(Order::class, 'quote_id', 'quote_id');
+    }
+
+    public function stockReservations(): HasMany
+    {
+        return $this->hasMany(StockReservation::class, 'quote_id', 'quote_id');
     }
 
     public function statusLabel(): string

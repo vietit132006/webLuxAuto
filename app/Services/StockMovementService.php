@@ -21,9 +21,12 @@ class StockMovementService
         string $reason,
         ?string $note = null,
         ?User $user = null,
-        ?Request $request = null
+        ?Request $request = null,
+        ?int $reservedBefore = null,
+        ?int $reservedChange = null,
+        ?int $reservedAfter = null
     ): ?StockMovement {
-        if ($change === 0) {
+        if ($change === 0 && ($reservedChange === null || $reservedChange === 0)) {
             return null;
         }
 
@@ -38,6 +41,9 @@ class StockMovementService
             'quantity_before' => $before,
             'quantity_change' => $change,
             'quantity_after' => $after,
+            'reserved_before' => $reservedBefore,
+            'reserved_change' => $reservedChange,
+            'reserved_after' => $reservedAfter,
             'reason' => $reason,
             'note' => $note,
             'ip_address' => $request?->ip() ?? request()?->ip(),

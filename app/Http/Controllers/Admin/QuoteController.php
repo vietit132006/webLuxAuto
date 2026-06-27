@@ -16,6 +16,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -203,7 +205,7 @@ class QuoteController extends Controller
 
     public function createOrderFromQuote(Request $request, Quote $quote): RedirectResponse
     {
-        [$order, $created, $quoteCode] = DB::transaction(function () use ($quote, $request): array {
+        [$order, $created, $quoteCode, $createdCustomerUser] = DB::transaction(function () use ($quote, $request): array {
             $lockedQuote = Quote::query()
                 ->with(['customer', 'car'])
                 ->whereKey($quote->getKey())
@@ -221,7 +223,7 @@ class QuoteController extends Controller
                 ->first();
 
             if ($existingOrder) {
-                return [$existingOrder, false, $lockedQuote->quote_code];
+                return [$existingOrder, false, $lockedQuote->quote_code, false];
             }
 
             if (!$lockedQuote->customer) {
@@ -236,13 +238,18 @@ class QuoteController extends Controller
                 ]);
             }
 
-            $customerUser = $this->customerUserForQuote($lockedQuote);
+            $lockedCar = Car::query()
+                ->whereKey($lockedQuote->car_id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-            if (!$customerUser) {
+            if ($lockedCar->availableStock() <= 0) {
                 throw ValidationException::withMessages([
-                    'customer' => 'Chưa tìm thấy tài khoản khách hàng trùng email/SĐT với khách hàng trong báo giá.',
+                    'stock' => 'Xe trong báo giá hiện không còn tồn khả dụng để tạo đơn hàng.',
                 ]);
             }
+
+            [$customerUser, $createdCustomerUser] = $this->findOrCreateCustomerUserForQuote($lockedQuote);
 
             $order = Order::create([
                 'quote_id' => $lockedQuote->quote_id,
@@ -254,7 +261,7 @@ class QuoteController extends Controller
 
             OrderDetail::create([
                 'order_id' => $order->order_id,
-                'car_id' => $lockedQuote->car_id,
+                'car_id' => $lockedCar->car_id,
                 'quantity' => 1,
                 'price' => $lockedQuote->total_price,
             ]);
@@ -266,13 +273,19 @@ class QuoteController extends Controller
                 'note' => 'Tạo đơn hàng từ báo giá ' . $lockedQuote->quote_code . '.',
             ]);
 
-            return [$order, true, $lockedQuote->quote_code];
+            return [$order, true, $lockedQuote->quote_code, $createdCustomerUser];
         });
 
         if (!$created) {
             return redirect()
                 ->route('admin.orders.show', $order->order_id)
                 ->with('success', 'Báo giá ' . $quoteCode . ' đã có đơn hàng ' . $order->display_code . '.');
+        }
+
+        if ($createdCustomerUser) {
+            return redirect()
+                ->route('admin.quotes.show', $quote)
+                ->with('success', 'Đã tự động tạo tài khoản khách hàng và tạo đơn hàng thành công.');
         }
 
         return redirect()
@@ -430,6 +443,9 @@ class QuoteController extends Controller
                 'license_plate',
                 'price',
                 'sale_price',
+                'stock',
+                'stock_quantity',
+                'reserved_quantity',
                 'registration_fee',
                 'license_plate_fee',
                 'insurance_fee',
@@ -482,42 +498,62 @@ class QuoteController extends Controller
             ->first();
     }
 
-    private function customerUserForQuote(Quote $quote): ?User
+    private function findOrCreateCustomerUserForQuote(Quote $quote): array
     {
         $email = trim((string) $quote->customer?->email);
         $phone = trim((string) $quote->customer?->phone);
 
-        if ($email === '' && $phone === '') {
-            return null;
-        }
-
-        $query = User::query()
-            ->where('role', 'customer')
-            ->where(function ($userQuery) use ($email, $phone): void {
-                if ($email !== '') {
-                    $userQuery->where('email', $email);
-                }
-
-                if ($phone !== '') {
-                    if ($email === '') {
-                        $userQuery->where('phone', $phone);
-                    } else {
-                        $userQuery->orWhere('phone', $phone);
-                    }
-                }
-            });
-
         if ($email !== '') {
-            $query->orderByRaw('CASE WHEN email = ? THEN 0 ELSE 1 END', [$email]);
+            $user = User::query()
+                ->where('email', $email)
+                ->first();
+
+            if ($user) {
+                return [$user, false];
+            }
         }
 
         if ($phone !== '') {
-            $query->orderByRaw('CASE WHEN phone = ? THEN 0 ELSE 1 END', [$phone]);
+            $user = User::query()
+                ->where('phone', $phone)
+                ->first();
+
+            if ($user) {
+                return [$user, false];
+            }
         }
 
-        return $query
-            ->orderByDesc('user_id')
+        if ($email === '') {
+            $email = $this->generatedCustomerEmail($quote);
+        }
+
+        $user = User::query()
+            ->where('email', $email)
             ->first();
+
+        if ($user) {
+            return [$user, false];
+        }
+
+        return [
+            User::create([
+                'name' => $quote->customer?->full_name ?: 'Khách hàng ' . $quote->quote_code,
+                'email' => $email,
+                'phone' => $phone !== '' ? $phone : null,
+                'password' => Hash::make(Str::random(12)),
+                'role' => 'customer',
+                'status' => true,
+            ]),
+            true,
+        ];
+    }
+
+    private function generatedCustomerEmail(Quote $quote): string
+    {
+        $customerId = $quote->customer?->customer_id;
+        $suffix = $customerId ? 'customer-' . $customerId : 'quote-' . $quote->quote_id;
+
+        return $suffix . '@luxauto.local';
     }
 
     private function userIdForSalesPerson(?string $salesPerson): ?int

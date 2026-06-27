@@ -52,6 +52,9 @@ class CarsExport implements FromCollection, WithHeadings, WithMapping, ShouldAut
             'interior_color',
             'stock_quantity',
             'stock',
+            'physical_stock',
+            'reserved_quantity',
+            'available_stock',
             'status',
             'status_label',
             'is_featured',
@@ -97,6 +100,9 @@ class CarsExport implements FromCollection, WithHeadings, WithMapping, ShouldAut
             $car->interior_color,
             $this->stockQuantity($car),
             $car->stock,
+            $car->physicalStock(),
+            $car->reservedStock(),
+            $car->availableStock(),
             $car->status,
             $this->statusLabel($car->status),
             (int) (bool) $car->is_featured,
@@ -111,7 +117,7 @@ class CarsExport implements FromCollection, WithHeadings, WithMapping, ShouldAut
 
     private function stockQuantity(Car $car): int
     {
-        return (int) ($car->stock_quantity ?? $car->stock ?? 0);
+        return $car->physicalStock();
     }
 
     private function conditionLabel(?string $condition): string

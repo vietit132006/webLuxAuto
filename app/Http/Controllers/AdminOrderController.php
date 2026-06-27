@@ -8,7 +8,7 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Setting;
 use App\Models\User;
-use App\Services\StockMovementService;
+use App\Services\StockReservationService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -20,7 +20,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class AdminOrderController extends Controller
 {
-    public function __construct(private readonly StockMovementService $stockMovementService)
+    public function __construct(private readonly StockReservationService $stockReservationService)
     {
     }
 
@@ -54,7 +54,7 @@ class AdminOrderController extends Controller
 
         $cars = Car::query()
             ->orderBy('name')
-            ->get(['car_id', 'name', 'price', 'stock', 'stock_quantity']);
+            ->get(['car_id', 'name', 'price', 'stock', 'stock_quantity', 'reserved_quantity']);
 
         return view('admin.orders.create', [
             'cars' => $cars,
@@ -120,7 +120,7 @@ class AdminOrderController extends Controller
 
                 $order->load(['details.car', 'user']);
                 $this->recordStatusHistory($order, null, $status, $request, 'Tạo đơn hàng từ trang quản trị.');
-                $this->stockMovementService->recordOrderStatusChange($order, null, $status, $request);
+                $this->syncStockReservationForStatus($order, null, $status, $request);
 
                 return $order;
             });
@@ -221,7 +221,7 @@ class AdminOrderController extends Controller
                     false
                 );
 
-                $this->stockMovementService->recordOrderStatusChange(
+                $this->syncStockReservationForStatus(
                     $order,
                     $statusBefore,
                     $statusAfter,
@@ -233,6 +233,51 @@ class AdminOrderController extends Controller
         }
 
         return back()->with('success', 'Đã cập nhật trạng thái đơn hàng thành công!');
+    }
+
+    private function syncStockReservationForStatus(
+        Order $order,
+        mixed $statusBefore,
+        mixed $statusAfter,
+        Request $request
+    ): void {
+        $before = Order::normalizeStatus($statusBefore);
+        $after = Order::normalizeStatus($statusAfter);
+        $actor = $request->user();
+
+        if ($after === Order::STATUS_DEPOSITED) {
+            $this->stockReservationService->reserveForOrder($order, $actor);
+
+            return;
+        }
+
+        if ($after === Order::STATUS_COMPLETED) {
+            if ($before === null) {
+                $this->stockReservationService->reserveForOrder($order, $actor);
+            }
+
+            $this->stockReservationService->completeForOrder($order, $actor);
+
+            return;
+        }
+
+        if ($after === Order::STATUS_CANCELLED) {
+            $this->stockReservationService->releaseForOrder(
+                $order,
+                'Hủy đơn hàng ' . $order->display_code . '.',
+                $actor
+            );
+
+            return;
+        }
+
+        if ($before === Order::STATUS_DEPOSITED && $after === Order::STATUS_PENDING) {
+            $this->stockReservationService->releaseForOrder(
+                $order,
+                'Đơn hàng ' . $order->display_code . ' chuyển về trạng thái chờ xử lý.',
+                $actor
+            );
+        }
     }
 
     private function validatedRequiredDeposit(Request $request): array

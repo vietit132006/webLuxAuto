@@ -191,6 +191,17 @@ class Order extends Model
         return $this->hasMany(OrderDetail::class, 'order_id', 'order_id');
     }
 
+    public function stockReservations()
+    {
+        return $this->hasMany(StockReservation::class, 'order_id', 'order_id');
+    }
+
+    public function activeStockReservations()
+    {
+        return $this->stockReservations()
+            ->where('status', StockReservation::STATUS_ACTIVE);
+    }
+
     public function quote()
     {
         return $this->belongsTo(Quote::class, 'quote_id', 'quote_id');

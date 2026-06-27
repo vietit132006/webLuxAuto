@@ -241,6 +241,7 @@ class CarController extends Controller
                     'vehicle_condition' => $validated['vehicle_condition'] ?? 'new',
                     'current_location' => $validated['current_location'] ?? null,
                     'stock_quantity' => $initialStock,
+                    'reserved_quantity' => 0,
                     'stock' => $initialStock,
                     'color' => $validated['color'] ?? null,
                     'interior_color' => $validated['interior_color'] ?? null,
@@ -326,7 +327,14 @@ class CarController extends Controller
     // Hiển thị chi tiết xe trong trang quản trị
     public function show($id)
     {
-        $car = Car::with(['brand', 'carModel', 'images'])->findOrFail($id);
+        $car = Car::with([
+            'brand',
+            'carModel',
+            'images',
+            'activeStockReservations.order.user',
+            'activeStockReservations.user',
+            'activeStockReservations.reservedBy',
+        ])->findOrFail($id);
 
         return view('admin.cars.show', compact('car'));
     }

@@ -47,10 +47,12 @@
                         <option value="">Chọn xe</option>
                         @foreach($cars as $car)
                             @php
-                                $stock = $car->stock_quantity ?? $car->stock ?? 0;
+                                $stock = $car->physicalStock();
+                                $reservedStock = $car->reservedStock();
+                                $availableStock = $car->availableStock();
                             @endphp
                             <option value="{{ $car->car_id }}" @selected((string) old('car_id') === (string) $car->car_id)>
-                                {{ $car->name }} - {{ number_format((float) $car->price, 0, ',', '.') }} đ - Kho: {{ $stock }}
+                                {{ $car->name }} - {{ number_format((float) $car->price, 0, ',', '.') }} đ - Tồn: {{ $stock }} / Giữ: {{ $reservedStock }} / Khả dụng: {{ $availableStock }}
                             </option>
                         @endforeach
                     </select>

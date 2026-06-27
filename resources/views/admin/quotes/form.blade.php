@@ -81,6 +81,7 @@
                     @foreach($cars as $car)
                         @php
                             $carPrice = (int) ($car->sale_price ?: $car->price);
+                            $availableStock = $car->availableStock();
                         @endphp
                         <option value="{{ $car->car_id }}"
                             data-price="{{ $carPrice }}"
@@ -88,8 +89,9 @@
                             data-plate-fee="{{ (int) ($car->license_plate_fee ?? 0) }}"
                             data-insurance-fee="{{ (int) ($car->insurance_fee ?? 0) }}"
                             data-other-fee="{{ (int) ($car->other_fees ?? 0) }}"
+                            data-available-stock="{{ $availableStock }}"
                             @selected($selectedCarId === (string) $car->car_id)>
-                            {{ $car->title }}{{ $car->vin ? ' - VIN ' . $car->vin : '' }}
+                            {{ $car->title }}{{ $car->vin ? ' - VIN ' . $car->vin : '' }} - Khả dụng: {{ $availableStock }}
                         </option>
                     @endforeach
                 </select>

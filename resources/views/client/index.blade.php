@@ -196,16 +196,26 @@
                                 $carId = $car->car_id ?? $car->id;
                                 $brandName = $car->carModel?->brand?->name ?? $car->brand?->name ?? null;
                                 $modelName = $car->carModel?->name ?? null;
-                                $statusText = match ((int) $car->status) {
-                                    2 => 'Đã đặt cọc',
-                                    3 => 'Đã bán',
-                                    default => 'Sẵn sàng',
-                                };
-                                $statusClass = match ((int) $car->status) {
-                                    2 => 'is-reserved',
-                                    3 => 'is-sold',
-                                    default => 'is-ready',
-                                };
+                                $physicalStock = $car->physicalStock();
+                                $availableStock = $car->availableStock();
+                                if ($physicalStock <= 0) {
+                                    $statusText = 'Hết hàng';
+                                    $statusClass = 'is-sold';
+                                } elseif ($availableStock <= 0) {
+                                    $statusText = 'Đã giữ hết';
+                                    $statusClass = 'is-reserved';
+                                } else {
+                                    $statusText = match ((int) $car->status) {
+                                        2 => 'Đã đặt cọc',
+                                        3 => 'Đã bán',
+                                        default => 'Sẵn sàng',
+                                    };
+                                    $statusClass = match ((int) $car->status) {
+                                        2 => 'is-reserved',
+                                        3 => 'is-sold',
+                                        default => 'is-ready',
+                                    };
+                                }
                                 $mileageText = is_null($car->mileage_km)
                                     ? 'Đang cập nhật'
                                     : number_format($car->mileage_km, 0, ',', '.') . ' km';

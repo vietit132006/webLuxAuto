@@ -44,6 +44,10 @@
             $salePrice = $car->sale_price;
             $actualPrice = $salePrice ?? $listPrice;
             $formatMoney = fn ($value) => number_format((int) ($value ?? 0)) . ' ₫';
+            $physicalStock = $car->physicalStock();
+            $reservedStock = $car->reservedStock();
+            $availableStock = $car->availableStock();
+            $activeReservations = $car->activeStockReservations ?? collect();
         @endphp
 
         <!-- HEADER -->
@@ -250,6 +254,59 @@
                         </div>
 
                     </div>
+                </div>
+
+                <div class="info-card inventory-card">
+                    <div class="info-card-title">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 7.5 12 3l9 4.5-9 4.5L3 7.5Zm0 0v9l9 4.5 9-4.5v-9M12 12v9" />
+                        </svg>
+                        Tình trạng tồn kho
+                    </div>
+
+                    <div class="inventory-metrics">
+                        <div>
+                            <span>Tồn vật lý</span>
+                            <strong>{{ number_format($physicalStock, 0, ',', '.') }}</strong>
+                        </div>
+                        <div>
+                            <span>Đã giữ</span>
+                            <strong>{{ number_format($reservedStock, 0, ',', '.') }}</strong>
+                        </div>
+                        <div>
+                            <span>Khả dụng</span>
+                            <strong>{{ number_format($availableStock, 0, ',', '.') }}</strong>
+                        </div>
+                    </div>
+
+                    @if ($activeReservations->isNotEmpty())
+                        <div class="reservation-list">
+                            @foreach ($activeReservations as $reservation)
+                                <div class="reservation-row">
+                                    <div>
+                                        <strong>
+                                            @if ($reservation->order)
+                                                <a href="{{ route('admin.orders.show', $reservation->order->order_id) }}">
+                                                    {{ $reservation->order->display_code }}
+                                                </a>
+                                            @else
+                                                Chưa gắn đơn hàng
+                                            @endif
+                                        </strong>
+                                        <span>{{ $reservation->user->name ?? $reservation->order?->user?->name ?? 'Khách hàng' }}</span>
+                                    </div>
+                                    <div class="reservation-meta">
+                                        <span>SL: {{ $reservation->quantity }}</span>
+                                        <span>{{ $reservation->reserved_at?->format('d/m/Y H:i') ?? '---' }}</span>
+                                        <span>{{ $reservation->status }}</span>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="reservation-empty">Chưa có giữ chỗ đang hoạt động.</p>
+                    @endif
                 </div>
 
                 <div class="info-card">

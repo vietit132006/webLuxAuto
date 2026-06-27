@@ -689,6 +689,18 @@
     color: var(--muted);
 }
 
+.quote-stock-warning {
+    display: inline-flex;
+    margin-left: 0.45rem;
+    padding: 0.18rem 0.5rem;
+    border: 1px solid rgba(251, 191, 36, 0.35);
+    border-radius: 999px;
+    background: rgba(251, 191, 36, 0.1);
+    color: #fde68a;
+    font-size: 0.78rem;
+    font-weight: 850;
+}
+
 @media (prefers-reduced-motion: reduce) {
     .admin-quotes-primary,
     .admin-quotes-secondary,

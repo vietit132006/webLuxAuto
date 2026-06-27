@@ -163,7 +163,7 @@
                             <th>Xe</th>
                             <th>Mã / VIN</th>
                             <th>Năm / Số km</th>
-                            <th>Kho / Màu sắc</th>
+                            <th>Kho / Tồn / Màu sắc</th>
                             <th>Giá</th>
                             <th>Trạng thái</th>
                             <th class="admin-cars-index-inline-2" width="230">Hành động</th>
@@ -204,6 +204,19 @@
                                 $salePrice = $car->sale_price;
                                 $brandName = $car->carModel?->brand?->name ?? null;
                                 $modelName = $car->carModel?->name ?? null;
+                                $physicalStock = $car->physicalStock();
+                                $reservedStock = $car->reservedStock();
+                                $availableStock = $car->availableStock();
+                                $inventoryBadgeText = null;
+                                $inventoryBadgeClass = null;
+
+                                if ($physicalStock <= 0) {
+                                    $inventoryBadgeText = 'Hết hàng';
+                                    $inventoryBadgeClass = 'badge-sold';
+                                } elseif ($availableStock <= 0) {
+                                    $inventoryBadgeText = 'Đã giữ hết';
+                                    $inventoryBadgeClass = 'badge-deposit';
+                                }
                             @endphp
                             <tr>
                                 <td>
@@ -238,8 +251,14 @@
                                     <span class="info-sub">Lăn bánh: {{ $onRoadDate ?: 'Chưa nhập' }}</span>
                                 </td>
 
-                                <td data-label="Kho / Màu sắc">
+                                <td data-label="Kho / Tồn / Màu sắc">
                                     <span class="info-main">Vị trí: {{ $car->current_location ?: 'Chưa cập nhật' }}</span>
+                                    <span class="info-sub">Tồn vật lý: {{ number_format($physicalStock, 0, ',', '.') }}</span>
+                                    <span class="info-sub">Đã giữ: {{ number_format($reservedStock, 0, ',', '.') }}</span>
+                                    <span class="info-sub">Khả dụng: {{ number_format($availableStock, 0, ',', '.') }}</span>
+                                    @if ($inventoryBadgeText)
+                                        <span class="lux-badge {{ $inventoryBadgeClass }} inventory-stock-badge">{{ $inventoryBadgeText }}</span>
+                                    @endif
                                     <span class="info-main">Ngoại thất: {{ $car->color ?: '-' }}</span>
                                     <span class="info-sub">Nội thất: {{ $car->interior_color ?: '-' }}</span>
                                 </td>
