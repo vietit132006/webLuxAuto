@@ -35,6 +35,7 @@ class Order extends Model
 
     protected $fillable = [
         'order_code',
+        'quote_id',
         'user_id',
         'total_price',
         'deposit_amount',
@@ -188,6 +189,27 @@ class Order extends Model
     public function details()
     {
         return $this->hasMany(OrderDetail::class, 'order_id', 'order_id');
+    }
+
+    public function stockReservations()
+    {
+        return $this->hasMany(StockReservation::class, 'order_id', 'order_id');
+    }
+
+    public function delivery()
+    {
+        return $this->hasOne(Delivery::class, 'order_id', 'order_id');
+    }
+
+    public function activeStockReservations()
+    {
+        return $this->stockReservations()
+            ->where('status', StockReservation::STATUS_ACTIVE);
+    }
+
+    public function quote()
+    {
+        return $this->belongsTo(Quote::class, 'quote_id', 'quote_id');
     }
 
     public function user()

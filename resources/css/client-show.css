@@ -394,6 +394,13 @@
         font-size: 0.92rem;
     }
 
+    .deposit-card__hint {
+        margin: 0.7rem 0 0;
+        color: #fde68a;
+        font-size: 0.88rem;
+        line-height: 1.55;
+    }
+
     .detail-actions {
         display: grid;
         gap: 0.65rem;

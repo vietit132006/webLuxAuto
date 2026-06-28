@@ -40,6 +40,9 @@ class InventoryReportExport implements FromCollection, WithHeadings, WithMapping
             'current_location',
             'stock_quantity',
             'stock',
+            'physical_stock',
+            'reserved_quantity',
+            'available_stock',
             'unit_inventory_price',
             'inventory_value',
             'price',
@@ -60,6 +63,8 @@ class InventoryReportExport implements FromCollection, WithHeadings, WithMapping
     public function map($car): array
     {
         $stockQuantity = $this->stockQuantity($car);
+        $reservedQuantity = $car->reservedStock();
+        $availableStock = $car->availableStock();
         $unitValue = (int) ($car->sale_price ?? $car->list_price ?? $car->price ?? 0);
         $rollingValue = (int) ($car->estimated_rolling_price ?? 0);
 
@@ -82,6 +87,9 @@ class InventoryReportExport implements FromCollection, WithHeadings, WithMapping
             $car->current_location,
             $stockQuantity,
             $car->stock,
+            $stockQuantity,
+            $reservedQuantity,
+            $availableStock,
             $unitValue,
             $stockQuantity * $unitValue,
             $car->price,
@@ -101,7 +109,7 @@ class InventoryReportExport implements FromCollection, WithHeadings, WithMapping
 
     private function stockQuantity(Car $car): int
     {
-        return (int) ($car->stock_quantity ?? $car->stock ?? 0);
+        return $car->physicalStock();
     }
 
     private function conditionLabel(?string $condition): string

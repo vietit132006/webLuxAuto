@@ -43,6 +43,9 @@ class TestDriveService
                 'notes.user',
                 'files.uploadedBy',
                 'activityLogs.user',
+                'quotes.customer',
+                'quotes.car.modelInfo.brand',
+                'quotes.user',
             ])
             ->findOrFail($id);
     }

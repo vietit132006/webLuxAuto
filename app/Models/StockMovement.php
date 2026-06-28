@@ -12,6 +12,7 @@ class StockMovement extends Model
     public const ACTION_ADJUSTMENT = 'adjustment';
     public const ACTION_INVENTORY_CHECK = 'inventory_check';
     public const ACTION_RESERVED = 'reserved';
+    public const ACTION_RELEASE_RESERVATION = 'release_reservation';
     public const ACTION_DELIVERY = 'delivery';
     public const ACTION_CANCEL_ORDER = 'cancel_order';
     public const ACTION_RETURN = 'return';
@@ -22,6 +23,7 @@ class StockMovement extends Model
         self::ACTION_ADJUSTMENT,
         self::ACTION_INVENTORY_CHECK,
         self::ACTION_RESERVED,
+        self::ACTION_RELEASE_RESERVATION,
         self::ACTION_DELIVERY,
         self::ACTION_CANCEL_ORDER,
         self::ACTION_RETURN,
@@ -33,6 +35,7 @@ class StockMovement extends Model
         self::ACTION_ADJUSTMENT => 'Điều chỉnh',
         self::ACTION_INVENTORY_CHECK => 'Kiểm tra tồn',
         self::ACTION_RESERVED => 'Giữ chỗ',
+        self::ACTION_RELEASE_RESERVATION => 'Nhả giữ chỗ',
         self::ACTION_DELIVERY => 'Giao xe',
         self::ACTION_CANCEL_ORDER => 'Hủy đơn',
         self::ACTION_RETURN => 'Hoàn trả',
@@ -45,6 +48,9 @@ class StockMovement extends Model
         'quantity_before',
         'quantity_change',
         'quantity_after',
+        'reserved_before',
+        'reserved_change',
+        'reserved_after',
         'reason',
         'note',
         'ip_address',
@@ -56,6 +62,9 @@ class StockMovement extends Model
             'quantity_before' => 'integer',
             'quantity_change' => 'integer',
             'quantity_after' => 'integer',
+            'reserved_before' => 'integer',
+            'reserved_change' => 'integer',
+            'reserved_after' => 'integer',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class Car extends Model
@@ -42,6 +43,7 @@ class Car extends Model
         'vehicle_condition',
         'current_location',
         'stock_quantity',
+        'reserved_quantity',
         'stock',
     ];
 
@@ -60,6 +62,7 @@ class Car extends Model
             'estimated_rolling_price' => 'integer',
             'mileage_km' => 'integer',
             'stock_quantity' => 'integer',
+            'reserved_quantity' => 'integer',
             'stock' => 'integer',
             'stock_in_date' => 'date',
             'on_road_date' => 'date',
@@ -91,6 +94,17 @@ class Car extends Model
     public function stockMovements()
     {
         return $this->hasMany(StockMovement::class, 'car_id', 'car_id');
+    }
+
+    public function stockReservations()
+    {
+        return $this->hasMany(StockReservation::class, 'car_id', 'car_id');
+    }
+
+    public function activeStockReservations()
+    {
+        return $this->stockReservations()
+            ->where('status', StockReservation::STATUS_ACTIVE);
     }
 
     public function quotes()
@@ -127,6 +141,86 @@ class Car extends Model
         }
 
         return number_format($this->estimated_rolling_price, 0, ',', '.') . ' VNĐ';
+    }
+
+    public function physicalStock(): int
+    {
+        return (int) ($this->stock_quantity ?? $this->stock ?? 0);
+    }
+
+    public function reservedStock(): int
+    {
+        return max(0, (int) ($this->reserved_quantity ?? 0));
+    }
+
+    public function availableStock(): int
+    {
+        return max(0, $this->physicalStock() - $this->reservedStock());
+    }
+
+    public function isSaleBlockedByStatus(): bool
+    {
+        $status = strtolower((string) $this->status);
+        $blockedStatuses = ['3', 'sold', 'hidden', 'out_of_stock', 'out-of-stock', 'inactive'];
+
+        return in_array($status, $blockedStatuses, true);
+    }
+
+    public function saleableStock(): int
+    {
+        return $this->isSaleBlockedByStatus() ? 0 : $this->availableStock();
+    }
+
+    public function isOutOfStock(): bool
+    {
+        return $this->physicalStock() <= 0;
+    }
+
+    public function isFullyReserved(): bool
+    {
+        return $this->physicalStock() > 0 && $this->availableStock() <= 0;
+    }
+
+    public function isAvailableForSale(): bool
+    {
+        return $this->saleableStock() > 0;
+    }
+
+    public function scopeAvailableForSale(Builder $query): Builder
+    {
+        return $query
+            ->whereRaw('(COALESCE(stock_quantity, stock, 0) - COALESCE(reserved_quantity, 0)) > 0')
+            ->where(function (Builder $statusQuery): void {
+                $statusQuery->whereNull('status')
+                    ->orWhere('status', '!=', 3);
+            });
+    }
+
+    public function scopeWithActiveBrand(Builder $query): Builder
+    {
+        return $query->whereHas('carModel.brand', function (Builder $brandQuery): void {
+            $brandQuery->active();
+        });
+    }
+
+    public function getPhysicalStockAttribute(): int
+    {
+        return $this->physicalStock();
+    }
+
+    public function getReservedStockAttribute(): int
+    {
+        return $this->reservedStock();
+    }
+
+    public function getAvailableStockAttribute(): int
+    {
+        return $this->availableStock();
+    }
+
+    public function getSaleableStockAttribute(): int
+    {
+        return $this->saleableStock();
     }
 
     public function carModel()

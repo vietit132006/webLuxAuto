@@ -177,7 +177,7 @@
 
 .admin-table {
     width: 100%;
-    min-width: 1120px;
+    min-width: 1220px;
     border-collapse: collapse;
     text-align: left;
 }
@@ -269,6 +269,31 @@
 .badge-unknown {
     background: rgba(148, 163, 184, 0.12);
     color: #cbd5e1;
+}
+
+.delivery-badge-pending {
+    background: rgba(234, 179, 8, 0.12);
+    color: #facc15;
+}
+
+.delivery-badge-preparing {
+    background: rgba(59, 130, 246, 0.12);
+    color: #60a5fa;
+}
+
+.delivery-badge-ready {
+    background: rgba(168, 85, 247, 0.13);
+    color: #c084fc;
+}
+
+.delivery-badge-delivered {
+    background: rgba(16, 185, 129, 0.13);
+    color: #34d399;
+}
+
+.delivery-badge-cancelled {
+    background: rgba(239, 68, 68, 0.12);
+    color: #f87171;
 }
 
 .status-form {

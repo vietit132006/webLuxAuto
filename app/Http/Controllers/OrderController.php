@@ -6,7 +6,7 @@ use App\Models\Car;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Setting;
-use App\Services\StockMovementService;
+use App\Services\StockReservationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -14,7 +14,7 @@ use InvalidArgumentException;
 
 class OrderController extends Controller
 {
-    public function __construct(private readonly StockMovementService $stockMovementService)
+    public function __construct(private readonly StockReservationService $stockReservationService)
     {
     }
 
@@ -35,9 +35,11 @@ class OrderController extends Controller
                 ->withErrors(['Lỗi' => 'Vui lòng đăng nhập để đặt cọc xe.']);
         }
 
-        $car = Car::findOrFail($car_id);
+        $car = Car::query()
+            ->withActiveBrand()
+            ->findOrFail($car_id);
 
-        if ((int) ($car->stock_quantity ?? $car->stock ?? 0) <= 0) {
+        if (!$car->isAvailableForSale() || $car->availableStock() <= 0) {
             return back()->withErrors([
                 'stock' => 'Xe hiện không còn tồn kho để đặt cọc.',
             ]);
@@ -176,12 +178,7 @@ class OrderController extends Controller
                             'Thanh toán cọc VNPay thành công.'
                         );
 
-                        $this->stockMovementService->recordOrderStatusChange(
-                            $order,
-                            $statusBefore,
-                            Order::STATUS_DEPOSITED,
-                            $request
-                        );
+                        $this->stockReservationService->reserveForOrder($order, $request->user());
                     });
                 } catch (InvalidArgumentException $e) {
                     return redirect()->route('order.history')->withErrors(['stock' => $e->getMessage()]);

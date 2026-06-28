@@ -164,6 +164,9 @@ Route::middleware('auth')->group(function () {
         Route::put('/brands/{id}', [BrandController::class, 'update'])
             ->middleware('permission:cars.edit')
             ->name('brands.update');
+        Route::patch('/brands/{id}/toggle-status', [BrandController::class, 'toggleStatus'])
+            ->middleware('permission:cars.edit')
+            ->name('brands.toggle-status');
         Route::delete('/brands/{id}', [BrandController::class, 'destroy'])
             ->middleware('permission:cars.delete')
             ->name('brands.destroy');
@@ -252,6 +255,21 @@ Route::middleware('auth')->group(function () {
         Route::post('/orders/{id}/status', [AdminOrderController::class, 'updateStatus'])
             ->middleware('permission:orders.edit')
             ->name('orders.updateStatus');
+        Route::patch('/orders/{order}/delivery', [AdminOrderController::class, 'updateDelivery'])
+            ->middleware('permission:orders.edit')
+            ->name('orders.updateDelivery');
+        Route::post('/orders/{order}/delivery/files', [AdminOrderController::class, 'uploadDeliveryFiles'])
+            ->middleware('permission:orders.edit')
+            ->name('orders.deliveryFiles.store');
+        Route::get('/delivery-files/{deliveryFile}/view', [AdminOrderController::class, 'viewDeliveryFile'])
+            ->middleware('permission:orders.view')
+            ->name('orders.deliveryFiles.view');
+        Route::get('/delivery-files/{deliveryFile}/download', [AdminOrderController::class, 'downloadDeliveryFile'])
+            ->middleware('permission:orders.view')
+            ->name('orders.deliveryFiles.download');
+        Route::delete('/delivery-files/{deliveryFile}', [AdminOrderController::class, 'deleteDeliveryFile'])
+            ->middleware('permission:orders.edit')
+            ->name('orders.deliveryFiles.destroy');
 
         Route::get('/customers', [CustomerController::class, 'index'])
             ->middleware('permission:customers.view')
@@ -293,6 +311,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/quotes/{quote}/send', [QuoteController::class, 'send'])
             ->middleware('permission:quotes.edit')
             ->name('quotes.send');
+        Route::post('/quotes/{quote}/create-order', [QuoteController::class, 'createOrderFromQuote'])
+            ->middleware('permission:orders.create')
+            ->name('quotes.createOrder');
         Route::get('/quotes/{quote}', [QuoteController::class, 'show'])
             ->middleware('permission:quotes.view')
             ->name('quotes.show');
@@ -351,6 +372,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/test-drives/export', [TestDriveController::class, 'export'])
             ->middleware('permission:test_drives.export')
             ->name('test_drives.export');
+        Route::get('/test-drives/{id}/quotes/create', [QuoteController::class, 'createFromTestDrive'])
+            ->middleware(['permission:test_drives.view', 'permission:quotes.create'])
+            ->name('test_drives.quotes.create');
         Route::get('/test-drives/{id}', [TestDriveController::class, 'show'])
             ->middleware('permission:test_drives.view')
             ->name('test_drives.show');

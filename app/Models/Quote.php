@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 
 class Quote extends Model
@@ -31,6 +33,7 @@ class Quote extends Model
         'customer_id',
         'car_id',
         'user_id',
+        'test_drive_id',
         'vehicle_price',
         'discount_amount',
         'registration_fee',
@@ -90,6 +93,21 @@ class Quote extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
+    }
+
+    public function testDrive(): BelongsTo
+    {
+        return $this->belongsTo(Ticket::class, 'test_drive_id', 'ticket_id');
+    }
+
+    public function order(): HasOne
+    {
+        return $this->hasOne(Order::class, 'quote_id', 'quote_id');
+    }
+
+    public function stockReservations(): HasMany
+    {
+        return $this->hasMany(StockReservation::class, 'quote_id', 'quote_id');
     }
 
     public function statusLabel(): string

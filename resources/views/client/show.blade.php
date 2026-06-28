@@ -12,22 +12,36 @@
     $brandName = $carModel?->brand?->name ?? $car->brand?->name ?? 'Hãng khác';
     $modelName = $carModel?->name;
     $fullName = trim($brandName . ' ' . ($modelName ? $modelName . ' ' : '') . $car->name);
-    $statusText = match ((int) $car->status) {
-        2 => 'Đã đặt cọc',
-        3 => 'Đã bán',
-        default => 'Sẵn sàng',
-    };
-    $quickStatusText = match ((int) $car->status) {
-        2 => 'Đã đặt cọc',
-        3 => 'Đã bán',
-        default => 'Xe mới 100%',
-    };
-    $statusClass = match ((int) $car->status) {
-        2 => 'is-reserved',
-        3 => 'is-sold',
-        default => 'is-ready',
-    };
-    $canDepositCar = (int) $car->status === 1;
+    $physicalStock = $car->physicalStock();
+    $availableStock = $car->availableStock();
+    $carStatus = (int) $car->status;
+    if ($carStatus === 3) {
+        $statusText = 'Đã bán';
+        $quickStatusText = 'Đã bán';
+        $statusClass = 'is-sold';
+    } elseif ($physicalStock <= 0) {
+        $statusText = 'Hết hàng';
+        $quickStatusText = 'Hết hàng';
+        $statusClass = 'is-sold';
+    } elseif ($availableStock <= 0) {
+        $statusText = 'Đã giữ hết';
+        $quickStatusText = 'Đã giữ hết';
+        $statusClass = 'is-reserved';
+    } else {
+        $statusText = match ($carStatus) {
+            2 => 'Đã đặt cọc',
+            default => 'Sẵn sàng',
+        };
+        $quickStatusText = match ($carStatus) {
+            2 => 'Đã đặt cọc',
+            default => 'Xe mới 100%',
+        };
+        $statusClass = match ($carStatus) {
+            2 => 'is-reserved',
+            default => 'is-ready',
+        };
+    }
+    $canDepositCar = $carStatus === 1 && $car->isAvailableForSale() && $availableStock > 0;
     $mileageText = is_null($car->mileage_km)
         ? 'Đang cập nhật'
         : number_format($car->mileage_km, 0, ',', '.') . ' km';
@@ -244,6 +258,7 @@
                         @endauth
                     @else
                         <button type="button" class="detail-btn detail-btn--disabled" disabled>{{ $statusText }}</button>
+                        <p class="deposit-card__hint">Xe chưa thể đặt cọc online, vui lòng gửi yêu cầu tư vấn để nhân viên kiểm tra phương án phù hợp.</p>
                     @endif
                 </section>
 

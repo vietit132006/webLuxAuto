@@ -581,6 +581,94 @@
             font-weight: 900;
         }
 
+        .inventory-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .inventory-metrics div {
+            min-width: 0;
+            padding: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.035);
+        }
+
+        .inventory-metrics span {
+            display: block;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .inventory-metrics strong {
+            display: block;
+            margin-top: 6px;
+            color: var(--gold);
+            font-size: 24px;
+            line-height: 1;
+        }
+
+        .reservation-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .reservation-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 12px;
+            align-items: center;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.18);
+        }
+
+        .reservation-row strong,
+        .reservation-row strong a {
+            color: var(--text);
+            text-decoration: none;
+        }
+
+        .reservation-row strong a:hover {
+            color: var(--gold);
+        }
+
+        .reservation-row span {
+            display: block;
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .reservation-meta {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .reservation-meta span {
+            margin-top: 0;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: rgba(201, 169, 98, 0.1);
+            color: var(--gold);
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .reservation-empty {
+            margin: 0;
+            color: var(--muted);
+        }
+
 /* Inline styles extracted from resources/views/admin/cars/show.blade.php */
 
 .admin-cars-show-inline-1 {
@@ -614,4 +702,15 @@
 .admin-cars-show-inline-5 {
     color: var(--muted);
     transition: 0.2s;
+}
+
+@media (max-width: 640px) {
+    .inventory-metrics,
+    .reservation-row {
+        grid-template-columns: 1fr;
+    }
+
+    .reservation-meta {
+        justify-content: flex-start;
+    }
 }

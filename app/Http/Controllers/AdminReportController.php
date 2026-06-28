@@ -112,6 +112,9 @@ class AdminReportController extends Controller
                 if ($newStock < 0) {
                     throw new \InvalidArgumentException('Tồn kho sau điều chỉnh không được âm.');
                 }
+                if ($newStock < $car->reservedStock()) {
+                    throw new \InvalidArgumentException('Không thể điều chỉnh tồn vật lý thấp hơn số lượng xe đang được giữ.');
+                }
                 $car->update([
                     'stock' => $newStock,
                     'stock_quantity' => $newStock,

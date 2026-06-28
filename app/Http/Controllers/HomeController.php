@@ -11,6 +11,7 @@ class HomeController extends Controller
     {
         $featured = Car::query()
             ->with(['brand', 'carModel.brand'])
+            ->withActiveBrand()
             ->where('is_featured', 1)
             ->latest()
             ->take(6)

@@ -37,6 +37,8 @@
             'status' => $history->new_status,
         ];
     }));
+    $relatedQuotes = $booking->quotes;
+    $primaryQuote = $relatedQuotes->first();
 @endphp
 
 @section('content')
@@ -59,7 +61,20 @@
             <h1>{{ $booking->display_code }}</h1>
             <p>Ngày tạo: {{ $booking->created_at?->format('d/m/Y H:i') }}</p>
         </div>
-        <span class="status-badge {{ $booking->test_drive_status_badge_class }}">{{ $booking->test_drive_status_label }}</span>
+        <div class="detail-actions">
+            @if($booking->status === \App\Models\Ticket::STATUS_COMPLETED)
+                @if($primaryQuote)
+                    @can('quotes.view')
+                        <a class="btn-secondary" href="{{ route('admin.quotes.show', $primaryQuote) }}">Xem báo giá</a>
+                    @endcan
+                @else
+                    @can('quotes.create')
+                        <a class="btn-primary" href="{{ route('admin.test_drives.quotes.create', $booking->ticket_id) }}">Tạo báo giá</a>
+                    @endcan
+                @endif
+            @endif
+            <span class="status-badge {{ $booking->test_drive_status_badge_class }}">{{ $booking->test_drive_status_label }}</span>
+        </div>
     </div>
 
     <div class="detail-grid">
@@ -97,6 +112,32 @@
                     <div class="request-message">{!! nl2br(e($booking->message)) !!}</div>
                 </div>
             </section>
+
+            @can('quotes.view')
+                @if($relatedQuotes->isNotEmpty())
+                    <section class="panel">
+                        <h2 class="panel-title">Báo giá liên quan</h2>
+                        <div class="quote-list">
+                            @foreach($relatedQuotes as $quote)
+                                <a class="quote-row" href="{{ route('admin.quotes.show', $quote) }}">
+                                    <div>
+                                        <strong>{{ $quote->quote_code }}</strong>
+                                        <span>
+                                            {{ $quote->customer?->full_name ?? 'Khách đã xóa' }}
+                                            · {{ $quote->car?->title ?? 'Xe đã xóa' }}
+                                        </span>
+                                        <small>{{ $quote->user->name ?? 'Hệ thống' }} · {{ $quote->created_at?->format('d/m/Y H:i') }}</small>
+                                    </div>
+                                    <div class="quote-row-side">
+                                        <span class="quote-status-pill {{ $quote->statusClass() }}">{{ $quote->statusLabel() }}</span>
+                                        <strong>{{ $quote->money('total_price') }}</strong>
+                                    </div>
+                                </a>
+                            @endforeach
+                        </div>
+                    </section>
+                @endif
+            @endcan
 
             <section class="panel">
                 <h2 class="panel-title">Timeline xử lý</h2>

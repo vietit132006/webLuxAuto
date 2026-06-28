@@ -89,6 +89,9 @@
                         <th>Trước</th>
                         <th>Thay đổi</th>
                         <th>Sau</th>
+                        <th>Giữ trước</th>
+                        <th>Giữ đổi</th>
+                        <th>Giữ sau</th>
                         <th>Người thực hiện</th>
                         <th>Lý do</th>
                         <th>Thời gian</th>
@@ -120,6 +123,15 @@
                                 {{ $movement->quantity_change > 0 ? '+' : '' }}{{ $movement->quantity_change }}
                             </td>
                             <td class="stock-number">{{ $movement->quantity_after }}</td>
+                            <td class="stock-number">{{ $movement->reserved_before ?? '---' }}</td>
+                            <td class="stock-number {{ ($movement->reserved_change ?? 0) >= 0 ? 'is-positive' : 'is-negative' }}">
+                                @if ($movement->reserved_change === null)
+                                    ---
+                                @else
+                                    {{ $movement->reserved_change > 0 ? '+' : '' }}{{ $movement->reserved_change }}
+                                @endif
+                            </td>
+                            <td class="stock-number">{{ $movement->reserved_after ?? '---' }}</td>
                             <td>
                                 <div class="stock-user-name">{{ $movement->user->name ?? 'Hệ thống' }}</div>
                                 @if ($movement->user?->email)
@@ -136,7 +148,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="stock-empty">Chưa có lịch sử tồn kho.</td>
+                            <td colspan="12" class="stock-empty">Chưa có lịch sử tồn kho.</td>
                         </tr>
                     @endforelse
                 </tbody>

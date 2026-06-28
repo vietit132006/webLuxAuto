@@ -20,7 +20,8 @@ class CompareController extends Controller
 
         $cars = collect();
         if ($ids !== []) {
-            $cars = Car::with('brand')
+            $cars = Car::with(['brand', 'carModel.brand'])
+                ->withActiveBrand()
                 ->whereIn('car_id', $ids)
                 ->get()
                 ->sortBy(fn ($c) => array_search($c->car_id, $ids, true));
