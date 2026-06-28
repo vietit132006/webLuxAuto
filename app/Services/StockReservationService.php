@@ -172,7 +172,8 @@ class StockReservationService
                     throw new InvalidArgumentException('Tồn kho sau thay đổi không được âm.');
                 }
 
-                $physicalAfter = $physicalBefore - $quantity;
+                $physicalAfter = 0;
+                $physicalChange = -$physicalBefore;
                 $reservedAfter = max(0, $reservedBefore - $completedReservedQuantity);
 
                 $updates = [
@@ -181,9 +182,7 @@ class StockReservationService
                     'reserved_quantity' => $reservedAfter,
                 ];
 
-                if ($physicalAfter === 0) {
-                    $updates['status'] = 3;
-                }
+                $updates['status'] = 3;
 
                 $car->forceFill($updates)->save();
 
@@ -195,7 +194,7 @@ class StockReservationService
                 $this->stockMovementService->recordMovement(
                     $car,
                     $physicalBefore,
-                    -$quantity,
+                    $physicalChange,
                     $physicalAfter,
                     StockMovement::ACTION_DELIVERY,
                     'Giao xe cho đơn hàng ' . $lockedOrder->display_code,
