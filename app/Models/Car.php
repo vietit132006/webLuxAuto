@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class Car extends Model
@@ -174,6 +175,23 @@ class Car extends Model
 
         return $this->availableStock() > 0
             && !in_array($status, $blockedStatuses, true);
+    }
+
+    public function scopeAvailableForSale(Builder $query): Builder
+    {
+        return $query
+            ->whereRaw('(COALESCE(stock_quantity, stock, 0) - COALESCE(reserved_quantity, 0)) > 0')
+            ->where(function (Builder $statusQuery): void {
+                $statusQuery->whereNull('status')
+                    ->orWhere('status', '!=', 3);
+            });
+    }
+
+    public function scopeWithActiveBrand(Builder $query): Builder
+    {
+        return $query->whereHas('carModel.brand', function (Builder $brandQuery): void {
+            $brandQuery->active();
+        });
     }
 
     public function getPhysicalStockAttribute(): int

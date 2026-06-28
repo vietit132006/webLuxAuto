@@ -7,6 +7,7 @@ use App\Models\Brand;
 use App\Models\OrderDetail;
 use App\Models\Review;
 use App\Models\Ticket;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
@@ -18,10 +19,19 @@ class CarController extends Controller
     public function index(Request $request)
     {
         // 1. Lấy danh sách các Hãng xe để đổ ra Sidebar lọc
-        $brands = Brand::all();
+        $brands = Brand::query()
+            ->active()
+            ->whereHas('carModels.cars', function (Builder $query): void {
+                $query->availableForSale();
+            })
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
 
         // 2. Bắt đầu câu truy vấn (Query Builder)
-        $query = Car::query()->with(['brand', 'carModel.brand']);
+        $query = Car::query()
+            ->with(['brand', 'carModel.brand'])
+            ->withActiveBrand();
 
         // Lọc theo Tên xe (Từ khóa)
         $query->when($request->keyword, function ($q, $keyword) {
@@ -30,8 +40,9 @@ class CarController extends Controller
 
         // Lọc theo Hãng xe
         $query->when($request->brand_id, function ($q, $brand_id) {
-            return $q->whereHas('carModel', function ($modelQuery) use ($brand_id) {
-                $modelQuery->where('brand_id', $brand_id);
+            return $q->whereHas('carModel.brand', function ($brandQuery) use ($brand_id) {
+                $brandQuery->active()
+                    ->where('brand_id', $brand_id);
             });
         });
 
@@ -59,6 +70,7 @@ class CarController extends Controller
     public function show(Car $car): View
     {
         $car->load(['brand', 'carModel.brand', 'images']);
+        abort_unless((bool) $car->carModel?->brand?->is_active, 404);
 
         $reviews = Review::query()
             ->with('user:user_id,name')

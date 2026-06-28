@@ -24,7 +24,10 @@ class TicketController extends Controller
         $car = null;
         $carId = request()->query('car_id');
         if ($carId) {
-            $car = Car::with('brand')->find($carId);
+            $car = Car::query()
+                ->with(['brand', 'carModel.brand'])
+                ->withActiveBrand()
+                ->find($carId);
         }
 
         $type = request()->query('type', 'support');
@@ -54,6 +57,10 @@ class TicketController extends Controller
 
         if ($request->ticket_type === 'test_drive' && empty($request->car_id)) {
             return back()->withInput()->withErrors(['car_id' => 'Vui lòng chọn xe cần đặt lịch lái thử.']);
+        }
+
+        if ($request->filled('car_id') && ! Car::query()->withActiveBrand()->whereKey($request->car_id)->exists()) {
+            return back()->withInput()->withErrors(['car_id' => 'Xe đã chọn hiện không khả dụng trên frontend.']);
         }
 
         Ticket::create([

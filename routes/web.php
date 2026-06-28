@@ -164,6 +164,9 @@ Route::middleware('auth')->group(function () {
         Route::put('/brands/{id}', [BrandController::class, 'update'])
             ->middleware('permission:cars.edit')
             ->name('brands.update');
+        Route::patch('/brands/{id}/toggle-status', [BrandController::class, 'toggleStatus'])
+            ->middleware('permission:cars.edit')
+            ->name('brands.toggle-status');
         Route::delete('/brands/{id}', [BrandController::class, 'destroy'])
             ->middleware('permission:cars.delete')
             ->name('brands.destroy');

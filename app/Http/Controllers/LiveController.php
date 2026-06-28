@@ -25,7 +25,10 @@ class LiveController extends Controller
         */
 
         // Hoặc tạm thời giữ nguyên logic cũ của bạn:
-        $featuredCars = Car::where('is_featured', 1)
+        $featuredCars = Car::query()
+            ->with(['brand', 'carModel.brand'])
+            ->withActiveBrand()
+            ->where('is_featured', 1)
             ->orderBy('created_at', 'desc')
             ->take(4)
             ->get();

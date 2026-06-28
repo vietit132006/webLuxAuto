@@ -35,7 +35,9 @@ class OrderController extends Controller
                 ->withErrors(['Lỗi' => 'Vui lòng đăng nhập để đặt cọc xe.']);
         }
 
-        $car = Car::findOrFail($car_id);
+        $car = Car::query()
+            ->withActiveBrand()
+            ->findOrFail($car_id);
 
         if (!$car->isAvailableForSale() || $car->availableStock() <= 0) {
             return back()->withErrors([
