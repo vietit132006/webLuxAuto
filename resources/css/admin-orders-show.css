@@ -195,12 +195,12 @@
     background: #0a0d12;
 }
 
-.delivery-check-item.is-done .check-mark {
+.delivery-check-item input:checked + .check-mark {
     border-color: rgba(52, 211, 153, 0.6);
     background: rgba(16, 185, 129, 0.16);
 }
 
-.delivery-check-item.is-done .check-mark::after {
+.delivery-check-item input:checked + .check-mark::after {
     width: 8px;
     height: 5px;
     border-bottom: 2px solid #34d399;

@@ -174,7 +174,7 @@
                             <div class="delivery-checklist">
                                 @foreach($deliveryChecklistOptions as $key => $label)
                                     @php($isChecked = !empty($deliveryChecklist[$key]))
-                                    <label class="delivery-check-item{{ $isChecked ? ' is-done' : '' }}">
+                                    <label class="delivery-check-item">
                                         <input type="checkbox" name="checklist_data[{{ $key }}]" value="1" @checked($isChecked)>
                                         <span class="check-mark" aria-hidden="true"></span>
                                         <span>{{ $label }}</span>
