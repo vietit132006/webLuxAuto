@@ -81,7 +81,7 @@
                     @foreach($cars as $car)
                         @php
                             $carPrice = (int) ($car->sale_price ?: $car->price);
-                            $availableStock = $car->availableStock();
+                            $availableStock = $car->saleableStock();
                         @endphp
                         <option value="{{ $car->car_id }}"
                             data-price="{{ $carPrice }}"

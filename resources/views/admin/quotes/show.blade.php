@@ -10,7 +10,7 @@
 
 @section('content')
 @php
-    $quoteAvailableStock = $quote->car?->availableStock() ?? 0;
+    $quoteAvailableStock = $quote->car?->saleableStock() ?? 0;
     $quotePhysicalStock = $quote->car?->physicalStock() ?? 0;
     $canCreateOrderFromQuote = $quote->status === \App\Models\Quote::STATUS_ACCEPTED
         && $quote->car

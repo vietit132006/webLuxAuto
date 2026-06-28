@@ -158,6 +158,19 @@ class Car extends Model
         return max(0, $this->physicalStock() - $this->reservedStock());
     }
 
+    public function isSaleBlockedByStatus(): bool
+    {
+        $status = strtolower((string) $this->status);
+        $blockedStatuses = ['3', 'sold', 'hidden', 'out_of_stock', 'out-of-stock', 'inactive'];
+
+        return in_array($status, $blockedStatuses, true);
+    }
+
+    public function saleableStock(): int
+    {
+        return $this->isSaleBlockedByStatus() ? 0 : $this->availableStock();
+    }
+
     public function isOutOfStock(): bool
     {
         return $this->physicalStock() <= 0;
@@ -170,11 +183,7 @@ class Car extends Model
 
     public function isAvailableForSale(): bool
     {
-        $status = strtolower((string) $this->status);
-        $blockedStatuses = ['3', 'sold', 'hidden', 'out_of_stock', 'out-of-stock', 'inactive'];
-
-        return $this->availableStock() > 0
-            && !in_array($status, $blockedStatuses, true);
+        return $this->saleableStock() > 0;
     }
 
     public function scopeAvailableForSale(Builder $query): Builder
@@ -207,6 +216,11 @@ class Car extends Model
     public function getAvailableStockAttribute(): int
     {
         return $this->availableStock();
+    }
+
+    public function getSaleableStockAttribute(): int
+    {
+        return $this->saleableStock();
     }
 
     public function carModel()

@@ -206,11 +206,14 @@
                                 $modelName = $car->carModel?->name ?? null;
                                 $physicalStock = $car->physicalStock();
                                 $reservedStock = $car->reservedStock();
-                                $availableStock = $car->availableStock();
+                                $availableStock = $car->saleableStock();
                                 $inventoryBadgeText = null;
                                 $inventoryBadgeClass = null;
 
-                                if ($physicalStock <= 0) {
+                                if ($car->isSaleBlockedByStatus()) {
+                                    $inventoryBadgeText = 'Đã khóa bán';
+                                    $inventoryBadgeClass = 'badge-sold';
+                                } elseif ($physicalStock <= 0) {
                                     $inventoryBadgeText = 'Hết hàng';
                                     $inventoryBadgeClass = 'badge-sold';
                                 } elseif ($availableStock <= 0) {

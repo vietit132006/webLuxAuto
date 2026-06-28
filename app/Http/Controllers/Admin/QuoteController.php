@@ -243,7 +243,7 @@ class QuoteController extends Controller
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            if ($lockedCar->availableStock() <= 0) {
+            if (!$lockedCar->isAvailableForSale()) {
                 throw ValidationException::withMessages([
                     'stock' => 'Xe trong báo giá hiện không còn tồn khả dụng để tạo đơn hàng.',
                 ]);

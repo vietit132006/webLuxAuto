@@ -101,6 +101,10 @@ class AdminOrderController extends Controller
                     ->lockForUpdate()
                     ->findOrFail($validated['car_id']);
 
+                if (!$car->isAvailableForSale()) {
+                    throw new InvalidArgumentException('Xe không còn khả dụng để tạo đơn hàng.');
+                }
+
                 $order = Order::create([
                     'user_id' => $validated['user_id'],
                     'total_price' => $car->price,

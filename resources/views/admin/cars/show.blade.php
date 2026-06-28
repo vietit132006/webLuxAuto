@@ -46,7 +46,7 @@
             $formatMoney = fn ($value) => number_format((int) ($value ?? 0)) . ' ₫';
             $physicalStock = $car->physicalStock();
             $reservedStock = $car->reservedStock();
-            $availableStock = $car->availableStock();
+            $availableStock = $car->saleableStock();
             $activeReservations = $car->activeStockReservations ?? collect();
         @endphp
 

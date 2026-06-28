@@ -49,7 +49,7 @@
                             @php
                                 $stock = $car->physicalStock();
                                 $reservedStock = $car->reservedStock();
-                                $availableStock = $car->availableStock();
+                                $availableStock = $car->saleableStock();
                             @endphp
                             <option value="{{ $car->car_id }}" @selected((string) old('car_id') === (string) $car->car_id)>
                                 {{ $car->name }} - {{ number_format((float) $car->price, 0, ',', '.') }} đ - Tồn: {{ $stock }} / Giữ: {{ $reservedStock }} / Khả dụng: {{ $availableStock }}

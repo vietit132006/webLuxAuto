@@ -46,6 +46,10 @@ class StockReservationService
                 $reservedBefore = $car->reservedStock();
                 $reservedAfter = $reservedBefore + $quantity;
 
+                if (!$car->isAvailableForSale()) {
+                    throw new InvalidArgumentException('Xe không còn khả dụng để giữ chỗ.');
+                }
+
                 if ($physicalBefore - $reservedBefore < $quantity) {
                     throw new InvalidArgumentException('Xe không còn tồn khả dụng để giữ chỗ.');
                 }
