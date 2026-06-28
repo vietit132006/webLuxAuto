@@ -194,7 +194,7 @@ class StockReservationService
                     -$quantity,
                     $physicalAfter,
                     StockMovement::ACTION_DELIVERY,
-                    'Giao xe theo đơn hàng ' . $lockedOrder->display_code . '.',
+                    'Giao xe cho đơn hàng ' . $lockedOrder->display_code,
                     null,
                     $user,
                     null,

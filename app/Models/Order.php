@@ -196,6 +196,11 @@ class Order extends Model
         return $this->hasMany(StockReservation::class, 'order_id', 'order_id');
     }
 
+    public function delivery()
+    {
+        return $this->hasOne(Delivery::class, 'order_id', 'order_id');
+    }
+
     public function activeStockReservations()
     {
         return $this->stockReservations()

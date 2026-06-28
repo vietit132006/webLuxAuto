@@ -255,6 +255,21 @@ Route::middleware('auth')->group(function () {
         Route::post('/orders/{id}/status', [AdminOrderController::class, 'updateStatus'])
             ->middleware('permission:orders.edit')
             ->name('orders.updateStatus');
+        Route::patch('/orders/{order}/delivery', [AdminOrderController::class, 'updateDelivery'])
+            ->middleware('permission:orders.edit|inventory.adjust')
+            ->name('orders.updateDelivery');
+        Route::post('/orders/{order}/delivery/files', [AdminOrderController::class, 'uploadDeliveryFiles'])
+            ->middleware('permission:orders.edit')
+            ->name('orders.deliveryFiles.store');
+        Route::get('/delivery-files/{deliveryFile}/view', [AdminOrderController::class, 'viewDeliveryFile'])
+            ->middleware('permission:orders.view')
+            ->name('orders.deliveryFiles.view');
+        Route::get('/delivery-files/{deliveryFile}/download', [AdminOrderController::class, 'downloadDeliveryFile'])
+            ->middleware('permission:orders.view')
+            ->name('orders.deliveryFiles.download');
+        Route::delete('/delivery-files/{deliveryFile}', [AdminOrderController::class, 'deleteDeliveryFile'])
+            ->middleware('permission:orders.edit')
+            ->name('orders.deliveryFiles.destroy');
 
         Route::get('/customers', [CustomerController::class, 'index'])
             ->middleware('permission:customers.view')

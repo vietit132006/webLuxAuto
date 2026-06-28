@@ -4,15 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Exports\OrdersExport;
 use App\Models\Car;
+use App\Models\Delivery;
+use App\Models\DeliveryFile;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Setting;
+use App\Models\StockReservation;
 use App\Models\User;
 use App\Services\StockReservationService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
@@ -135,10 +139,26 @@ class AdminOrderController extends Controller
 
     public function show($id)
     {
-        $order = Order::with(['user', 'details.car', 'statusHistories.user', 'depositConfirmer', 'quote'])
+        $order = Order::with([
+            'user',
+            'details.car',
+            'statusHistories.user',
+            'depositConfirmer',
+            'quote',
+            'delivery.deliveryStaff',
+            'delivery.files.uploadedBy',
+        ])
             ->findOrFail($id);
 
+        $delivery = $this->ensureDeliveryForOrder($order);
+        $order->setRelation('delivery', $delivery);
+
         return view('admin.orders.show', [
+            'canManageDelivery' => $this->canManageDelivery(request()->user()),
+            'delivery' => $delivery,
+            'deliveryChecklistOptions' => Delivery::checklistOptions(),
+            'deliveryStaffOptions' => $this->deliveryStaffOptions($delivery),
+            'deliveryStatusOptions' => Delivery::statusOptions(),
             'order' => $order,
             'depositMethodOptions' => Order::depositMethodOptions(),
             'statusOptions' => Order::statusOptions(),
@@ -188,6 +208,15 @@ class AdminOrderController extends Controller
                     return;
                 }
 
+                if (
+                    $statusAfter === Order::STATUS_COMPLETED
+                    && !$this->orderHasDeliveredDelivery($order)
+                ) {
+                    throw ValidationException::withMessages([
+                        'status' => 'Vui lòng xác nhận giao xe trước khi hoàn tất đơn hàng.',
+                    ]);
+                }
+
                 $updates = ['status' => $statusAfter];
 
                 if ($statusAfter === Order::STATUS_DEPOSITED) {
@@ -235,6 +264,149 @@ class AdminOrderController extends Controller
         return back()->with('success', 'Đã cập nhật trạng thái đơn hàng thành công!');
     }
 
+    public function updateDelivery(Request $request, Order $order)
+    {
+        $validated = $request->validate([
+            'expected_delivery_date' => 'nullable|date',
+            'actual_delivery_date' => 'nullable|date',
+            'delivery_location' => 'nullable|string|max:255',
+            'delivery_staff_id' => 'nullable|integer|exists:users,user_id',
+            'status' => ['required', Rule::in(Delivery::STATUSES)],
+            'note' => 'nullable|string|max:2000',
+            'checklist_data' => 'nullable|array',
+        ]);
+
+        try {
+            DB::transaction(function () use ($order, $request, $validated): void {
+                $lockedOrder = Order::query()
+                    ->with(['details.car', 'user', 'delivery'])
+                    ->lockForUpdate()
+                    ->findOrFail($order->getKey());
+
+                $delivery = $this->lockedDeliveryForOrder($lockedOrder);
+                $payload = $this->deliveryPayload($validated, $request);
+                $statusAfter = $payload['status'];
+
+                if (
+                    $delivery->status === Delivery::STATUS_DELIVERED
+                    && $statusAfter !== Delivery::STATUS_DELIVERED
+                ) {
+                    throw new InvalidArgumentException(
+                        'Xe đã được giao, không thể đổi trạng thái giao xe. Nếu cần hoàn kho, vui lòng dùng chức năng điều chỉnh tồn kho.'
+                    );
+                }
+
+                $shouldDeductStock = $statusAfter === Delivery::STATUS_DELIVERED
+                    && !$delivery->stock_deducted_at;
+
+                if ($shouldDeductStock) {
+                    $activeReservation = StockReservation::query()
+                        ->where('order_id', $lockedOrder->order_id)
+                        ->where('status', StockReservation::STATUS_ACTIVE)
+                        ->lockForUpdate()
+                        ->first(['id']);
+
+                    if (!$activeReservation) {
+                        throw new InvalidArgumentException('Đơn hàng chưa giữ xe, không thể giao xe.');
+                    }
+
+                    $this->stockReservationService->completeForOrder($lockedOrder, $request->user());
+
+                    if (!$payload['actual_delivery_date']) {
+                        $payload['actual_delivery_date'] = now();
+                    }
+
+                    $payload['stock_deducted_at'] = now();
+                } elseif ($delivery->stock_deducted_at) {
+                    $payload['stock_deducted_at'] = $delivery->stock_deducted_at;
+                    $payload['actual_delivery_date'] = $payload['actual_delivery_date']
+                        ?: $delivery->actual_delivery_date;
+                }
+
+                $delivery->forceFill($payload)->save();
+
+                if ($shouldDeductStock) {
+                    $statusBefore = $lockedOrder->status;
+
+                    if (Order::normalizeStatus($statusBefore) !== Order::STATUS_COMPLETED) {
+                        $lockedOrder->forceFill([
+                            'status' => Order::STATUS_COMPLETED,
+                        ])->save();
+
+                        $lockedOrder->refresh();
+
+                        $this->recordStatusHistory(
+                            $lockedOrder,
+                            $statusBefore,
+                            Order::STATUS_COMPLETED,
+                            $request,
+                            'Hoàn tất đơn hàng sau khi giao xe.',
+                            false
+                        );
+                    }
+                }
+            });
+        } catch (InvalidArgumentException $e) {
+            return back()
+                ->withInput()
+                ->withErrors(['delivery_status' => $e->getMessage()]);
+        }
+
+        return back()->with('success', 'Đã cập nhật thông tin giao xe thành công!');
+    }
+
+    public function uploadDeliveryFiles(Request $request, Order $order)
+    {
+        $request->validate([
+            'delivery_files' => 'required|array|max:10',
+            'delivery_files.*' => 'required|file|mimes:pdf,jpg,jpeg,png,webp|max:5120',
+        ]);
+
+        $delivery = $this->ensureDeliveryForOrder($order);
+
+        foreach ($request->file('delivery_files', []) as $file) {
+            $path = $file->store('delivery-files/' . $delivery->id, 'public');
+
+            $delivery->files()->create([
+                'file_name' => $file->getClientOriginalName(),
+                'file_path' => $path,
+                'uploaded_by' => $request->user()?->getKey(),
+            ]);
+        }
+
+        return back()->with('success', 'Đã tải lên tài liệu giao xe thành công!');
+    }
+
+    public function downloadDeliveryFile(DeliveryFile $deliveryFile)
+    {
+        abort_unless($deliveryFile->delivery, 404);
+        abort_unless(Storage::disk('public')->exists($deliveryFile->file_path), 404);
+
+        return Storage::disk('public')->download(
+            $deliveryFile->file_path,
+            $deliveryFile->file_name
+        );
+    }
+
+    public function viewDeliveryFile(DeliveryFile $deliveryFile)
+    {
+        abort_unless($deliveryFile->delivery, 404);
+        abort_unless(Storage::disk('public')->exists($deliveryFile->file_path), 404);
+
+        return Storage::disk('public')->response(
+            $deliveryFile->file_path,
+            $deliveryFile->file_name
+        );
+    }
+
+    public function deleteDeliveryFile(DeliveryFile $deliveryFile)
+    {
+        Storage::disk('public')->delete($deliveryFile->file_path);
+        $deliveryFile->delete();
+
+        return back()->with('success', 'Đã xóa tài liệu giao xe.');
+    }
+
     private function syncStockReservationForStatus(
         Order $order,
         mixed $statusBefore,
@@ -252,12 +424,6 @@ class AdminOrderController extends Controller
         }
 
         if ($after === Order::STATUS_COMPLETED) {
-            if ($before === null) {
-                $this->stockReservationService->reserveForOrder($order, $actor);
-            }
-
-            $this->stockReservationService->completeForOrder($order, $actor);
-
             return;
         }
 
@@ -278,6 +444,121 @@ class AdminOrderController extends Controller
                 $actor
             );
         }
+    }
+
+    private function lockedDeliveryForOrder(Order $order): Delivery
+    {
+        $delivery = Delivery::query()
+            ->where('order_id', $order->order_id)
+            ->lockForUpdate()
+            ->first();
+
+        if ($delivery) {
+            return $delivery;
+        }
+
+        return Delivery::create($this->newDeliveryAttributes($order));
+    }
+
+    private function ensureDeliveryForOrder(Order $order): Delivery
+    {
+        $order->loadMissing(['details', 'delivery.deliveryStaff', 'delivery.files.uploadedBy']);
+
+        if ($order->delivery) {
+            return $order->delivery;
+        }
+
+        $delivery = Delivery::query()->firstOrCreate(
+            ['order_id' => $order->order_id],
+            $this->newDeliveryAttributes($order)
+        );
+
+        return $delivery->load(['deliveryStaff', 'files.uploadedBy']);
+    }
+
+    private function newDeliveryAttributes(Order $order): array
+    {
+        $order->loadMissing('details');
+
+        return [
+            'order_id' => $order->order_id,
+            'user_id' => $order->user_id,
+            'car_id' => $order->details->first()?->car_id,
+            'status' => Delivery::STATUS_PENDING,
+        ];
+    }
+
+    private function deliveryPayload(array $validated, Request $request): array
+    {
+        $expectedDate = $validated['expected_delivery_date'] ?? null;
+        $actualDate = $validated['actual_delivery_date'] ?? null;
+
+        return [
+            'expected_delivery_date' => $expectedDate ? Carbon::parse($expectedDate) : null,
+            'actual_delivery_date' => $actualDate ? Carbon::parse($actualDate) : null,
+            'delivery_location' => $validated['delivery_location'] ?? null,
+            'delivery_staff_id' => $validated['delivery_staff_id'] ?? null,
+            'status' => $validated['status'],
+            'note' => $validated['note'] ?? null,
+            'checklist_data' => $this->normalizeDeliveryChecklist($request->input('checklist_data', [])),
+        ];
+    }
+
+    private function normalizeDeliveryChecklist(array $input): array
+    {
+        $selected = [];
+
+        foreach ($input as $key => $value) {
+            if (is_string($key) && array_key_exists($key, Delivery::CHECKLIST_OPTIONS)) {
+                $selected[$key] = filter_var($value, FILTER_VALIDATE_BOOLEAN);
+                continue;
+            }
+
+            if (is_string($value) && array_key_exists($value, Delivery::CHECKLIST_OPTIONS)) {
+                $selected[$value] = true;
+            }
+        }
+
+        return collect(Delivery::CHECKLIST_OPTIONS)
+            ->keys()
+            ->mapWithKeys(fn (string $key): array => [$key => (bool) ($selected[$key] ?? false)])
+            ->all();
+    }
+
+    private function deliveryStaffOptions(Delivery $delivery)
+    {
+        return User::query()
+            ->where(function (Builder $query) use ($delivery): void {
+                $query->whereIn('role', ['admin', 'staff']);
+
+                if ($delivery->delivery_staff_id) {
+                    $query->orWhere('user_id', $delivery->delivery_staff_id);
+                }
+            })
+            ->orderBy('name')
+            ->get(['user_id', 'name', 'email']);
+    }
+
+    private function canManageDelivery(?User $user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+
+        try {
+            return $user->can('orders.edit') || $user->can('inventory.adjust');
+        } catch (\Throwable) {
+            return in_array($user->role, ['admin', 'staff'], true);
+        }
+    }
+
+    private function orderHasDeliveredDelivery(Order $order): bool
+    {
+        $order->loadMissing('delivery');
+
+        return $order->delivery
+            && $order->delivery->status === Delivery::STATUS_DELIVERED
+            && $order->delivery->stock_deducted_at;
     }
 
     private function validatedRequiredDeposit(Request $request): array
@@ -354,7 +635,7 @@ class AdminOrderController extends Controller
     private function ordersQuery(array $filters): Builder
     {
         $query = Order::query()
-            ->with(['user', 'details.car'])
+            ->with(['user', 'details.car', 'delivery'])
             ->select('orders.*');
 
         $this->applyOrderFilters($query, $filters);

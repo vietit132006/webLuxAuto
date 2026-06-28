@@ -15,8 +15,22 @@
     $depositNote = old('deposit_note', $order->deposit_note);
     $needsDepositInfo = $depositAmount <= 0 || !$order->deposit_date || blank($order->deposit_method) || blank($order->deposit_note);
     $needsDepositForStatus = $needsDepositInfo && \App\Models\Order::normalizeStatus($order->status) !== \App\Models\Order::STATUS_DEPOSITED;
+    $isDeliveryOldInput = old('_delivery_form') === '1';
     $selectedStatus = (string) old('status', $order->status);
+    if ($isDeliveryOldInput) {
+        $selectedStatus = (string) $order->status;
+    }
     $showStatusDepositFields = $needsDepositForStatus && $selectedStatus === (string) \App\Models\Order::STATUS_DEPOSITED;
+    $deliveryIsDelivered = $delivery->status === \App\Models\Delivery::STATUS_DELIVERED;
+    $selectedDeliveryStatus = (string) ($isDeliveryOldInput ? old('status', $delivery->status) : $delivery->status);
+    $deliveryExpectedInput = old('expected_delivery_date', $delivery->expected_delivery_date ? $delivery->expected_delivery_date->format('Y-m-d\TH:i') : '');
+    $deliveryActualInput = old('actual_delivery_date', $delivery->actual_delivery_date ? $delivery->actual_delivery_date->format('Y-m-d\TH:i') : '');
+    $deliveryLocationInput = old('delivery_location', $delivery->delivery_location);
+    $deliveryStaffInput = old('delivery_staff_id', $delivery->delivery_staff_id);
+    $deliveryNoteInput = old('note', $delivery->note);
+    $deliveryChecklist = $isDeliveryOldInput ? old('checklist_data', []) : ($delivery->checklist_data ?: []);
+    $deliveryChecklistTotal = count($deliveryChecklistOptions);
+    $deliveryChecklistDone = collect($deliveryChecklistOptions)->keys()->filter(fn ($key) => !empty($deliveryChecklist[$key]))->count();
 @endphp
 
 @section('content')
@@ -72,6 +86,142 @@
                     @empty
                         <div class="empty-state">Đơn hàng chưa có xe.</div>
                     @endforelse
+                </div>
+            </section>
+
+            <section class="panel delivery-panel">
+                <div class="delivery-panel-head">
+                    <div>
+                        <h2 class="panel-title">Thông tin giao xe</h2>
+                        <div class="delivery-subtitle">
+                            Checklist {{ $deliveryChecklistDone }}/{{ $deliveryChecklistTotal }}
+                            @if($delivery->stock_deducted_at)
+                                · Trừ kho: {{ $delivery->stock_deducted_at->format('H:i - d/m/Y') }}
+                            @endif
+                        </div>
+                    </div>
+                    <span class="delivery-badge {{ $delivery->status_badge_class }}">{{ $delivery->status_label }}</span>
+                </div>
+
+                @if($deliveryIsDelivered)
+                    <div class="delivery-lock-alert">
+                        Xe đã được giao, trạng thái giao xe đã khóa. Nếu cần hoàn kho, vui lòng dùng chức năng điều chỉnh tồn kho.
+                    </div>
+                @elseif(!$canManageDelivery)
+                    <div class="delivery-lock-alert is-muted">
+                        Bạn chỉ có quyền xem thông tin giao xe.
+                    </div>
+                @endif
+
+                <form action="{{ route('admin.orders.updateDelivery', $order->order_id) }}" method="POST" class="delivery-form">
+                    @csrf
+                    @method('PATCH')
+                    <input type="hidden" name="_delivery_form" value="1">
+
+                    <fieldset class="delivery-fieldset" @disabled(!$canManageDelivery || $deliveryIsDelivered)>
+                        <div class="delivery-form-grid">
+                            <div class="form-field">
+                                <label for="expected_delivery_date" class="form-label">Ngày giao dự kiến</label>
+                                <input id="expected_delivery_date" type="datetime-local" name="expected_delivery_date" class="form-control" value="{{ $deliveryExpectedInput }}">
+                            </div>
+
+                            <div class="form-field">
+                                <label for="actual_delivery_date" class="form-label">Ngày giao thực tế</label>
+                                <input id="actual_delivery_date" type="datetime-local" name="actual_delivery_date" class="form-control" value="{{ $deliveryActualInput }}">
+                            </div>
+
+                            <div class="form-field">
+                                <label for="delivery_location" class="form-label">Địa điểm giao xe</label>
+                                <input id="delivery_location" type="text" name="delivery_location" class="form-control" value="{{ $deliveryLocationInput }}" maxlength="255">
+                            </div>
+
+                            <div class="form-field">
+                                <label for="delivery_staff_id" class="form-label">Nhân viên bàn giao</label>
+                                <select id="delivery_staff_id" name="delivery_staff_id" class="form-control">
+                                    <option value="">Chọn nhân viên</option>
+                                    @foreach($deliveryStaffOptions as $staff)
+                                        <option value="{{ $staff->user_id }}" @selected((string) $deliveryStaffInput === (string) $staff->user_id)>
+                                            {{ $staff->name }}{{ $staff->email ? ' - ' . $staff->email : '' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="form-field">
+                                <label for="delivery_status" class="form-label">Trạng thái giao xe</label>
+                                <select id="delivery_status" name="status" class="form-control">
+                                    @foreach($deliveryStatusOptions as $value => $label)
+                                        <option value="{{ $value }}" @selected($selectedDeliveryStatus === (string) $value)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="form-field form-field-wide">
+                                <label for="delivery_note" class="form-label">Ghi chú bàn giao</label>
+                                <textarea id="delivery_note" name="note" class="form-control" rows="3">{{ $deliveryNoteInput }}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="delivery-checklist-block">
+                            <div class="delivery-section-title">Checklist bàn giao</div>
+                            <div class="delivery-checklist">
+                                @foreach($deliveryChecklistOptions as $key => $label)
+                                    @php($isChecked = !empty($deliveryChecklist[$key]))
+                                    <label class="delivery-check-item{{ $isChecked ? ' is-done' : '' }}">
+                                        <input type="checkbox" name="checklist_data[{{ $key }}]" value="1" @checked($isChecked)>
+                                        <span class="check-mark" aria-hidden="true"></span>
+                                        <span>{{ $label }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    @if($canManageDelivery && !$deliveryIsDelivered)
+                        <button type="submit" class="btn-submit">Lưu thông tin giao xe</button>
+                    @endif
+                </form>
+
+                <div class="delivery-files-block">
+                    <div class="delivery-section-title">Tài liệu giao xe</div>
+
+                    @can('orders.edit')
+                        <form action="{{ route('admin.orders.deliveryFiles.store', $order->order_id) }}" method="POST" enctype="multipart/form-data" class="delivery-upload-form">
+                            @csrf
+                            <label for="delivery_files" class="file-upload-label">Upload PDF, JPG, PNG, WEBP tối đa 5MB/file</label>
+                            <div class="delivery-upload-row">
+                                <input id="delivery_files" type="file" name="delivery_files[]" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.webp" multiple>
+                                <button type="submit" class="btn-submit btn-upload">Tải lên</button>
+                            </div>
+                        </form>
+                    @endcan
+
+                    <div class="delivery-file-list">
+                        @forelse($delivery->files as $file)
+                            <div class="delivery-file-item">
+                                <div class="delivery-file-main">
+                                    <div class="delivery-file-name">{{ $file->file_name }}</div>
+                                    <div class="delivery-file-meta">
+                                        {{ $file->uploadedBy->name ?? 'Hệ thống' }}
+                                        · {{ $file->created_at ? $file->created_at->format('H:i - d/m/Y') : 'N/A' }}
+                                    </div>
+                                </div>
+                                <div class="delivery-file-actions">
+                                    <a href="{{ route('admin.orders.deliveryFiles.view', $file) }}" target="_blank" rel="noopener" class="btn-file">Xem</a>
+                                    <a href="{{ route('admin.orders.deliveryFiles.download', $file) }}" class="btn-file">Tải xuống</a>
+                                    @can('orders.edit')
+                                        <form action="{{ route('admin.orders.deliveryFiles.destroy', $file) }}" method="POST" onsubmit="return confirm('Xóa tài liệu giao xe này?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn-file btn-file-danger">Xóa</button>
+                                        </form>
+                                    @endcan
+                                </div>
+                            </div>
+                        @empty
+                            <div class="empty-state">Chưa có tài liệu giao xe.</div>
+                        @endforelse
+                    </div>
                 </div>
             </section>
 

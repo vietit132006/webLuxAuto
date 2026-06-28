@@ -153,6 +153,7 @@
                     <th>Tổng tiền</th>
                     <th>Tiền cọc</th>
                     <th>Trạng thái</th>
+                    <th>Giao xe</th>
                     <th>Ngày tạo</th>
                     <th>Thao tác</th>
                     <th>Cập nhật</th>
@@ -186,6 +187,14 @@
                             <span class="badge {{ $order->status_badge_class }}">{{ $order->status_label }}</span>
                         </td>
 
+                        <td>
+                            @if($order->delivery)
+                                <span class="badge delivery-badge {{ $order->delivery->status_badge_class }}">{{ $order->delivery->status_label }}</span>
+                            @else
+                                <span class="muted">Chưa tạo</span>
+                            @endif
+                        </td>
+
                         <td class="date-cell">{{ $order->created_at ? $order->created_at->format('H:i - d/m/Y') : 'N/A' }}</td>
 
                         <td>
@@ -210,7 +219,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td class="empty-cell" colspan="9">Chưa có đơn hàng nào phù hợp.</td>
+                        <td class="empty-cell" colspan="10">Chưa có đơn hàng nào phù hợp.</td>
                     </tr>
                 @endforelse
             </tbody>
