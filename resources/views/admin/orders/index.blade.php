@@ -203,6 +203,9 @@
 
                         <td>
                             @can('orders.edit')
+                                @if($order->delivery && $order->delivery->status === \App\Models\Delivery::STATUS_DELIVERED && $order->delivery->stock_deducted_at)
+                                    <span class="muted">Đã giao, khóa</span>
+                                @else
                                 <form action="{{ route('admin.orders.updateStatus', $order->order_id) }}" method="POST" class="status-form">
                                     @csrf
                                     <select name="status" class="status-select" aria-label="Trạng thái đơn hàng {{ $order->display_code }}">
@@ -212,6 +215,7 @@
                                     </select>
                                     <button type="submit" class="btn-update">Lưu</button>
                                 </form>
+                                @endif
                             @else
                                 <span class="muted">Không có quyền</span>
                             @endcan

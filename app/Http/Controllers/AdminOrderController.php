@@ -175,7 +175,16 @@ class AdminOrderController extends Controller
             'deposit_note' => 'nullable|string|max:1000',
         ]);
 
-        $order = Order::query()->findOrFail($id);
+        $order = Order::query()
+            ->with('delivery')
+            ->findOrFail($id);
+
+        if ($this->orderHasDeliveredDelivery($order)) {
+            return back()->withErrors([
+                'deposit' => 'Xe đã được giao, không thể chỉnh sửa thông tin cọc. Nếu cần điều chỉnh, vui lòng xử lý bằng nghiệp vụ đối soát riêng.',
+            ]);
+        }
+
         $order->update($this->depositPayload($validated, $request));
 
         return back()->with('success', 'Đã cập nhật thông tin đặt cọc thành công!');
@@ -197,7 +206,7 @@ class AdminOrderController extends Controller
 
         try {
             DB::transaction(function () use ($id, $request, $validated) {
-                $order = Order::with(['details.car', 'user'])
+                $order = Order::with(['details.car', 'user', 'delivery'])
                     ->lockForUpdate()
                     ->findOrFail($id);
 
@@ -206,6 +215,12 @@ class AdminOrderController extends Controller
 
                 if ((string) $statusBefore === (string) $statusAfter) {
                     return;
+                }
+
+                if ($this->orderHasDeliveredDelivery($order)) {
+                    throw ValidationException::withMessages([
+                        'status' => 'Xe đã được giao, không thể đổi trạng thái đơn hàng. Nếu cần hoàn kho hoặc hủy sau giao, vui lòng dùng quy trình điều chỉnh/đối soát riêng.',
+                    ]);
                 }
 
                 if (

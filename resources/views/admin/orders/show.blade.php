@@ -344,6 +344,11 @@
                     <div class="info-value">{{ $order->depositConfirmer->name ?? 'N/A' }}</div>
                 </div>
 
+                @if($deliveryIsDelivered)
+                    <div class="delivery-lock-alert is-muted">
+                        Xe đã được giao, thông tin cọc đã khóa để bảo toàn lịch sử thanh toán.
+                    </div>
+                @else
                 @can('orders.edit')
                     <form action="{{ route('admin.orders.updateDeposit', $order->order_id) }}" method="POST" class="deposit-update-form">
                         @csrf
@@ -384,11 +389,17 @@
                         <button type="submit" class="btn-submit">Lưu thông tin cọc</button>
                     </form>
                 @endcan
+                @endif
             </section>
 
             @can('orders.edit')
                 <section class="panel">
                     <h2 class="panel-title">Cập nhật trạng thái</h2>
+                    @if($deliveryIsDelivered)
+                        <div class="delivery-lock-alert is-muted">
+                            Xe đã được giao, trạng thái đơn hàng đã khóa. Nếu cần hoàn kho hoặc hủy sau giao, vui lòng dùng quy trình điều chỉnh/đối soát riêng.
+                        </div>
+                    @else
                     <form action="{{ route('admin.orders.updateStatus', $order->order_id) }}" method="POST" class="status-update-form" data-status-deposit-form data-deposited-value="{{ \App\Models\Order::STATUS_DEPOSITED }}">
                         @csrf
                         <label for="status" class="form-label">Trạng thái</label>
@@ -434,6 +445,7 @@
 
                         <button type="submit" class="btn-submit">Lưu trạng thái</button>
                     </form>
+                    @endif
                 </section>
             @endcan
         </div>
