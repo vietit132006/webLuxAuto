@@ -306,17 +306,27 @@ class AdminOrderController extends Controller
                         ->lockForUpdate()
                         ->first(['id']);
 
-                    if (!$activeReservation) {
-                        throw new InvalidArgumentException('Đơn hàng chưa giữ xe, không thể giao xe.');
-                    }
+                    if ($activeReservation) {
+                        $this->stockReservationService->completeForOrder($lockedOrder, $request->user());
+                        $payload['stock_deducted_at'] = now();
+                    } else {
+                        $completedReservation = StockReservation::query()
+                            ->where('order_id', $lockedOrder->order_id)
+                            ->where('status', StockReservation::STATUS_COMPLETED)
+                            ->lockForUpdate()
+                            ->orderByDesc('completed_at')
+                            ->first(['completed_at']);
 
-                    $this->stockReservationService->completeForOrder($lockedOrder, $request->user());
+                        if (!$completedReservation) {
+                        throw new InvalidArgumentException('Đơn hàng chưa giữ xe, không thể giao xe.');
+                        }
+
+                        $payload['stock_deducted_at'] = $completedReservation->completed_at ?: now();
+                    }
 
                     if (!$payload['actual_delivery_date']) {
                         $payload['actual_delivery_date'] = now();
                     }
-
-                    $payload['stock_deducted_at'] = now();
                 } elseif ($delivery->stock_deducted_at) {
                     $payload['stock_deducted_at'] = $delivery->stock_deducted_at;
                     $payload['actual_delivery_date'] = $payload['actual_delivery_date']
