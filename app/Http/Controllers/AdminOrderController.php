@@ -307,6 +307,19 @@ class AdminOrderController extends Controller
                 $statusAfter = $payload['status'];
 
                 if (
+                    $statusAfter === Delivery::STATUS_DELIVERED
+                    && !Delivery::checklistIsComplete($payload['checklist_data'])
+                ) {
+                    $missingChecklist = Delivery::missingChecklistLabels($payload['checklist_data']);
+
+                    throw ValidationException::withMessages([
+                        'checklist_data' => 'Vui lòng hoàn thành đủ checklist bàn giao trước khi xác nhận đã giao xe: '
+                            . implode(', ', $missingChecklist)
+                            . '.',
+                    ]);
+                }
+
+                if (
                     $delivery->status === Delivery::STATUS_DELIVERED
                     && $statusAfter !== Delivery::STATUS_DELIVERED
                 ) {

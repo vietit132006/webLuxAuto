@@ -31,6 +31,7 @@
     $deliveryChecklist = $isDeliveryOldInput ? old('checklist_data', []) : ($delivery->checklist_data ?: []);
     $deliveryChecklistTotal = count($deliveryChecklistOptions);
     $deliveryChecklistDone = collect($deliveryChecklistOptions)->keys()->filter(fn ($key) => !empty($deliveryChecklist[$key]))->count();
+    $deliveryChecklistMissing = \App\Models\Delivery::missingChecklistLabels($deliveryChecklist);
 @endphp
 
 @section('content')
@@ -110,6 +111,12 @@
                 @elseif(!$canManageDelivery)
                     <div class="delivery-lock-alert is-muted">
                         Bạn chỉ có quyền xem thông tin giao xe.
+                    </div>
+                @endif
+
+                @if($deliveryChecklistMissing !== [])
+                    <div class="delivery-lock-alert{{ $deliveryIsDelivered ? '' : ' is-muted' }}">
+                        Checklist bàn giao chưa đủ. Cần hoàn thành: {{ implode(', ', $deliveryChecklistMissing) }}.
                     </div>
                 @endif
 

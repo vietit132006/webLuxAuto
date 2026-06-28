@@ -76,6 +76,26 @@ class Delivery extends Model
         return self::CHECKLIST_OPTIONS;
     }
 
+    public static function completedChecklistCount(?array $checklist): int
+    {
+        return count(array_filter($checklist ?: []));
+    }
+
+    public static function missingChecklistLabels(?array $checklist): array
+    {
+        $checklist = $checklist ?: [];
+
+        return collect(self::CHECKLIST_OPTIONS)
+            ->filter(fn (string $label, string $key): bool => empty($checklist[$key]))
+            ->values()
+            ->all();
+    }
+
+    public static function checklistIsComplete(?array $checklist): bool
+    {
+        return self::missingChecklistLabels($checklist) === [];
+    }
+
     public static function labelForStatus(?string $status): string
     {
         return self::STATUS_LABELS[$status] ?? ($status ?: 'N/A');
@@ -93,9 +113,7 @@ class Delivery extends Model
 
     public function getCompletedChecklistCountAttribute(): int
     {
-        $checklist = $this->checklist_data ?: [];
-
-        return count(array_filter($checklist));
+        return self::completedChecklistCount($this->checklist_data);
     }
 
     public function order(): BelongsTo
