@@ -498,6 +498,10 @@ class CarController extends Controller
                 $oldStock = (int) ($car->stock_quantity ?? $car->stock ?? 0);
                 $newStock = (int) ($validated['stock_quantity'] ?? $oldStock);
 
+                if ($newStock < $car->reservedStock()) {
+                    throw new \InvalidArgumentException('Không thể điều chỉnh tồn vật lý thấp hơn số lượng xe đang được giữ.');
+                }
+
                 $car->fill([
                     'car_model_id' => $validated['car_model_id'],
                     'name' => $validated['name'],

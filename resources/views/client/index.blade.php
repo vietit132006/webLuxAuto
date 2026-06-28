@@ -198,21 +198,23 @@
                                 $modelName = $car->carModel?->name ?? null;
                                 $physicalStock = $car->physicalStock();
                                 $availableStock = $car->availableStock();
-                                if ($physicalStock <= 0) {
+                                $carStatus = (int) $car->status;
+                                if ($carStatus === 3) {
+                                    $statusText = 'Đã bán';
+                                    $statusClass = 'is-sold';
+                                } elseif ($physicalStock <= 0) {
                                     $statusText = 'Hết hàng';
                                     $statusClass = 'is-sold';
                                 } elseif ($availableStock <= 0) {
                                     $statusText = 'Đã giữ hết';
                                     $statusClass = 'is-reserved';
                                 } else {
-                                    $statusText = match ((int) $car->status) {
+                                    $statusText = match ($carStatus) {
                                         2 => 'Đã đặt cọc',
-                                        3 => 'Đã bán',
                                         default => 'Sẵn sàng',
                                     };
-                                    $statusClass = match ((int) $car->status) {
+                                    $statusClass = match ($carStatus) {
                                         2 => 'is-reserved',
-                                        3 => 'is-sold',
                                         default => 'is-ready',
                                     };
                                 }

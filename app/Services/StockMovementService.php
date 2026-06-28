@@ -69,6 +69,10 @@ class StockMovementService
             throw new InvalidArgumentException('Tồn kho sau thay đổi không được âm.');
         }
 
+        if ($after < $lockedCar->reservedStock()) {
+            throw new InvalidArgumentException('Không thể điều chỉnh tồn vật lý thấp hơn số lượng xe đang được giữ.');
+        }
+
         $lockedCar->update([
             'stock' => $after,
             'stock_quantity' => $after,

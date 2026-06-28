@@ -256,7 +256,7 @@ Route::middleware('auth')->group(function () {
             ->middleware('permission:orders.edit')
             ->name('orders.updateStatus');
         Route::patch('/orders/{order}/delivery', [AdminOrderController::class, 'updateDelivery'])
-            ->middleware('permission:orders.edit|inventory.adjust')
+            ->middleware('permission:orders.edit')
             ->name('orders.updateDelivery');
         Route::post('/orders/{order}/delivery/files', [AdminOrderController::class, 'uploadDeliveryFiles'])
             ->middleware('permission:orders.edit')

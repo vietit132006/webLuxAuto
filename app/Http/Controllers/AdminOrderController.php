@@ -588,7 +588,7 @@ class AdminOrderController extends Controller
         }
 
         try {
-            return $user->can('orders.edit') || $user->can('inventory.adjust');
+            return $user->can('orders.edit');
         } catch (\Throwable) {
             return in_array($user->role, ['admin', 'staff'], true);
         }

@@ -14,7 +14,12 @@
     $fullName = trim($brandName . ' ' . ($modelName ? $modelName . ' ' : '') . $car->name);
     $physicalStock = $car->physicalStock();
     $availableStock = $car->availableStock();
-    if ($physicalStock <= 0) {
+    $carStatus = (int) $car->status;
+    if ($carStatus === 3) {
+        $statusText = 'Đã bán';
+        $quickStatusText = 'Đã bán';
+        $statusClass = 'is-sold';
+    } elseif ($physicalStock <= 0) {
         $statusText = 'Hết hàng';
         $quickStatusText = 'Hết hàng';
         $statusClass = 'is-sold';
@@ -23,23 +28,20 @@
         $quickStatusText = 'Đã giữ hết';
         $statusClass = 'is-reserved';
     } else {
-        $statusText = match ((int) $car->status) {
+        $statusText = match ($carStatus) {
             2 => 'Đã đặt cọc',
-            3 => 'Đã bán',
             default => 'Sẵn sàng',
         };
-        $quickStatusText = match ((int) $car->status) {
+        $quickStatusText = match ($carStatus) {
             2 => 'Đã đặt cọc',
-            3 => 'Đã bán',
             default => 'Xe mới 100%',
         };
-        $statusClass = match ((int) $car->status) {
+        $statusClass = match ($carStatus) {
             2 => 'is-reserved',
-            3 => 'is-sold',
             default => 'is-ready',
         };
     }
-    $canDepositCar = (int) $car->status === 1 && $car->isAvailableForSale() && $availableStock > 0;
+    $canDepositCar = $carStatus === 1 && $car->isAvailableForSale() && $availableStock > 0;
     $mileageText = is_null($car->mileage_km)
         ? 'Đang cập nhật'
         : number_format($car->mileage_km, 0, ',', '.') . ' km';
