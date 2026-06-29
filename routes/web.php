@@ -327,21 +327,51 @@ Route::middleware('auth')->group(function () {
             ->middleware('permission:quotes.delete')
             ->name('quotes.destroy');
 
+        Route::get('/reports/sales/export', [AdminReportController::class, 'exportSales'])
+            ->middleware('permission:reports.view')
+            ->name('reports.sales.export');
         Route::get('/reports/sales', [AdminReportController::class, 'sales'])
             ->middleware('permission:reports.view')
             ->name('reports.sales');
+        Route::get('/reports/inventory/export', [AdminReportController::class, 'exportInventory'])
+            ->middleware('permission:reports.view|inventory.view')
+            ->name('reports.inventory.export');
         Route::get('/reports/inventory', [AdminReportController::class, 'inventory'])
-            ->middleware('permission:inventory.view')
+            ->middleware('permission:reports.view|inventory.view')
             ->name('reports.inventory');
+        Route::get('/reports/reservations/export', [AdminReportController::class, 'exportReservations'])
+            ->middleware('permission:reports.view|inventory.view')
+            ->name('reports.reservations.export');
+        Route::get('/reports/reservations', [AdminReportController::class, 'reservations'])
+            ->middleware('permission:reports.view|inventory.view')
+            ->name('reports.reservations');
+        Route::get('/reports/deliveries/export', [AdminReportController::class, 'exportDeliveries'])
+            ->middleware('permission:reports.view|inventory.view')
+            ->name('reports.deliveries.export');
+        Route::get('/reports/deliveries', [AdminReportController::class, 'deliveries'])
+            ->middleware('permission:reports.view|inventory.view')
+            ->name('reports.deliveries');
         Route::get('/reports/inventory-check', [AdminReportController::class, 'inventoryCheck'])
             ->middleware('permission:inventory.adjust')
             ->name('reports.inventory_check');
         Route::post('/reports/inventory-log', [AdminReportController::class, 'storeInventoryLog'])
             ->middleware('permission:inventory.adjust')
             ->name('reports.inventory_log');
+        Route::get('/reports/customers/export', [AdminReportController::class, 'exportCustomers'])
+            ->middleware('permission:reports.view')
+            ->name('reports.customers.export');
         Route::get('/reports/customers', [AdminReportController::class, 'customers'])
-            ->middleware('permission:customers.view')
+            ->middleware('permission:reports.view')
             ->name('reports.customers');
+        Route::get('/reports/staff/export', [AdminReportController::class, 'exportStaff'])
+            ->middleware('permission:reports.view')
+            ->name('reports.staff.export');
+        Route::get('/reports/staff', [AdminReportController::class, 'staff'])
+            ->middleware('permission:reports.view')
+            ->name('reports.staff');
+        Route::get('/reports/conversion', [AdminReportController::class, 'conversion'])
+            ->middleware('permission:reports.view')
+            ->name('reports.conversion');
         Route::get('/reports/reviews', [AdminReportController::class, 'reviews'])
             ->middleware('permission:reviews.view')
             ->name('reports.reviews');

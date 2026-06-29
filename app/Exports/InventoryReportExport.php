@@ -3,20 +3,28 @@
 namespace App\Exports;
 
 use App\Models\Car;
-use Illuminate\Database\Eloquent\Collection;
-use Maatwebsite\Excel\Concerns\FromCollection;
+use App\Support\AdminReportQuery;
+use Illuminate\Database\Eloquent\Builder;
+use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 
-class InventoryReportExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize
+class InventoryReportExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSize
 {
-    public function collection(): Collection
+    public function __construct(private readonly array $filters = [])
     {
-        return Car::query()
+    }
+
+    public function query(): Builder
+    {
+        $query = Car::query()
             ->with('carModel.brand')
-            ->orderBy('name')
-            ->get();
+            ->orderBy('name');
+
+        AdminReportQuery::applyInventoryFilters($query, $this->filters);
+
+        return $query;
     }
 
     public function headings(): array
@@ -62,7 +70,7 @@ class InventoryReportExport implements FromCollection, WithHeadings, WithMapping
 
     public function map($car): array
     {
-        $stockQuantity = $this->stockQuantity($car);
+        $stockQuantity = $car->physicalStock();
         $reservedQuantity = $car->reservedStock();
         $availableStock = $car->availableStock();
         $unitValue = (int) ($car->sale_price ?? $car->list_price ?? $car->price ?? 0);
@@ -105,11 +113,6 @@ class InventoryReportExport implements FromCollection, WithHeadings, WithMapping
             $car->owner_count,
             $this->dateTimeValue($car->updated_at),
         ];
-    }
-
-    private function stockQuantity(Car $car): int
-    {
-        return $car->physicalStock();
     }
 
     private function conditionLabel(?string $condition): string

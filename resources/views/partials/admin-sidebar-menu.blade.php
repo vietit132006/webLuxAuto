@@ -78,7 +78,13 @@
             'label' => 'Báo cáo & Phân tích',
             'icon' => 'bar_chart',
             'items' => [
-                ['label' => 'Doanh số', 'route' => 'admin.reports.sales', 'active' => ['admin.reports.sales'], 'icon' => 'bar_chart', 'permission' => 'reports.view'],
+                ['label' => 'Doanh số', 'route' => 'admin.reports.sales', 'active' => ['admin.reports.sales', 'admin.reports.sales.export'], 'icon' => 'bar_chart', 'permission' => 'reports.view'],
+                ['label' => 'Tồn kho', 'route' => 'admin.reports.inventory', 'active' => ['admin.reports.inventory', 'admin.reports.inventory.export'], 'icon' => 'boxes', 'permission' => ['reports.view', 'inventory.view']],
+                ['label' => 'Giữ chỗ xe', 'route' => 'admin.reports.reservations', 'active' => ['admin.reports.reservations', 'admin.reports.reservations.export'], 'icon' => 'clipboard_check', 'permission' => ['reports.view', 'inventory.view']],
+                ['label' => 'Giao xe', 'route' => 'admin.reports.deliveries', 'active' => ['admin.reports.deliveries', 'admin.reports.deliveries.export'], 'icon' => 'calendar', 'permission' => ['reports.view', 'inventory.view']],
+                ['label' => 'Khách hàng', 'route' => 'admin.reports.customers', 'active' => ['admin.reports.customers', 'admin.reports.customers.export'], 'icon' => 'users', 'permission' => 'reports.view'],
+                ['label' => 'Nhân viên sale', 'route' => 'admin.reports.staff', 'active' => ['admin.reports.staff', 'admin.reports.staff.export'], 'icon' => 'users', 'permission' => 'reports.view'],
+                ['label' => 'Chuyển đổi', 'route' => 'admin.reports.conversion', 'active' => ['admin.reports.conversion'], 'icon' => 'bar_chart', 'permission' => 'reports.view'],
             ],
         ],
         [
