@@ -12,6 +12,7 @@ use App\Models\Setting;
 use App\Models\StockReservation;
 use App\Models\User;
 use App\Services\StockReservationService;
+use App\Services\WarrantyService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -24,7 +25,10 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class AdminOrderController extends Controller
 {
-    public function __construct(private readonly StockReservationService $stockReservationService)
+    public function __construct(
+        private readonly StockReservationService $stockReservationService,
+        private readonly WarrantyService $warrantyService
+    )
     {
     }
 
@@ -386,6 +390,10 @@ class AdminOrderController extends Controller
                             false
                         );
                     }
+                }
+
+                if ($statusAfter === Delivery::STATUS_DELIVERED) {
+                    $this->warrantyService->ensureForDeliveredOrder($lockedOrder, $delivery);
                 }
             });
         } catch (InvalidArgumentException $e) {

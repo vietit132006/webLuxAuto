@@ -112,6 +112,21 @@ class Car extends Model
         return $this->hasMany(Quote::class, 'car_id', 'car_id');
     }
 
+    public function warranties()
+    {
+        return $this->hasMany(Warranty::class, 'car_id', 'car_id');
+    }
+
+    public function serviceAppointments()
+    {
+        return $this->hasMany(ServiceAppointment::class, 'car_id', 'car_id');
+    }
+
+    public function serviceRecords()
+    {
+        return $this->hasMany(ServiceRecord::class, 'car_id', 'car_id');
+    }
+
     // ========================
     // ACCESSORS
     // ========================
