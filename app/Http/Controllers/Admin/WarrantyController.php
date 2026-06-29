@@ -200,9 +200,7 @@ class WarrantyController extends Controller
 
         $startDate = Carbon::parse($validated['start_date']);
         $warrantyMonths = (int) $validated['warranty_months'];
-        $endDate = !empty($validated['end_date'])
-            ? Carbon::parse($validated['end_date'])
-            : $startDate->copy()->addMonthsNoOverflow($warrantyMonths);
+        $endDate = $startDate->copy()->addMonthsNoOverflow($warrantyMonths);
 
         $warranty->fill([
             'order_id' => $order->order_id,

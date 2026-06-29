@@ -12,7 +12,9 @@
 @php
     $isEdit = $mode === 'edit';
     $startDate = old('start_date', $warranty->start_date ? $warranty->start_date->format('Y-m-d') : now()->format('Y-m-d'));
-    $endDate = old('end_date', $warranty->end_date ? $warranty->end_date->format('Y-m-d') : now()->addMonthsNoOverflow(36)->format('Y-m-d'));
+    $selectedMonths = (int) old('warranty_months', $warranty->effective_warranty_months ?: 36);
+    $endDate = \Illuminate\Support\Carbon::parse($startDate)->addMonthsNoOverflow($selectedMonths)->format('Y-m-d');
+    $monthOptions = [12 => '12 tháng', 24 => '24 tháng', 36 => '36 tháng', 60 => '60 tháng'];
 @endphp
 
 <div class="after-page">
@@ -87,12 +89,19 @@
 
             <div class="after-field">
                 <label for="end_date">Ngày kết thúc</label>
-                <input id="end_date" type="date" name="end_date" class="after-control" value="{{ $endDate }}">
+                <input id="end_date" type="date" name="end_date" class="after-control" value="{{ $endDate }}" readonly data-warranty-end-date>
             </div>
 
             <div class="after-field">
                 <label for="warranty_months">Số tháng</label>
-                <input id="warranty_months" type="number" name="warranty_months" class="after-control" min="1" max="120" value="{{ old('warranty_months', $warranty->warranty_months ?: 36) }}" required>
+                <select id="warranty_months" name="warranty_months" class="after-control" required data-warranty-months>
+                    @foreach($monthOptions as $value => $label)
+                        <option value="{{ $value }}" @selected($selectedMonths === $value)>{{ $label }}</option>
+                    @endforeach
+                    @unless(array_key_exists($selectedMonths, $monthOptions))
+                        <option value="{{ $selectedMonths }}" selected>{{ $selectedMonths }} tháng</option>
+                    @endunless
+                </select>
             </div>
 
             <div class="after-field">
@@ -122,3 +131,58 @@
     </form>
 </div>
 @endsection
+
+@push('scripts')
+    <script>
+        (() => {
+            const startInput = document.querySelector('[name="start_date"]');
+            const monthsInput = document.querySelector('[data-warranty-months]');
+            const endInput = document.querySelector('[data-warranty-end-date]');
+
+            if (!startInput || !monthsInput || !endInput) {
+                return;
+            }
+
+            const parseDate = (value) => {
+                if (!value) {
+                    return null;
+                }
+
+                const date = new Date(`${value}T00:00:00`);
+
+                return Number.isNaN(date.getTime()) ? null : date;
+            };
+
+            const formatDate = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+
+                return `${year}-${month}-${day}`;
+            };
+
+            const addMonthsNoOverflow = (date, months) => {
+                const target = new Date(date.getFullYear(), date.getMonth() + months, 1);
+                const lastDay = new Date(target.getFullYear(), target.getMonth() + 1, 0).getDate();
+                target.setDate(Math.min(date.getDate(), lastDay));
+
+                return target;
+            };
+
+            const syncEndDate = () => {
+                const start = parseDate(startInput.value);
+                const months = Number.parseInt(monthsInput.value, 10);
+
+                if (!start || Number.isNaN(months) || months < 1) {
+                    return;
+                }
+
+                endInput.value = formatDate(addMonthsNoOverflow(start, months));
+            };
+
+            startInput.addEventListener('change', syncEndDate);
+            monthsInput.addEventListener('change', syncEndDate);
+            syncEndDate();
+        })();
+    </script>
+@endpush

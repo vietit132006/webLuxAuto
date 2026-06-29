@@ -40,7 +40,7 @@
                     <div class="after-info-card"><span>Ngày bắt đầu</span><strong>{{ $warranty->start_date?->format('d/m/Y') }}</strong></div>
                     <div class="after-info-card"><span>Ngày kết thúc</span><strong>{{ $warranty->end_date?->format('d/m/Y') }}</strong></div>
                     <div class="after-info-card"><span>Còn lại</span><strong>{{ $warranty->days_remaining >= 0 ? number_format($warranty->days_remaining) . ' ngày' : 'Quá hạn ' . number_format(abs($warranty->days_remaining)) . ' ngày' }}</strong></div>
-                    <div class="after-info-card"><span>Thời hạn</span><strong>{{ number_format($warranty->warranty_months) }} tháng</strong></div>
+                    <div class="after-info-card"><span>Thời hạn</span><strong>{{ number_format($warranty->effective_warranty_months) }} tháng</strong></div>
                     <div class="after-info-card"><span>VIN</span><strong>{{ $warranty->vin ?: 'N/A' }}</strong></div>
                     <div class="after-info-card"><span>Biển số</span><strong>{{ $warranty->license_plate ?: 'N/A' }}</strong></div>
                     <div class="after-info-card"><span>Giới hạn km</span><strong>{{ $warranty->mileage_limit ? number_format($warranty->mileage_limit) . ' km' : 'Không giới hạn' }}</strong></div>

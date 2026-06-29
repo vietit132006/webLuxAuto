@@ -59,7 +59,7 @@ class WarrantiesExport implements FromQuery, WithHeadings, WithMapping, ShouldAu
             $warranty->license_plate,
             $warranty->start_date?->format('d/m/Y'),
             $warranty->end_date?->format('d/m/Y'),
-            $warranty->warranty_months,
+            $warranty->effective_warranty_months,
             $warranty->mileage_limit,
             $warranty->status_label,
             $warranty->days_remaining,

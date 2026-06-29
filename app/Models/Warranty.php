@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 class Warranty extends Model
 {
@@ -91,6 +92,28 @@ class Warranty extends Model
         return self::STATUS_LABELS[$status] ?? ($status ?: 'N/A');
     }
 
+    public static function monthsBetweenDates(mixed $startDate, mixed $endDate): int
+    {
+        $start = Carbon::parse($startDate)->startOfDay();
+        $end = Carbon::parse($endDate)->startOfDay();
+
+        if ($end->lessThanOrEqualTo($start)) {
+            return 1;
+        }
+
+        $months = 0;
+
+        while ($months < 120 && $start->copy()->addMonthsNoOverflow($months + 1)->lessThanOrEqualTo($end)) {
+            $months++;
+        }
+
+        if ($start->copy()->addMonthsNoOverflow($months)->lessThan($end)) {
+            $months++;
+        }
+
+        return max(1, $months);
+    }
+
     public function scopeExpiringWithin(Builder $query, int $days = 30): Builder
     {
         return $query
@@ -115,6 +138,15 @@ class Warranty extends Model
         }
 
         return (int) now()->startOfDay()->diffInDays($this->end_date->copy()->startOfDay(), false);
+    }
+
+    public function getEffectiveWarrantyMonthsAttribute(): int
+    {
+        if (!$this->start_date || !$this->end_date) {
+            return (int) ($this->warranty_months ?: 0);
+        }
+
+        return self::monthsBetweenDates($this->start_date, $this->end_date);
     }
 
     public function getCarDisplayNameAttribute(): string
