@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\TestDriveController;
 use App\Http\Controllers\Admin\WarrantyController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminLiveController;
+use App\Http\Controllers\AdminNewsCategoryController;
 use App\Http\Controllers\AdminNewsController;
 use App\Http\Controllers\AdminOrderController;
 use App\Http\Controllers\AdminReportController;
@@ -36,6 +37,8 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/livestream', [LiveController::class, 'index'])->name('livestream');
+Route::get('/tin-tuc', [NewsController::class, 'index'])->name('news.index');
+Route::get('/tin-tuc/{slug}', [NewsController::class, 'show'])->name('news.show');
 Route::get('/bao-gia/{quote}/{token}', [PublicQuoteController::class, 'show'])->name('quotes.public.show');
 Route::get('/bao-gia/{quote}/{token}/pdf', [PublicQuoteController::class, 'pdf'])->name('quotes.public.pdf');
 Route::post('/bao-gia/{quote}/{token}/phan-hoi', [PublicQuoteController::class, 'respond'])->name('quotes.public.respond');
@@ -68,9 +71,6 @@ Route::middleware('auth')->group(function () {
         ->name('saved-login-accounts.store');
     Route::post('/account-switch', [AccountSwitchController::class, 'switchTo'])->name('account-switch.switch');
     Route::post('/account-switch/restore', [AccountSwitchController::class, 'restore'])->name('account-switch.restore');
-
-    Route::get('/tin-tuc', [NewsController::class, 'index'])->name('news.index');
-    Route::get('/tin-tuc/{slug}', [NewsController::class, 'show'])->name('news.show');
 
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -216,6 +216,28 @@ Route::middleware('auth')->group(function () {
             ->middleware('permission:roles.delete')
             ->name('roles.destroy');
 
+        Route::get('/news-categories', [AdminNewsCategoryController::class, 'index'])
+            ->middleware('permission:news_categories.view')
+            ->name('news-categories.index');
+        Route::get('/news-categories/create', [AdminNewsCategoryController::class, 'create'])
+            ->middleware('permission:news_categories.create')
+            ->name('news-categories.create');
+        Route::post('/news-categories', [AdminNewsCategoryController::class, 'store'])
+            ->middleware('permission:news_categories.create')
+            ->name('news-categories.store');
+        Route::get('/news-categories/{newsCategory}/edit', [AdminNewsCategoryController::class, 'edit'])
+            ->middleware('permission:news_categories.edit')
+            ->name('news-categories.edit');
+        Route::put('/news-categories/{newsCategory}', [AdminNewsCategoryController::class, 'update'])
+            ->middleware('permission:news_categories.edit')
+            ->name('news-categories.update');
+        Route::patch('/news-categories/{newsCategory}/toggle-status', [AdminNewsCategoryController::class, 'toggleStatus'])
+            ->middleware('permission:news_categories.edit')
+            ->name('news-categories.toggle-status');
+        Route::delete('/news-categories/{newsCategory}', [AdminNewsCategoryController::class, 'destroy'])
+            ->middleware('permission:news_categories.delete')
+            ->name('news-categories.destroy');
+
         Route::get('/news', [AdminNewsController::class, 'index'])
             ->middleware('permission:news.view')
             ->name('news.index');
@@ -225,16 +247,16 @@ Route::middleware('auth')->group(function () {
         Route::post('/news', [AdminNewsController::class, 'store'])
             ->middleware('permission:news.create')
             ->name('news.store');
-        Route::get('/news/{id}/detail', [AdminNewsController::class, 'show'])
+        Route::get('/news/{news}', [AdminNewsController::class, 'show'])
             ->middleware('permission:news.view')
             ->name('news.show');
-        Route::get('/news/{id}/edit', [AdminNewsController::class, 'edit'])
+        Route::get('/news/{news}/edit', [AdminNewsController::class, 'edit'])
             ->middleware('permission:news.edit')
             ->name('news.edit');
-        Route::put('/news/{id}', [AdminNewsController::class, 'update'])
+        Route::put('/news/{news}', [AdminNewsController::class, 'update'])
             ->middleware('permission:news.edit')
             ->name('news.update');
-        Route::delete('/news/{id}', [AdminNewsController::class, 'destroy'])
+        Route::delete('/news/{news}', [AdminNewsController::class, 'destroy'])
             ->middleware('permission:news.delete')
             ->name('news.destroy');
 

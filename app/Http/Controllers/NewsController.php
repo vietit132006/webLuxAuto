@@ -2,35 +2,153 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Car;
 use App\Models\News;
+use App\Models\NewsCategory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class NewsController extends Controller
 {
-    // Trang danh sách tin tức (Có tìm kiếm)
-    public function index(Request $request)
+    public function index(Request $request): View
     {
-        $search = $request->input('q');
+        $filters = [
+            'q' => trim((string) $request->input('q', '')),
+            'category' => $request->input('category'),
+        ];
 
-        $news = News::where('status', 1) // Chỉ lấy bài viết đang Đã xuất bản
-            ->when($search, function ($query, $search) {
-                return $query->where('title', 'like', "%{$search}%");
+        $baseQuery = $this->visibleNewsQuery();
+
+        $featuredNews = (clone $baseQuery)
+            ->where('is_featured', true)
+            ->publishedFirst()
+            ->take(4)
+            ->get();
+
+        $newsQuery = (clone $baseQuery)
+            ->when($filters['q'] !== '', function (Builder $query) use ($filters): void {
+                $keyword = $filters['q'];
+                $query->where(function (Builder $searchQuery) use ($keyword): void {
+                    $searchQuery->where('title', 'like', "%{$keyword}%")
+                        ->orWhere('summary', 'like', "%{$keyword}%")
+                        ->orWhereHas('tags', fn (Builder $tagQuery) => $tagQuery->where('name', 'like', "%{$keyword}%"));
+                });
             })
-            ->orderBy('created_at', 'desc')
-            ->paginate(9);
+            ->when($filters['category'], function (Builder $query, string $slug): void {
+                $query->whereHas('category', fn (Builder $categoryQuery) => $categoryQuery->where('slug', $slug));
+            });
 
-        return view('client.news.index', compact('news', 'search'));
+        $news = $newsQuery
+            ->publishedFirst()
+            ->paginate(9)
+            ->withQueryString();
+
+        $categories = NewsCategory::query()
+            ->active()
+            ->withCount(['news' => fn (Builder $query) => $query->visible()])
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+
+        $latestNews = (clone $baseQuery)->publishedFirst()->take(5)->get();
+        $popularNews = (clone $baseQuery)->orderByDesc('views_count')->publishedFirst()->take(5)->get();
+
+        return view('client.news.index', [
+            'news' => $news,
+            'filters' => $filters,
+            'categories' => $categories,
+            'featuredNews' => $featuredNews,
+            'latestNews' => $latestNews,
+            'popularNews' => $popularNews,
+        ]);
     }
 
-    // Trang đọc chi tiết 1 bài viết
-    public function show($slug)
+    public function show(Request $request, string $slug): View
     {
-        // Tìm bài viết theo đường dẫn (slug)
-        $article = News::where('slug', $slug)->where('status', 1)->firstOrFail();
+        $article = $this->visibleNewsQuery()
+            ->where('slug', $slug)
+            ->firstOrFail();
 
-        // Lấy thêm 3 bài viết mới nhất để làm tin liên quan
-        $relatedNews = News::where('status', 1)->where('news_id', '!=', $article->news_id)->latest()->take(3)->get();
+        $sessionKey = 'news_viewed_' . $article->id;
+        if (!$request->session()->has($sessionKey)) {
+            $article->increment('views_count');
+            $request->session()->put($sessionKey, true);
+            $article->refresh();
+        }
 
-        return view('client.news.show', compact('article', 'relatedNews'));
+        $relatedNews = $this->visibleNewsQuery()
+            ->whereKeyNot($article->id)
+            ->when($article->category_id, fn (Builder $query) => $query->where('category_id', $article->category_id))
+            ->publishedFirst()
+            ->take(3)
+            ->get();
+
+        if ($relatedNews->count() < 3) {
+            $fallback = $this->visibleNewsQuery()
+                ->whereKeyNot($article->id)
+                ->whereNotIn('id', $relatedNews->pluck('id'))
+                ->publishedFirst()
+                ->take(3 - $relatedNews->count())
+                ->get();
+
+            $relatedNews = $relatedNews->concat($fallback);
+        }
+
+        $relatedCars = $this->relatedCars($article);
+        $latestNews = $this->visibleNewsQuery()->whereKeyNot($article->id)->publishedFirst()->take(5)->get();
+        $popularNews = $this->visibleNewsQuery()->whereKeyNot($article->id)->orderByDesc('views_count')->take(5)->get();
+
+        return view('client.news.show', compact(
+            'article',
+            'relatedNews',
+            'relatedCars',
+            'latestNews',
+            'popularNews'
+        ));
+    }
+
+    private function visibleNewsQuery(): Builder
+    {
+        return News::query()
+            ->visible()
+            ->with(['category', 'author:user_id,name', 'tags', 'relatedCar.carModel.brand', 'relatedBrand', 'relatedModel.brand'])
+            ->where(function (Builder $query): void {
+                $query->whereNull('category_id')
+                    ->orWhereHas('category', fn (Builder $categoryQuery) => $categoryQuery->active());
+            });
+    }
+
+    private function relatedCars(News $article)
+    {
+        $query = Car::query()
+            ->with(['carModel.brand', 'modelInfo.brand', 'images'])
+            ->withActiveBrand();
+
+        if ($article->related_car_id) {
+            return $query->where('car_id', $article->related_car_id)->take(1)->get();
+        }
+
+        if ($article->related_model_id) {
+            return $query->where('car_model_id', $article->related_model_id)
+                ->availableForSale()
+                ->orderByDesc('is_featured')
+                ->orderByDesc('created_at')
+                ->take(3)
+                ->get();
+        }
+
+        if ($article->related_brand_id) {
+            return $query->whereHas('carModel.brand', function (Builder $brandQuery) use ($article): void {
+                $brandQuery->where('brand_id', $article->related_brand_id);
+            })
+                ->availableForSale()
+                ->orderByDesc('is_featured')
+                ->orderByDesc('created_at')
+                ->take(3)
+                ->get();
+        }
+
+        return collect();
     }
 }

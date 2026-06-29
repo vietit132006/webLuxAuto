@@ -62,6 +62,7 @@
             'icon' => 'megaphone',
             'items' => [
                 ['label' => 'Tin tức', 'route' => 'admin.news.index', 'active' => ['admin.news.*'], 'icon' => 'newspaper', 'permission' => 'news.view'],
+                ['label' => 'Chuyên mục tin', 'route' => 'admin.news-categories.index', 'active' => ['admin.news-categories.*'], 'icon' => 'list_tree', 'permission' => 'news_categories.view'],
                 ['label' => 'Khuyến mãi', 'route' => 'admin.promotions', 'active' => ['admin.promotions*'], 'icon' => 'tag', 'permission' => 'promotions.view'],
                 ['label' => 'Đánh giá', 'route' => 'admin.reports.reviews', 'active' => ['admin.reports.reviews'], 'icon' => 'star', 'permission' => 'reviews.view'],
                 ['label' => 'Livestream', 'route' => 'admin.live.index', 'active' => ['admin.live.*'], 'icon' => 'video', 'class' => 'sidebar-link-live', 'permission' => 'live.view'],
