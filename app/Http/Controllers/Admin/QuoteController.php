@@ -10,6 +10,7 @@ use App\Models\OrderDetail;
 use App\Models\Quote;
 use App\Models\Ticket;
 use App\Models\User;
+use App\Services\PromotionApplicationService;
 use App\Services\QuotePdfService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,6 +25,10 @@ use Illuminate\View\View;
 
 class QuoteController extends Controller
 {
+    public function __construct(private readonly PromotionApplicationService $promotionApplications)
+    {
+    }
+
     public function index(Request $request): View
     {
         $filters = $this->filters($request);
@@ -131,6 +136,14 @@ class QuoteController extends Controller
     {
         $data = $this->validatedData($request);
         $data['user_id'] = $data['user_id'] ?? Auth::id();
+        $promotionPayloads = $this->promotionPayloadsForRequest($request, $data);
+
+        if ($promotionPayloads->isNotEmpty()) {
+            $data['discount_amount'] = max(
+                (float) ($data['discount_amount'] ?? 0),
+                (float) $promotionPayloads->sum('discount_amount')
+            );
+        }
 
         if (!empty($data['test_drive_id'])) {
             $existingQuote = Quote::query()
@@ -145,10 +158,13 @@ class QuoteController extends Controller
             }
         }
 
-        $quote = DB::transaction(function () use ($data) {
+        $quote = DB::transaction(function () use ($data, $promotionPayloads) {
             $data['quote_code'] = Quote::generateQuoteCode();
 
-            return Quote::create($data);
+            $quote = Quote::create($data);
+            $this->promotionApplications->syncQuotePromotions($quote, $promotionPayloads);
+
+            return $quote;
         });
 
         return redirect()
@@ -158,7 +174,7 @@ class QuoteController extends Controller
 
     public function show(Quote $quote): View
     {
-        $quote->load(['customer', 'car.modelInfo.brand', 'user', 'testDrive', 'order']);
+        $quote->load(['customer', 'car.modelInfo.brand', 'user', 'testDrive', 'order', 'quotePromotions.promotion']);
 
         return view('admin.quotes.show', compact('quote'));
     }
@@ -171,8 +187,19 @@ class QuoteController extends Controller
     public function update(Request $request, Quote $quote): RedirectResponse
     {
         $data = $this->validatedData($request);
+        $promotionPayloads = $this->promotionPayloadsForRequest($request, $data);
 
-        $quote->update($data);
+        if ($promotionPayloads->isNotEmpty()) {
+            $data['discount_amount'] = max(
+                (float) ($data['discount_amount'] ?? 0),
+                (float) $promotionPayloads->sum('discount_amount')
+            );
+        }
+
+        DB::transaction(function () use ($quote, $data, $promotionPayloads): void {
+            $quote->update($data);
+            $this->promotionApplications->syncQuotePromotions($quote, $promotionPayloads);
+        });
 
         return redirect()
             ->route('admin.quotes.show', $quote)
@@ -207,7 +234,7 @@ class QuoteController extends Controller
     {
         [$order, $created, $quoteCode, $createdCustomerUser] = DB::transaction(function () use ($quote, $request): array {
             $lockedQuote = Quote::query()
-                ->with(['customer', 'car'])
+                ->with(['customer', 'car', 'quotePromotions.promotion'])
                 ->whereKey($quote->getKey())
                 ->lockForUpdate()
                 ->firstOrFail();
@@ -273,6 +300,8 @@ class QuoteController extends Controller
                 'note' => 'Tạo đơn hàng từ báo giá ' . $lockedQuote->quote_code . '.',
             ]);
 
+            $this->promotionApplications->copyQuotePromotionsToOrder($lockedQuote, $order);
+
             return [$order, true, $lockedQuote->quote_code, $createdCustomerUser];
         });
 
@@ -304,6 +333,7 @@ class QuoteController extends Controller
 
         return [
             'quote' => $quote,
+            'applicablePromotions' => $this->applicablePromotionsForQuote($quote),
             'customers' => $this->customersForSelect(),
             'cars' => $this->carsForSelect(),
             'users' => $this->usersForSelect($quote->user_id ? (int) $quote->user_id : null),
@@ -311,6 +341,52 @@ class QuoteController extends Controller
             'sourceTestDrive' => $sourceTestDrive,
             'prefillWarning' => $prefillWarning,
         ];
+    }
+
+    private function applicablePromotionsForQuote(Quote $quote)
+    {
+        $quote->loadMissing('quotePromotions.promotion');
+
+        if (!$quote->car_id) {
+            return collect();
+        }
+
+        $car = Car::query()
+            ->with('modelInfo.brand')
+            ->find($quote->car_id);
+
+        if (!$car) {
+            return collect();
+        }
+
+        $applicablePromotions = $this->promotionApplications->applicablePromotionsForCar($car);
+        $existingPromotions = $quote->quotePromotions
+            ->pluck('promotion')
+            ->filter();
+
+        return $applicablePromotions
+            ->merge($existingPromotions)
+            ->unique('id')
+            ->values();
+    }
+
+    private function promotionPayloadsForRequest(Request $request, array $data)
+    {
+        return $this->promotionApplications->applicationPayloadForCar(
+            (int) $data['car_id'],
+            (float) $data['vehicle_price'],
+            $this->promotionIds($request)
+        );
+    }
+
+    private function promotionIds(Request $request): array
+    {
+        $request->validate([
+            'promotion_ids' => ['nullable', 'array'],
+            'promotion_ids.*' => ['integer', Rule::exists('promotions', 'id')],
+        ]);
+
+        return (array) $request->input('promotion_ids', []);
     }
 
     private function filters(Request $request): array

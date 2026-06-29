@@ -20,7 +20,6 @@ use App\Models\Quote;
 use App\Models\Review;
 use App\Models\ServiceAppointment;
 use App\Models\ServiceRecord;
-use App\Models\Setting;
 use App\Models\StockMovement;
 use App\Models\StockReservation;
 use App\Models\Ticket;
@@ -561,30 +560,6 @@ class AdminReportController extends Controller
             ->pluck('cnt', 'rating');
 
         return view('admin.reports.reviews', compact('reviews', 'avgRating', 'totalReviews', 'distribution'));
-    }
-
-    public function promotions(): View
-    {
-        $setting = Setting::firstOrCreate(
-            ['key' => 'promotions_content'],
-            ['value' => '', 'group' => 'marketing']
-        );
-
-        return view('admin.promotions', ['content' => $setting->value ?? '']);
-    }
-
-    public function updatePromotions(Request $request): RedirectResponse
-    {
-        $data = $request->validate([
-            'content' => 'nullable|string|max:20000',
-        ]);
-
-        Setting::updateOrCreate(
-            ['key' => 'promotions_content'],
-            ['value' => $data['content'] ?? '', 'group' => 'marketing']
-        );
-
-        return redirect()->route('admin.promotions')->with('success', 'Đã lưu nội dung khuyến mãi.');
     }
 
     private function salesMonthlyChart(array $filters): array

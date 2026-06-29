@@ -89,6 +89,7 @@
                 ['label' => 'Hậu mãi', 'route' => 'admin.reports.services', 'active' => ['admin.reports.services', 'admin.reports.services.export'], 'icon' => 'history', 'permission' => 'reports.view'],
                 ['label' => 'Khách hàng', 'route' => 'admin.reports.customers', 'active' => ['admin.reports.customers', 'admin.reports.customers.export'], 'icon' => 'users', 'permission' => 'reports.view'],
                 ['label' => 'Nhân viên sale', 'route' => 'admin.reports.staff', 'active' => ['admin.reports.staff', 'admin.reports.staff.export'], 'icon' => 'users', 'permission' => 'reports.view'],
+                ['label' => 'Khuyến mãi', 'route' => 'admin.reports.promotions', 'active' => ['admin.reports.promotions'], 'icon' => 'tag', 'permission' => 'reports.view'],
                 ['label' => 'Chuyển đổi', 'route' => 'admin.reports.conversion', 'active' => ['admin.reports.conversion'], 'icon' => 'bar_chart', 'permission' => 'reports.view'],
             ],
         ],

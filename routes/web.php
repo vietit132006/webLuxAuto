@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CarController as AdminCarController;
 use App\Http\Controllers\Admin\CarExcelController;
 use App\Http\Controllers\Admin\CarModelController;
 use App\Http\Controllers\Admin\CustomerController;
+use App\Http\Controllers\Admin\PromotionController as AdminPromotionController;
 use App\Http\Controllers\Admin\QuoteController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\ServiceAppointmentController;
@@ -39,6 +40,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/livestream', [LiveController::class, 'index'])->name('livestream');
 Route::get('/tin-tuc', [NewsController::class, 'index'])->name('news.index');
 Route::get('/tin-tuc/{slug}', [NewsController::class, 'show'])->name('news.show');
+Route::get('/khuyen-mai', [PromotionController::class, 'index'])->name('promotions.index');
+Route::get('/khuyen-mai/{promotion:slug}', [PromotionController::class, 'show'])->name('promotions.show');
 Route::get('/bao-gia/{quote}/{token}', [PublicQuoteController::class, 'show'])->name('quotes.public.show');
 Route::get('/bao-gia/{quote}/{token}/pdf', [PublicQuoteController::class, 'pdf'])->name('quotes.public.pdf');
 Route::post('/bao-gia/{quote}/{token}/phan-hoi', [PublicQuoteController::class, 'respond'])->name('quotes.public.respond');
@@ -82,7 +85,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/xe/{car}', [ClientCarController::class, 'show'])->name('cars.show_public');
     Route::post('/xe/{car}/danh-gia', [ClientCarController::class, 'storeReview'])->name('cars.reviews.store');
 
-    Route::get('/khuyen-mai', [PromotionController::class, 'index'])->name('promotions.index');
     Route::get('/so-sanh-xe', [CompareController::class, 'index'])->name('compare.index');
 
     Route::get('/ho-tro', [TicketController::class, 'history'])->name('ticket.history');
@@ -407,12 +409,36 @@ Route::middleware('auth')->group(function () {
         Route::get('/reports/reviews', [AdminReportController::class, 'reviews'])
             ->middleware('permission:reviews.view')
             ->name('reports.reviews');
-        Route::get('/promotions', [AdminReportController::class, 'promotions'])
+        Route::get('/reports/promotions', [AdminPromotionController::class, 'report'])
+            ->middleware('permission:reports.view')
+            ->name('reports.promotions');
+        Route::get('/promotions/applicable', [AdminPromotionController::class, 'applicable'])
+            ->middleware('permission:promotions.apply')
+            ->name('promotions.applicable');
+        Route::get('/promotions', [AdminPromotionController::class, 'index'])
             ->middleware('permission:promotions.view')
             ->name('promotions');
-        Route::put('/promotions', [AdminReportController::class, 'updatePromotions'])
+        Route::get('/promotions/create', [AdminPromotionController::class, 'create'])
+            ->middleware('permission:promotions.create')
+            ->name('promotions.create');
+        Route::post('/promotions', [AdminPromotionController::class, 'store'])
+            ->middleware('permission:promotions.create')
+            ->name('promotions.store');
+        Route::get('/promotions/{promotion}/edit', [AdminPromotionController::class, 'edit'])
+            ->middleware('permission:promotions.edit')
+            ->name('promotions.edit');
+        Route::put('/promotions/{promotion}', [AdminPromotionController::class, 'update'])
             ->middleware('permission:promotions.edit')
             ->name('promotions.update');
+        Route::patch('/promotions/{promotion}/publish', [AdminPromotionController::class, 'publish'])
+            ->middleware('permission:promotions.publish')
+            ->name('promotions.publish');
+        Route::patch('/promotions/{promotion}/archive', [AdminPromotionController::class, 'archive'])
+            ->middleware('permission:promotions.edit')
+            ->name('promotions.archive');
+        Route::delete('/promotions/{promotion}', [AdminPromotionController::class, 'destroy'])
+            ->middleware('permission:promotions.delete')
+            ->name('promotions.destroy');
 
         Route::get('/live', [AdminLiveController::class, 'index'])
             ->middleware('permission:live.view')

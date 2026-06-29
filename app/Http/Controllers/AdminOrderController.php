@@ -153,6 +153,7 @@ class AdminOrderController extends Controller
             'statusHistories.user',
             'depositConfirmer',
             'quote',
+            'orderPromotions.promotion',
             'delivery.deliveryStaff',
             'delivery.files.uploadedBy',
         ])

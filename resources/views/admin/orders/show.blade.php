@@ -308,6 +308,25 @@
                 </section>
             @endif
 
+            @if($order->orderPromotions->isNotEmpty())
+                <section class="panel">
+                    <h2 class="panel-title">Khuyến mãi đã áp dụng</h2>
+                    @foreach($order->orderPromotions as $orderPromotion)
+                        <div class="info-group">
+                            <div class="info-label">{{ $orderPromotion->promotion?->promotion_code ?? 'KM đã xóa' }}</div>
+                            <div class="info-value">
+                                {{ $orderPromotion->promotion?->title ?? 'Khuyến mãi đã xóa' }}
+                                <br>
+                                Giảm {{ number_format((float) $orderPromotion->discount_amount, 0, ',', '.') }} đ
+                                @if($orderPromotion->gift_note)
+                                    <br>{{ $orderPromotion->gift_note }}
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </section>
+            @endif
+
             <section class="panel">
                 <h2 class="panel-title">Thanh toán</h2>
                 <div class="summary-row">

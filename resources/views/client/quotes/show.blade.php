@@ -137,6 +137,27 @@
         </div>
     </section>
 
+    @if($quote->quotePromotions->isNotEmpty())
+        <section class="client-quote-panel">
+            <div class="client-quote-section-title">
+                <h2>Ưu đãi đã áp dụng</h2>
+                <span>{{ number_format($quote->promotionDiscountTotal(), 0, ',', '.') }} đ</span>
+            </div>
+
+            <div class="client-quote-promotions">
+                @foreach($quote->quotePromotions as $quotePromotion)
+                    <div>
+                        <strong>{{ $quotePromotion->promotion?->promotion_code ?? 'KM đã xóa' }} - {{ $quotePromotion->promotion?->title ?? 'Khuyến mãi đã xóa' }}</strong>
+                        <span>Giảm {{ number_format((float) $quotePromotion->discount_amount, 0, ',', '.') }} đ</span>
+                        @if($quotePromotion->gift_note)
+                            <small>{{ $quotePromotion->gift_note }}</small>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        </section>
+    @endif
+
     @if($quote->note)
         <section class="client-quote-panel">
             <h2>Ghi chú từ Lux Auto</h2>

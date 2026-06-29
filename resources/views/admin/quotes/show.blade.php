@@ -226,6 +226,27 @@
         </div>
     </section>
 
+    @if($quote->quotePromotions->isNotEmpty())
+        <section class="quote-note-panel quote-promotion-summary">
+            <div class="quote-section-title">
+                <h2>Khuyến mãi đã áp dụng</h2>
+                <span>{{ number_format($quote->promotionDiscountTotal(), 0, ',', '.') }} đ</span>
+            </div>
+
+            <div class="quote-promotion-summary-list">
+                @foreach($quote->quotePromotions as $quotePromotion)
+                    <div>
+                        <strong>{{ $quotePromotion->promotion?->promotion_code ?? 'KM đã xóa' }} - {{ $quotePromotion->promotion?->title ?? 'Khuyến mãi đã xóa' }}</strong>
+                        <span>Giảm {{ number_format((float) $quotePromotion->discount_amount, 0, ',', '.') }} đ</span>
+                        @if($quotePromotion->gift_note)
+                            <small>{{ $quotePromotion->gift_note }}</small>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        </section>
+    @endif
+
     @if($quote->note)
         <section class="quote-note-panel">
             <h2>Ghi chú</h2>

@@ -196,6 +196,20 @@
         </tbody>
     </table>
 
+    @if($quote->quotePromotions->isNotEmpty())
+        <div class="note">
+            <strong>Khuyến mãi đã áp dụng:</strong>
+            @foreach($quote->quotePromotions as $quotePromotion)
+                <br>
+                {{ $quotePromotion->promotion?->promotion_code ?? 'KM đã xóa' }} - {{ $quotePromotion->promotion?->title ?? 'Khuyến mãi đã xóa' }}:
+                giảm {{ number_format((float) $quotePromotion->discount_amount, 0, ',', '.') }} đ
+                @if($quotePromotion->gift_note)
+                    | {{ $quotePromotion->gift_note }}
+                @endif
+            @endforeach
+        </div>
+    @endif
+
     @if($quote->note)
         <div class="note">
             <strong>Ghi chú:</strong>

@@ -110,6 +110,11 @@ class Quote extends Model
         return $this->hasMany(StockReservation::class, 'quote_id', 'quote_id');
     }
 
+    public function quotePromotions(): HasMany
+    {
+        return $this->hasMany(QuotePromotion::class, 'quote_id', 'quote_id');
+    }
+
     public function statusLabel(): string
     {
         return self::STATUSES[$this->status] ?? $this->status;
@@ -123,6 +128,13 @@ class Quote extends Model
     public function money(string $field): string
     {
         return number_format((float) $this->{$field}, 0, ',', '.') . ' đ';
+    }
+
+    public function promotionDiscountTotal(): float
+    {
+        $this->loadMissing('quotePromotions');
+
+        return (float) $this->quotePromotions->sum(fn (QuotePromotion $quotePromotion): float => (float) $quotePromotion->discount_amount);
     }
 
     public function ensurePublicToken(): string
