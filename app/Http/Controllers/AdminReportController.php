@@ -7,6 +7,7 @@ use App\Exports\DeliveryReportExport;
 use App\Exports\InventoryReportExport;
 use App\Exports\ReservationReportExport;
 use App\Exports\SalesReportExport;
+use App\Exports\ServiceReportExport;
 use App\Exports\StaffReportExport;
 use App\Models\Brand;
 use App\Models\Car;
@@ -17,12 +18,16 @@ use App\Models\InventoryLog;
 use App\Models\Order;
 use App\Models\Quote;
 use App\Models\Review;
+use App\Models\ServiceAppointment;
+use App\Models\ServiceRecord;
 use App\Models\Setting;
 use App\Models\StockMovement;
 use App\Models\StockReservation;
 use App\Models\Ticket;
 use App\Models\User;
+use App\Models\Warranty;
 use App\Services\StockMovementService;
+use App\Support\AfterSalesQuery;
 use App\Support\AdminReportQuery;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -266,6 +271,72 @@ class AdminReportController extends Controller
         return Excel::download(
             new DeliveryReportExport($this->deliveryFilters($request)),
             'luxauto-delivery-report-' . now()->format('Ymd-His') . '.xlsx'
+        );
+    }
+
+    public function services(Request $request): View
+    {
+        $filters = AfterSalesQuery::cleanRecordFilters($request->query());
+        $recordsQuery = ServiceRecord::query()
+            ->with(['serviceAppointment', 'warranty', 'user', 'car.carModel.brand', 'handledBy']);
+        AfterSalesQuery::applyRecordFilters($recordsQuery, $filters);
+
+        $records = $recordsQuery
+            ->orderByDesc('service_date')
+            ->orderByDesc('id')
+            ->paginate(25)
+            ->withQueryString();
+
+        $statsQuery = ServiceRecord::query();
+        AfterSalesQuery::applyRecordFilters($statsQuery, $filters);
+
+        $appointmentsQuery = ServiceAppointment::query();
+        if ($filters['service_type']) {
+            $appointmentsQuery->where('service_type', $filters['service_type']);
+        }
+        if ($filters['handled_by']) {
+            $appointmentsQuery->where('assigned_staff_id', $filters['handled_by']);
+        }
+        if ($filters['date_from']) {
+            $appointmentsQuery->where('appointment_date', '>=', $filters['date_from']);
+        }
+        if ($filters['date_to']) {
+            $appointmentsQuery->where('appointment_date', '<=', $filters['date_to']);
+        }
+
+        $topCarsQuery = ServiceRecord::query()
+            ->join('cars', 'cars.car_id', '=', 'service_records.car_id')
+            ->selectRaw('cars.car_id, cars.name, COUNT(*) as services_count, COALESCE(SUM(service_records.total_cost), 0) as total_cost')
+            ->groupBy('cars.car_id', 'cars.name')
+            ->orderByDesc('services_count')
+            ->orderByDesc('total_cost')
+            ->take(8);
+        AfterSalesQuery::applyRecordFilters($topCarsQuery, $filters);
+
+        return view('admin.reports.services', [
+            'filters' => $filters,
+            'records' => $records,
+            'serviceTypeOptions' => ServiceAppointment::serviceTypeOptions(),
+            'staff' => $this->staffOptions(),
+            'stats' => [
+                'appointments' => (clone $appointmentsQuery)->count(),
+                'completed_appointments' => (clone $appointmentsQuery)->where('status', ServiceAppointment::STATUS_COMPLETED)->count(),
+                'cancelled_appointments' => (clone $appointmentsQuery)->where('status', ServiceAppointment::STATUS_CANCELLED)->count(),
+                'records' => (clone $statsQuery)->count(),
+                'service_cost' => (float) (clone $statsQuery)->sum('total_cost'),
+                'next_due' => ServiceRecord::query()->nextServiceWithin(30)->count(),
+                'expiring_warranties' => Warranty::query()->expiringWithin(30)->count(),
+            ],
+            'statusOptions' => ServiceRecord::statusOptions(),
+            'topCars' => $topCarsQuery->get(),
+        ]);
+    }
+
+    public function exportServices(Request $request): BinaryFileResponse
+    {
+        return Excel::download(
+            new ServiceReportExport(AfterSalesQuery::cleanRecordFilters($request->query())),
+            'luxauto-service-report-' . now()->format('Ymd-His') . '.xlsx'
         );
     }
 

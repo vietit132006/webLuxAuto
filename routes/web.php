@@ -7,8 +7,12 @@ use App\Http\Controllers\Admin\CarModelController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\QuoteController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\ServiceAppointmentController;
+use App\Http\Controllers\Admin\ServiceFileController;
+use App\Http\Controllers\Admin\ServiceRecordController;
 use App\Http\Controllers\Admin\StockMovementController;
 use App\Http\Controllers\Admin\TestDriveController;
+use App\Http\Controllers\Admin\WarrantyController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminLiveController;
 use App\Http\Controllers\AdminNewsController;
@@ -351,6 +355,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/reports/deliveries', [AdminReportController::class, 'deliveries'])
             ->middleware('permission:reports.view|inventory.view')
             ->name('reports.deliveries');
+        Route::get('/reports/services/export', [AdminReportController::class, 'exportServices'])
+            ->middleware('permission:reports.view')
+            ->name('reports.services.export');
+        Route::get('/reports/services', [AdminReportController::class, 'services'])
+            ->middleware('permission:reports.view')
+            ->name('reports.services');
         Route::get('/reports/inventory-check', [AdminReportController::class, 'inventoryCheck'])
             ->middleware('permission:inventory.adjust')
             ->name('reports.inventory_check');
@@ -395,6 +405,91 @@ Route::middleware('auth')->group(function () {
         Route::post('/tickets/{id}/reply', [AdminTicketController::class, 'reply'])
             ->middleware('permission:tickets.reply')
             ->name('tickets.reply');
+
+        Route::get('/warranties/export', [WarrantyController::class, 'export'])
+            ->middleware('permission:warranties.view')
+            ->name('warranties.export');
+        Route::get('/warranties', [WarrantyController::class, 'index'])
+            ->middleware('permission:warranties.view')
+            ->name('warranties.index');
+        Route::get('/warranties/create', [WarrantyController::class, 'create'])
+            ->middleware('permission:warranties.create')
+            ->name('warranties.create');
+        Route::post('/warranties', [WarrantyController::class, 'store'])
+            ->middleware('permission:warranties.create')
+            ->name('warranties.store');
+        Route::get('/warranties/{warranty}', [WarrantyController::class, 'show'])
+            ->middleware('permission:warranties.view')
+            ->name('warranties.show');
+        Route::get('/warranties/{warranty}/edit', [WarrantyController::class, 'edit'])
+            ->middleware('permission:warranties.edit')
+            ->name('warranties.edit');
+        Route::put('/warranties/{warranty}', [WarrantyController::class, 'update'])
+            ->middleware('permission:warranties.edit')
+            ->name('warranties.update');
+        Route::delete('/warranties/{warranty}', [WarrantyController::class, 'destroy'])
+            ->middleware('permission:warranties.delete')
+            ->name('warranties.destroy');
+
+        Route::get('/service-appointments', [ServiceAppointmentController::class, 'index'])
+            ->middleware('permission:services.view')
+            ->name('service-appointments.index');
+        Route::get('/service-appointments/create', [ServiceAppointmentController::class, 'create'])
+            ->middleware('permission:services.create')
+            ->name('service-appointments.create');
+        Route::post('/service-appointments', [ServiceAppointmentController::class, 'store'])
+            ->middleware('permission:services.create')
+            ->name('service-appointments.store');
+        Route::get('/service-appointments/{serviceAppointment}', [ServiceAppointmentController::class, 'show'])
+            ->middleware('permission:services.view')
+            ->name('service-appointments.show');
+        Route::get('/service-appointments/{serviceAppointment}/edit', [ServiceAppointmentController::class, 'edit'])
+            ->middleware('permission:services.edit')
+            ->name('service-appointments.edit');
+        Route::put('/service-appointments/{serviceAppointment}', [ServiceAppointmentController::class, 'update'])
+            ->middleware('permission:services.edit')
+            ->name('service-appointments.update');
+        Route::delete('/service-appointments/{serviceAppointment}', [ServiceAppointmentController::class, 'destroy'])
+            ->middleware('permission:services.delete')
+            ->name('service-appointments.destroy');
+        Route::post('/service-appointments/{serviceAppointment}/files', [ServiceFileController::class, 'storeForAppointment'])
+            ->middleware('permission:services.edit')
+            ->name('service-appointments.files.store');
+
+        Route::get('/service-records', [ServiceRecordController::class, 'index'])
+            ->middleware('permission:service_records.view')
+            ->name('service-records.index');
+        Route::get('/service-records/create', [ServiceRecordController::class, 'create'])
+            ->middleware('permission:service_records.create')
+            ->name('service-records.create');
+        Route::post('/service-records', [ServiceRecordController::class, 'store'])
+            ->middleware('permission:service_records.create')
+            ->name('service-records.store');
+        Route::get('/service-records/{serviceRecord}', [ServiceRecordController::class, 'show'])
+            ->middleware('permission:service_records.view')
+            ->name('service-records.show');
+        Route::get('/service-records/{serviceRecord}/edit', [ServiceRecordController::class, 'edit'])
+            ->middleware('permission:service_records.edit')
+            ->name('service-records.edit');
+        Route::put('/service-records/{serviceRecord}', [ServiceRecordController::class, 'update'])
+            ->middleware('permission:service_records.edit')
+            ->name('service-records.update');
+        Route::delete('/service-records/{serviceRecord}', [ServiceRecordController::class, 'destroy'])
+            ->middleware('permission:service_records.delete')
+            ->name('service-records.destroy');
+        Route::post('/service-records/{serviceRecord}/files', [ServiceFileController::class, 'storeForRecord'])
+            ->middleware('permission:service_records.edit')
+            ->name('service-records.files.store');
+
+        Route::get('/service-files/{serviceFile}/view', [ServiceFileController::class, 'view'])
+            ->middleware('permission:services.view|service_records.view')
+            ->name('service-files.view');
+        Route::get('/service-files/{serviceFile}/download', [ServiceFileController::class, 'download'])
+            ->middleware('permission:services.view|service_records.view')
+            ->name('service-files.download');
+        Route::delete('/service-files/{serviceFile}', [ServiceFileController::class, 'destroy'])
+            ->middleware('permission:services.edit|service_records.edit')
+            ->name('service-files.destroy');
 
         Route::get('/test-drives', [TestDriveController::class, 'index'])
             ->middleware('permission:test_drives.view')

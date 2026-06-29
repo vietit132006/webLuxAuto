@@ -72,6 +72,9 @@
             'icon' => 'headset',
             'items' => [
                 ['label' => 'Hỗ trợ', 'route' => 'admin.tickets.index', 'active' => ['admin.tickets.*'], 'icon' => 'headset', 'permission' => 'tickets.view'],
+                ['label' => 'Bảo hành', 'route' => 'admin.warranties.index', 'active' => ['admin.warranties.*'], 'icon' => 'clipboard_check', 'permission' => 'warranties.view'],
+                ['label' => 'Bảo dưỡng', 'route' => 'admin.service-appointments.index', 'active' => ['admin.service-appointments.*'], 'icon' => 'calendar', 'permission' => 'services.view'],
+                ['label' => 'Lịch sử dịch vụ', 'route' => 'admin.service-records.index', 'active' => ['admin.service-records.*'], 'icon' => 'history', 'permission' => 'service_records.view'],
             ],
         ],
         [
@@ -82,6 +85,7 @@
                 ['label' => 'Tồn kho', 'route' => 'admin.reports.inventory', 'active' => ['admin.reports.inventory', 'admin.reports.inventory.export'], 'icon' => 'boxes', 'permission' => ['reports.view', 'inventory.view']],
                 ['label' => 'Giữ chỗ xe', 'route' => 'admin.reports.reservations', 'active' => ['admin.reports.reservations', 'admin.reports.reservations.export'], 'icon' => 'clipboard_check', 'permission' => ['reports.view', 'inventory.view']],
                 ['label' => 'Giao xe', 'route' => 'admin.reports.deliveries', 'active' => ['admin.reports.deliveries', 'admin.reports.deliveries.export'], 'icon' => 'calendar', 'permission' => ['reports.view', 'inventory.view']],
+                ['label' => 'Hậu mãi', 'route' => 'admin.reports.services', 'active' => ['admin.reports.services', 'admin.reports.services.export'], 'icon' => 'history', 'permission' => 'reports.view'],
                 ['label' => 'Khách hàng', 'route' => 'admin.reports.customers', 'active' => ['admin.reports.customers', 'admin.reports.customers.export'], 'icon' => 'users', 'permission' => 'reports.view'],
                 ['label' => 'Nhân viên sale', 'route' => 'admin.reports.staff', 'active' => ['admin.reports.staff', 'admin.reports.staff.export'], 'icon' => 'users', 'permission' => 'reports.view'],
                 ['label' => 'Chuyển đổi', 'route' => 'admin.reports.conversion', 'active' => ['admin.reports.conversion'], 'icon' => 'bar_chart', 'permission' => 'reports.view'],
