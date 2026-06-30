@@ -1,35 +1,408 @@
-.rep-title { font-size: 1.5rem; font-weight: 700; margin: 0 0 1rem; }
-    .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-    .stat-box { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; }
-    .stat-box .lbl { color: var(--muted); font-size: 0.8rem; }
-    .stat-box .val { font-size: 1.5rem; font-weight: 800; color: var(--accent); }
-    .stars { letter-spacing: 2px; color: #fbbf24; }
-    .table-responsive { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); }
-    .admin-table { width: 100%; border-collapse: collapse; }
-    .admin-table th, .admin-table td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
-    .admin-table th { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; }
-    .dist { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; }
-    .dist span { background: rgba(255,255,255,0.04); padding: 0.35rem 0.65rem; border-radius: 6px; font-size: 0.85rem; }
+.review-report-page {
+    display: grid;
+    gap: 1.25rem;
+}
 
-/* Inline styles extracted from resources/views/admin/reports/reviews.blade.php */
+.review-report-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
 
-.admin-reports-reviews-inline-1 {
-    margin-top: 1.5rem;
+.review-report-head h1 {
+    margin: 0;
+    color: var(--text);
+    font-size: 1.55rem;
+    font-weight: 850;
+}
+
+.review-report-head p {
+    margin: 0.3rem 0 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.review-report-actions,
+.report-filter-actions {
+    display: flex;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+}
+
+.report-primary,
+.report-secondary,
+.report-filter-actions button,
+.report-filter-actions a {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    padding: 0 1rem;
+    border: 1px solid transparent;
+    font: inherit;
+    font-weight: 850;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.report-primary,
+.report-filter-actions button {
+    background: var(--accent);
+    color: #0c0f14;
+}
+
+.report-primary:hover,
+.report-primary:focus-visible,
+.report-filter-actions button:hover,
+.report-filter-actions button:focus-visible {
+    border-color: #d9bd78;
+    background: #d9bd78;
+    color: #0c0f14;
+    outline: none;
+}
+
+.report-secondary,
+.report-filter-actions a {
+    border-color: var(--border);
+    background: rgba(255, 255, 255, 0.035);
+    color: var(--text);
+}
+
+.report-secondary:hover,
+.report-secondary:focus-visible,
+.report-filter-actions a:hover,
+.report-filter-actions a:focus-visible {
+    border-color: rgba(201, 169, 98, 0.55);
+    color: var(--accent);
+    outline: none;
+}
+
+.review-report-filter,
+.review-report-stats > div,
+.report-panel {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+}
+
+.review-report-filter {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(130px, 1fr)) auto;
+    gap: 0.85rem;
+    align-items: end;
+    padding: 1rem;
+}
+
+.report-filter-field {
+    display: grid;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+.report-filter-field label {
+    color: var(--muted);
+    font-size: 0.76rem;
+    font-weight: 850;
+    text-transform: uppercase;
+}
+
+.report-filter-field input,
+.report-filter-field select {
+    width: 100%;
+    min-height: 42px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #0a0d12;
+    color: var(--text);
+    padding: 0 0.78rem;
+    font: inherit;
+}
+
+.report-filter-field input:focus,
+.report-filter-field select:focus {
+    outline: none;
+    border-color: rgba(201, 169, 98, 0.7);
+    box-shadow: 0 0 0 3px rgba(201, 169, 98, 0.12);
+}
+
+.review-report-stats {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0.85rem;
+}
+
+.review-report-stats > div {
+    padding: 1rem;
+}
+
+.review-report-stats span {
+    display: block;
+    color: var(--muted);
+    font-size: 0.74rem;
+    font-weight: 850;
+    text-transform: uppercase;
+}
+
+.review-report-stats strong {
+    display: block;
+    margin-top: 0.35rem;
+    color: var(--text);
+    font-size: 1.35rem;
+}
+
+.review-report-stats .is-alert strong {
+    color: #fca5a5;
+}
+
+.review-report-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.report-panel {
+    min-width: 0;
+    padding: 1rem;
+}
+
+.report-panel h2 {
+    margin: 0 0 1rem;
+    color: var(--text);
+    font-size: 1.08rem;
+    font-weight: 900;
+}
+
+.rating-bars {
+    display: grid;
+    gap: 0.55rem;
+}
+
+.rating-bar-row {
+    display: grid;
+    grid-template-columns: minmax(76px, 0.28fr) minmax(0, 1fr) 44px;
+    gap: 0.7rem;
+    align-items: center;
+    color: var(--muted);
+    font-size: 0.86rem;
+}
+
+.rating-bar-row i {
+    overflow: hidden;
+    height: 9px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.rating-bar-row b {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--accent);
+}
+
+.rating-bar-row strong {
+    color: var(--text);
+    text-align: right;
+}
+
+.mini-chart {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(28px, 1fr));
+    gap: 0.5rem;
+    align-items: end;
+    min-height: 170px;
+}
+
+.mini-chart div {
+    display: grid;
+    gap: 0.35rem;
+    justify-items: center;
+    align-items: end;
+    color: var(--muted);
+    font-size: 0.72rem;
+}
+
+.mini-chart i {
+    width: 100%;
+    max-width: 26px;
+    border-radius: 999px 999px 4px 4px;
+    background: linear-gradient(180deg, #fbbf24, var(--accent));
+}
+
+.mini-chart strong {
+    color: var(--text);
+    font-size: 0.78rem;
+}
+
+.top-car-columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.top-car-columns h3 {
+    margin: 0 0 0.75rem;
+    color: var(--muted);
+    font-size: 0.82rem;
+    text-transform: uppercase;
+}
+
+.top-car-columns p,
+.bad-review-list a {
+    display: block;
+    margin: 0 0 0.65rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.top-car-columns p:last-child {
+    margin-bottom: 0;
+}
+
+.top-car-columns strong,
+.bad-review-list strong {
+    display: block;
+    color: var(--text);
+}
+
+.top-car-columns span,
+.bad-review-list span,
+.bad-review-list p {
+    display: block;
+    margin-top: 0.25rem;
+    color: var(--muted);
+    font-size: 0.84rem;
+}
+
+.bad-review-list {
+    display: grid;
+    gap: 0.65rem;
+}
+
+.bad-review-list a {
+    margin: 0;
+    text-decoration: none;
+}
+
+.bad-review-list a:hover,
+.bad-review-list a:focus-visible {
+    border-color: rgba(201, 169, 98, 0.55);
+    outline: none;
+}
+
+.report-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.report-table {
+    width: 100%;
+    min-width: 880px;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.report-table th,
+.report-table td {
+    padding: 0.85rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+}
+
+.report-table th {
+    color: var(--muted);
+    font-size: 0.73rem;
+    font-weight: 850;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.report-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.report-stars {
+    color: #fbbf24;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+}
+
+.report-empty,
+.report-pagination {
+    color: var(--muted);
+}
+
+.report-empty {
+    margin: 0;
+    padding: 1rem;
+    text-align: center;
+}
+
+.report-pagination {
     display: flex;
     justify-content: center;
+    margin-top: 1rem;
 }
 
-.admin-reports-reviews-inline-2 {
-    text-align: center;
-    color: var(--muted);
-    padding: 2rem;
+@media (prefers-reduced-motion: reduce) {
+    .report-primary,
+    .report-secondary,
+    .report-filter-actions button,
+    .report-filter-actions a {
+        transition: none;
+    }
 }
 
-.admin-reports-reviews-inline-3 {
-    color: var(--muted);
-    max-width: 320px;
+@media (max-width: 1180px) {
+    .review-report-filter,
+    .review-report-stats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .report-filter-actions {
+        grid-column: 1 / -1;
+    }
 }
 
-.admin-reports-reviews-inline-4 {
-    white-space: nowrap;
+@media (max-width: 860px) {
+    .review-report-grid,
+    .top-car-columns {
+        grid-template-columns: 1fr;
+    }
+
+    .mini-chart {
+        overflow-x: auto;
+        grid-template-columns: repeat(12, 42px);
+    }
+}
+
+@media (max-width: 700px) {
+    .review-report-head {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .review-report-filter,
+    .review-report-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .review-report-actions,
+    .report-filter-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .report-primary,
+    .report-secondary,
+    .report-filter-actions button,
+    .report-filter-actions a {
+        width: 100%;
+    }
 }

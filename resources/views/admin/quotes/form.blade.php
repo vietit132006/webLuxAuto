@@ -15,6 +15,8 @@
     $selectedCustomerId = (string) old('customer_id', $quote->customer_id);
     $selectedCarId = (string) old('car_id', $quote->car_id);
     $selectedUserId = (string) old('user_id', $quote->user_id);
+    $selectedPromotionIds = collect(old('promotion_ids', $quote->quotePromotions->pluck('promotion_id')->all()))
+        ->map(fn ($id) => (string) $id);
     $backUrl = $isEdit
         ? route('admin.quotes.show', $quote)
         : ($sourceTestDrive ? route('admin.test_drives.show', $sourceTestDrive->ticket_id) : route('admin.quotes.index'));
@@ -54,7 +56,10 @@
         </section>
     @endif
 
-    <form class="quote-form" method="post" action="{{ $isEdit ? route('admin.quotes.update', $quote) : route('admin.quotes.store') }}" data-quote-form data-mode="{{ $isEdit ? 'edit' : 'create' }}">
+    <form class="quote-form" method="post" action="{{ $isEdit ? route('admin.quotes.update', $quote) : route('admin.quotes.store') }}"
+        data-quote-form
+        data-mode="{{ $isEdit ? 'edit' : 'create' }}"
+        data-promotions-endpoint="{{ route('admin.promotions.applicable') }}">
         @csrf
         @if($isEdit)
             @method('PUT')
@@ -165,6 +170,44 @@
                 <strong data-quote-total>0 đ</strong>
             </div>
 
+            <section class="quote-promotion-box is-wide" data-quote-promotions>
+                <div class="quote-promotion-head">
+                    <div>
+                        <h2>Khuyến mãi áp dụng cho xe này</h2>
+                        <p>Chọn một hoặc nhiều chương trình phù hợp để lưu vào báo giá.</p>
+                    </div>
+                    <strong data-promotion-discount-total>0 đ</strong>
+                </div>
+
+                <div class="quote-promotion-list" data-promotion-list>
+                    @forelse($applicablePromotions as $promotion)
+                        @php
+                            $pivot = $quote->quotePromotions->firstWhere('promotion_id', $promotion->id);
+                            $discountAmount = $pivot
+                                ? (float) $pivot->discount_amount
+                                : $promotion->calculateDiscountAmount((float) old('vehicle_price', $quote->vehicle_price ?: 0));
+                        @endphp
+                        <label class="quote-promotion-option">
+                            <input type="checkbox"
+                                name="promotion_ids[]"
+                                value="{{ $promotion->id }}"
+                                data-promotion-checkbox
+                                data-promotion-discount="{{ $discountAmount }}"
+                                @checked($selectedPromotionIds->contains((string) $promotion->id))>
+                            <span>
+                                <strong>{{ $promotion->promotion_code }} - {{ $promotion->title }}</strong>
+                                <em>{{ $promotion->typeLabel() }} · {{ $promotion->discountLabel() }} · {{ $promotion->targetSummary() }}</em>
+                                @if($promotion->gift_description)
+                                    <small>{{ $promotion->gift_description }}</small>
+                                @endif
+                            </span>
+                        </label>
+                    @empty
+                        <div class="quote-promotion-empty" data-promotion-empty>Chọn xe để xem khuyến mãi phù hợp.</div>
+                    @endforelse
+                </div>
+            </section>
+
             <div class="quote-form-field is-wide">
                 <label for="note">Ghi chú</label>
                 <textarea id="note" name="note" rows="4">{{ old('note', $quote->note) }}</textarea>
@@ -195,6 +238,8 @@
 
             const totalTarget = form.querySelector('[data-quote-total]');
             const formatter = new Intl.NumberFormat('vi-VN');
+            const promotionList = form.querySelector('[data-promotion-list]');
+            const promotionDiscountTarget = form.querySelector('[data-promotion-discount-total]');
 
             const amount = (field) => {
                 const input = moneyFields[field];
@@ -221,7 +266,145 @@
                 input.addEventListener('input', updateTotal);
             });
 
+            const checkedPromotionDiscountTotal = () => {
+                if (!promotionList) {
+                    return 0;
+                }
+
+                return Array.from(promotionList.querySelectorAll('[data-promotion-checkbox]:checked'))
+                    .reduce((sum, checkbox) => sum + Number(checkbox.dataset.promotionDiscount || 0), 0);
+            };
+
+            const updatePromotionDiscountLabel = () => {
+                const total = checkedPromotionDiscountTotal();
+
+                if (promotionDiscountTarget) {
+                    promotionDiscountTarget.textContent = `${formatter.format(total)} đ`;
+                }
+
+                return total;
+            };
+
+            const applyPromotionDiscount = () => {
+                const total = updatePromotionDiscountLabel();
+
+                if (total > 0 && moneyFields.discount_amount) {
+                    moneyFields.discount_amount.value = Math.round(total);
+                }
+
+                updateTotal();
+            };
+
+            const bindPromotionCheckboxes = () => {
+                if (!promotionList) {
+                    return;
+                }
+
+                promotionList.querySelectorAll('[data-promotion-checkbox]').forEach((checkbox) => {
+                    checkbox.addEventListener('change', applyPromotionDiscount);
+                });
+
+                updatePromotionDiscountLabel();
+            };
+
+            const selectedPromotionIds = () => {
+                if (!promotionList) {
+                    return new Set();
+                }
+
+                return new Set(Array.from(promotionList.querySelectorAll('[data-promotion-checkbox]:checked'))
+                    .map((checkbox) => String(checkbox.value)));
+            };
+
+            const escapeHtml = (value) => String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+
+            const renderPromotions = (promotions, useAutoApply = false) => {
+                if (!promotionList) {
+                    return;
+                }
+
+                if (!promotions.length) {
+                    promotionList.innerHTML = '<div class="quote-promotion-empty">Không có khuyến mãi đang hoạt động cho xe này.</div>';
+                    updatePromotionDiscountLabel();
+                    return;
+                }
+
+                const selected = selectedPromotionIds();
+
+                promotionList.innerHTML = promotions.map((promotion) => {
+                    const checked = selected.has(String(promotion.id)) || (useAutoApply && promotion.auto_apply);
+                    const gift = promotion.gift_description
+                        ? `<small>${escapeHtml(promotion.gift_description)}</small>`
+                        : '';
+
+                    return `
+                        <label class="quote-promotion-option">
+                            <input type="checkbox"
+                                name="promotion_ids[]"
+                                value="${promotion.id}"
+                                data-promotion-checkbox
+                                data-promotion-discount="${Number(promotion.discount_amount || 0)}"
+                                ${checked ? 'checked' : ''}>
+                            <span>
+                                <strong>${escapeHtml(promotion.promotion_code)} - ${escapeHtml(promotion.title)}</strong>
+                                <em>${escapeHtml(promotion.type_label)} · ${escapeHtml(promotion.discount_label)} · ${escapeHtml(promotion.target_summary)}</em>
+                                ${gift}
+                            </span>
+                        </label>
+                    `;
+                }).join('');
+
+                bindPromotionCheckboxes();
+
+                if (useAutoApply) {
+                    applyPromotionDiscount();
+                }
+            };
+
             const carSelect = form.querySelector('[data-quote-car]');
+
+            const loadPromotionsForSelectedCar = async () => {
+                if (!carSelect || !promotionList || !form.dataset.promotionsEndpoint) {
+                    return;
+                }
+
+                const carId = carSelect.value;
+
+                if (!carId) {
+                    promotionList.innerHTML = '<div class="quote-promotion-empty">Chọn xe để xem khuyến mãi phù hợp.</div>';
+                    updatePromotionDiscountLabel();
+                    return;
+                }
+
+                const url = new URL(form.dataset.promotionsEndpoint, window.location.origin);
+                url.searchParams.set('car_id', carId);
+                url.searchParams.set('vehicle_price', amount('vehicle_price'));
+
+                promotionList.innerHTML = '<div class="quote-promotion-empty">Đang tải khuyến mãi...</div>';
+
+                try {
+                    const response = await fetch(url.toString(), {
+                        headers: {
+                            Accept: 'application/json',
+                        },
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Cannot load promotions');
+                    }
+
+                    const data = await response.json();
+                    renderPromotions(data.promotions || [], form.dataset.mode === 'create');
+                } catch (error) {
+                    promotionList.innerHTML = '<div class="quote-promotion-empty">Không tải được khuyến mãi. Vui lòng kiểm tra quyền áp dụng khuyến mãi.</div>';
+                    updatePromotionDiscountLabel();
+                }
+            };
 
             const fillFromSelectedCar = (force = false) => {
                 if (!carSelect || !carSelect.selectedOptions.length) {
@@ -259,13 +442,18 @@
             };
 
             if (carSelect) {
-                carSelect.addEventListener('change', () => fillFromSelectedCar(form.dataset.mode === 'create'));
+                carSelect.addEventListener('change', () => {
+                    fillFromSelectedCar(form.dataset.mode === 'create');
+                    loadPromotionsForSelectedCar();
+                });
 
                 if (form.dataset.mode === 'create' && carSelect.value) {
                     fillFromSelectedCar(false);
+                    loadPromotionsForSelectedCar();
                 }
             }
 
+            bindPromotionCheckboxes();
             updateTotal();
         })();
     </script>

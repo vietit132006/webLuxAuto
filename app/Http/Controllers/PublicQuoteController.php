@@ -72,7 +72,7 @@ class PublicQuoteController extends Controller
     private function quoteForPublicAccess(string $quoteCode, string $token): Quote
     {
         return Quote::query()
-            ->with(['customer', 'car.modelInfo.brand', 'user'])
+            ->with(['customer', 'car.modelInfo.brand', 'user', 'quotePromotions.promotion'])
             ->where('quote_code', $quoteCode)
             ->where('public_token', $token)
             ->firstOrFail();

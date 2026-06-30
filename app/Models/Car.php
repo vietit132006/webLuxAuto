@@ -44,6 +44,8 @@ class Car extends Model
         'current_location',
         'stock_quantity',
         'reserved_quantity',
+        'avg_rating',
+        'reviews_count',
         'stock',
     ];
 
@@ -63,6 +65,8 @@ class Car extends Model
             'mileage_km' => 'integer',
             'stock_quantity' => 'integer',
             'reserved_quantity' => 'integer',
+            'avg_rating' => 'decimal:2',
+            'reviews_count' => 'integer',
             'stock' => 'integer',
             'stock_in_date' => 'date',
             'on_road_date' => 'date',
@@ -110,6 +114,46 @@ class Car extends Model
     public function quotes()
     {
         return $this->hasMany(Quote::class, 'car_id', 'car_id');
+    }
+
+    public function liveSessionCars()
+    {
+        return $this->hasMany(LiveSessionCar::class, 'car_id', 'car_id');
+    }
+
+    public function liveSessions()
+    {
+        return $this->belongsToMany(LiveSession::class, 'live_session_cars', 'car_id', 'live_session_id')
+            ->withPivot([
+                'promotion_id',
+                'display_order',
+                'live_price',
+                'live_note',
+                'is_focus',
+                'is_active',
+                'pinned_at',
+            ])
+            ->withTimestamps();
+    }
+
+    public function liveLeads()
+    {
+        return $this->hasMany(LiveLead::class, 'car_id', 'car_id');
+    }
+
+    public function warranties()
+    {
+        return $this->hasMany(Warranty::class, 'car_id', 'car_id');
+    }
+
+    public function serviceAppointments()
+    {
+        return $this->hasMany(ServiceAppointment::class, 'car_id', 'car_id');
+    }
+
+    public function serviceRecords()
+    {
+        return $this->hasMany(ServiceRecord::class, 'car_id', 'car_id');
     }
 
     // ========================

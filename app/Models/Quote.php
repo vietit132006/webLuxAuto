@@ -34,6 +34,8 @@ class Quote extends Model
         'car_id',
         'user_id',
         'test_drive_id',
+        'live_session_id',
+        'live_lead_id',
         'vehicle_price',
         'discount_amount',
         'registration_fee',
@@ -100,6 +102,16 @@ class Quote extends Model
         return $this->belongsTo(Ticket::class, 'test_drive_id', 'ticket_id');
     }
 
+    public function liveSession(): BelongsTo
+    {
+        return $this->belongsTo(LiveSession::class);
+    }
+
+    public function liveLead(): BelongsTo
+    {
+        return $this->belongsTo(LiveLead::class);
+    }
+
     public function order(): HasOne
     {
         return $this->hasOne(Order::class, 'quote_id', 'quote_id');
@@ -108,6 +120,11 @@ class Quote extends Model
     public function stockReservations(): HasMany
     {
         return $this->hasMany(StockReservation::class, 'quote_id', 'quote_id');
+    }
+
+    public function quotePromotions(): HasMany
+    {
+        return $this->hasMany(QuotePromotion::class, 'quote_id', 'quote_id');
     }
 
     public function statusLabel(): string
@@ -123,6 +140,13 @@ class Quote extends Model
     public function money(string $field): string
     {
         return number_format((float) $this->{$field}, 0, ',', '.') . ' đ';
+    }
+
+    public function promotionDiscountTotal(): float
+    {
+        $this->loadMissing('quotePromotions');
+
+        return (float) $this->quotePromotions->sum(fn (QuotePromotion $quotePromotion): float => (float) $quotePromotion->discount_amount);
     }
 
     public function ensurePublicToken(): string

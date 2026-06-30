@@ -56,6 +56,21 @@ class User extends Authenticatable
         return $this->hasMany(Quote::class, 'user_id', 'user_id');
     }
 
+    public function warranties()
+    {
+        return $this->hasMany(Warranty::class, 'user_id', 'user_id');
+    }
+
+    public function serviceAppointments()
+    {
+        return $this->hasMany(ServiceAppointment::class, 'user_id', 'user_id');
+    }
+
+    public function handledServiceRecords()
+    {
+        return $this->hasMany(ServiceRecord::class, 'handled_by', 'user_id');
+    }
+
     public function canViewStockHistory(): bool
     {
         try {

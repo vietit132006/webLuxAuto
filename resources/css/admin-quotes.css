@@ -398,6 +398,130 @@
     grid-column: 1 / -1;
 }
 
+.quote-promotion-box {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 0.85rem;
+    padding: 1rem;
+    border: 1px solid rgba(201, 169, 98, 0.24);
+    border-radius: 8px;
+    background: rgba(201, 169, 98, 0.055);
+}
+
+.quote-promotion-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(201, 169, 98, 0.16);
+}
+
+.quote-promotion-head h2 {
+    margin: 0;
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 900;
+}
+
+.quote-promotion-head p {
+    margin: 0.22rem 0 0;
+    color: var(--muted);
+    font-size: 0.86rem;
+}
+
+.quote-promotion-head strong {
+    color: var(--accent);
+    font-size: 1.08rem;
+    white-space: nowrap;
+}
+
+.quote-promotion-list {
+    display: grid;
+    gap: 0.6rem;
+}
+
+.quote-promotion-option {
+    display: grid;
+    grid-template-columns: 18px minmax(0, 1fr);
+    gap: 0.7rem;
+    align-items: start;
+    min-height: 64px;
+    padding: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.035);
+    cursor: pointer;
+}
+
+.quote-promotion-option input {
+    width: 18px;
+    height: 18px;
+    margin-top: 0.1rem;
+    accent-color: var(--accent);
+}
+
+.quote-promotion-option strong,
+.quote-promotion-option em,
+.quote-promotion-option small {
+    display: block;
+}
+
+.quote-promotion-option strong {
+    color: var(--text);
+    font-size: 0.92rem;
+}
+
+.quote-promotion-option em {
+    margin-top: 0.2rem;
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-style: normal;
+}
+
+.quote-promotion-option small {
+    margin-top: 0.35rem;
+    color: #fde68a;
+    font-size: 0.8rem;
+}
+
+.quote-promotion-empty {
+    padding: 1rem;
+    border: 1px dashed rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    color: var(--muted);
+    text-align: center;
+}
+
+.quote-promotion-summary-list {
+    display: grid;
+    gap: 0.65rem;
+}
+
+.quote-promotion-summary-list > div {
+    padding: 0.8rem;
+    border: 1px solid rgba(201, 169, 98, 0.18);
+    border-radius: 8px;
+    background: rgba(201, 169, 98, 0.055);
+}
+
+.quote-promotion-summary-list strong,
+.quote-promotion-summary-list span,
+.quote-promotion-summary-list small {
+    display: block;
+}
+
+.quote-promotion-summary-list span {
+    margin-top: 0.25rem;
+    color: var(--accent);
+    font-weight: 850;
+}
+
+.quote-promotion-summary-list small {
+    margin-top: 0.25rem;
+    color: var(--muted);
+}
+
 .quote-total-preview {
     display: flex;
     min-height: 72px;

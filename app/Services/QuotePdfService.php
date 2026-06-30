@@ -11,7 +11,7 @@ class QuotePdfService
 {
     public function download(Quote $quote): Response
     {
-        $quote->loadMissing(['customer', 'car.modelInfo.brand', 'user']);
+        $quote->loadMissing(['customer', 'car.modelInfo.brand', 'user', 'quotePromotions.promotion']);
 
         $html = view('admin.quotes.pdf', compact('quote'))->render();
 

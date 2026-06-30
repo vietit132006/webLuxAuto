@@ -1,5 +1,6 @@
 @extends('layouts.admin')
-@section('title', 'Quản lý Livestream')
+
+@section('title', 'Quan ly livestream')
 
 @push('styles')
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
@@ -7,103 +8,163 @@
     @endif
 @endpush
 
-
 @section('content')
-<div class="wrap">
-    <div class="header-actions admin-live-index-inline-27">
-        <h1 class="page-title admin-live-index-inline-26">Quản lý <span class="admin-live-index-inline-25">Livestream</span></h1>
-        <p class="admin-live-index-inline-24">Cấu hình luồng phát sóng trực tiếp và ghim xe nổi bật</p>
+<div class="live-admin-page">
+    <div class="live-admin-head">
+        <div>
+            <h1>Quan ly livestream</h1>
+            <p>Phien live ban xe, xe ghim, lead va hieu qua chuyen doi.</p>
+        </div>
+        <div class="live-admin-actions">
+            @can('live.reports.view')
+                <a class="live-btn live-btn-secondary" href="{{ route('admin.reports.live') }}">Bao cao</a>
+            @endcan
+            @can('live.create')
+                <a class="live-btn live-btn-primary" href="{{ route('admin.live.create') }}">Tao phien live</a>
+            @endcan
+        </div>
     </div>
 
-    {{-- Hiển thị thông báo --}}
     @if(session('success'))
-        <div class="admin-live-index-inline-23">
-            ✅ {{ session('success') }}
-        </div>
+        <div class="live-alert is-success">{{ session('success') }}</div>
     @endif
 
-    <form action="{{ route('admin.live.update') }}" method="POST">
-        @csrf
+    @if($errors->any())
+        <div class="live-alert is-error">{{ $errors->first() }}</div>
+    @endif
 
-        <div class="admin-live-index-inline-22">
+    <section class="live-stats-grid">
+        <div><span>Tong phien</span><strong>{{ number_format($stats['total']) }}</strong></div>
+        <div><span>Dang live</span><strong>{{ number_format($stats['live']) }}</strong></div>
+        <div><span>Da len lich</span><strong>{{ number_format($stats['scheduled']) }}</strong></div>
+        <div><span>Da ket thuc</span><strong>{{ number_format($stats['ended']) }}</strong></div>
+        <div class="is-alert"><span>Lead moi</span><strong>{{ number_format($stats['new_leads']) }}</strong></div>
+    </section>
 
-            <div class="admin-live-index-inline-21">
-                <h3 class="admin-live-index-inline-10">Cấu hình Video</h3>
-
-                <div class="admin-live-index-inline-20">
-                    <label class="admin-live-index-inline-19">ID hoặc Link Video YouTube</label>
-                    <input class="admin-live-index-inline-18" type="text" id="youtube_input" name="video_id" value="{{ old('video_id', $live->video_id) }}" placeholder="Dán link YouTube hoặc ID vào đây...">
-                    <small class="admin-live-index-inline-17">
-                        💡 <b>Mẹo:</b> Bạn có thể dán <b>toàn bộ đường link</b>, hệ thống sẽ tự động lọc lấy ID.<br>
-                        Ví dụ: <code>https://youtube.com/watch?v=<b>ypYFF1BQrpo</b></code>
-                    </small>
-                </div>
-
-                <div class="admin-live-index-inline-16">
-                    <label class="admin-live-index-inline-15">
-                        <input class="admin-live-index-inline-14" type="checkbox" name="is_active" value="1" {{ $live->is_active ? 'checked' : '' }}>
-                        BẬT LUỒNG PHÁT SÓNG
-                    </label>
-                    <p class="admin-live-index-inline-13">Nếu tắt, khách hàng sẽ không xem được Live.</p>
-                </div>
-
-                <button class="admin-live-index-inline-12" type="submit">
-                    💾 LƯU CẤU HÌNH LIVE
-                </button>
-            </div>
-
-            <div class="admin-live-index-inline-11">
-                <h3 class="admin-live-index-inline-10">Ghim xe lên màn hình Live</h3>
-
-                @php
-                    // Lấy mảng ID xe đang được chọn (tránh lỗi nếu null)
-                    $selectedCarIds = $live->featured_car_ids ?? [];
-                @endphp
-
-                <div class="admin-live-index-inline-9">
-                    <div class="admin-live-index-inline-8">
-                        @foreach($cars as $car)
-                            <label class="admin-live-index-inline-7">
-                                <input class="admin-live-index-inline-6" type="checkbox" name="car_ids[]" value="{{ $car->car_id }}"
-                                    {{ in_array($car->car_id, $selectedCarIds) ? 'checked' : '' }}>
-
-                                @if($car->image)
-                                    <img class="admin-live-index-inline-5" src="{{ asset('storage/' . $car->image) }}">
-                                @else
-                                    <div class="admin-live-index-inline-4">No Image</div>
-                                @endif
-
-                                <div class="admin-live-index-inline-3">
-                                    <h4 class="admin-live-index-inline-2">{{ $car->name }}</h4>
-                                    <p class="admin-live-index-inline-1">{{ number_format($car->price, 0, ',', '.') }} VNĐ</p>
-                                </div>
-                            </label>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-
+    <form class="live-filter" method="get" action="{{ route('admin.live.index') }}">
+        <div class="live-field">
+            <label for="q">Tu khoa</label>
+            <input id="q" name="q" type="search" value="{{ $filters['q'] }}" placeholder="Ma live, tieu de, video ID">
+        </div>
+        <div class="live-field">
+            <label for="status">Trang thai</label>
+            <select id="status" name="status">
+                <option value="">Tat ca</option>
+                @foreach($statusOptions as $value => $label)
+                    <option value="{{ $value }}" @selected($filters['status'] === $value)>{{ $label }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="live-field">
+            <label for="platform">Nen tang</label>
+            <select id="platform" name="platform">
+                <option value="">Tat ca</option>
+                @foreach($platformOptions as $value => $label)
+                    <option value="{{ $value }}" @selected($filters['platform'] === $value)>{{ $label }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="live-field">
+            <label for="date_from">Tu ngay</label>
+            <input id="date_from" name="date_from" type="date" value="{{ $filters['date_from'] }}">
+        </div>
+        <div class="live-field">
+            <label for="date_to">Den ngay</label>
+            <input id="date_to" name="date_to" type="date" value="{{ $filters['date_to'] }}">
+        </div>
+        <div class="live-filter-actions">
+            <button class="live-btn live-btn-primary" type="submit">Loc</button>
+            <a class="live-btn live-btn-secondary" href="{{ route('admin.live.index') }}">Xoa loc</a>
         </div>
     </form>
+
+    <section class="live-table-wrap">
+        <table class="live-table">
+            <thead>
+                <tr>
+                    <th>Ma live</th>
+                    <th>Tieu de</th>
+                    <th>Nen tang</th>
+                    <th>Bat dau</th>
+                    <th>Ket thuc</th>
+                    <th>Trang thai</th>
+                    <th>Xe ghim</th>
+                    <th>Luot xem</th>
+                    <th>Lead</th>
+                    <th>Hanh dong</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($sessions as $session)
+                    <tr>
+                        <td>
+                            <a class="live-code" href="{{ route('admin.live.show', $session) }}">{{ $session->live_code ?: 'LIVE' . str_pad($session->id, 6, '0', STR_PAD_LEFT) }}</a>
+                        </td>
+                        <td>
+                            <div class="live-main-text">{{ $session->title }}</div>
+                            <div class="live-sub-text">{{ $session->host?->name ?: 'Chua gan host' }}</div>
+                        </td>
+                        <td>{{ $session->platformLabel() }}</td>
+                        <td>{{ $session->starts_at?->format('d/m/Y H:i') ?: 'Chua len lich' }}</td>
+                        <td>{{ $session->ends_at?->format('d/m/Y H:i') ?: 'Chua ket thuc' }}</td>
+                        <td><span class="live-status-badge {{ $session->statusBadgeClass() }}">{{ $session->statusLabel() }}</span></td>
+                        <td>{{ number_format((int) $session->pinned_cars_count) }}</td>
+                        <td>{{ number_format((int) $session->views_count) }}</td>
+                        <td>
+                            <div class="live-main-text">{{ number_format((int) $session->leads_count) }}</div>
+                            <div class="live-sub-text">BG {{ number_format((int) $session->quote_requests_count) }} / LT {{ number_format((int) $session->test_drive_requests_count) }}</div>
+                        </td>
+                        <td>
+                            <div class="live-row-actions">
+                                @can('live.view')
+                                    <a href="{{ route('admin.live.show', $session) }}">Chi tiet</a>
+                                @endcan
+                                @can('live.edit')
+                                    <a href="{{ route('admin.live.edit', $session) }}">Sua</a>
+                                @endcan
+                                @can('live.manage')
+                                    @if($session->is_active)
+                                        <form method="post" action="{{ route('admin.live.stop', $session) }}">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit">Tat</button>
+                                        </form>
+                                    @else
+                                        <form method="post" action="{{ route('admin.live.start', $session) }}">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit">Bat</button>
+                                        </form>
+                                    @endif
+                                    @if($session->status !== \App\Models\LiveSession::STATUS_ENDED)
+                                        <form method="post" action="{{ route('admin.live.end', $session) }}">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit">Ket thuc</button>
+                                        </form>
+                                    @endif
+                                @endcan
+                                @can('live.delete')
+                                    @if((int) $session->leads_count === 0)
+                                        <form method="post" action="{{ route('admin.live.destroy', $session) }}" onsubmit="return confirm('Xoa phien livestream nay?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="is-danger" type="submit">Xoa</button>
+                                        </form>
+                                    @endif
+                                @endcan
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="10" class="live-empty">Chua co phien livestream nao.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </section>
+
+    <div class="live-pagination">{{ $sessions->links('pagination.lux') }}</div>
 </div>
-
-
-<script>
-    // Script tự động trích xuất ID YouTube khi người dùng dán Link
-    document.getElementById('youtube_input').addEventListener('input', function(e) {
-        let url = e.target.value.trim();
-
-        // Regex để bắt ID từ nhiều định dạng link YouTube khác nhau
-        let regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|studio\.youtube\.com\/video\/)([^#\&\?\/]*).*/;
-        let match = url.match(regExp);
-
-        if (match && match[2].length === 11) {
-            // Nếu tìm thấy ID hợp lệ, thay thế nội dung ô input bằng ID đó
-            e.target.value = match[2];
-            e.target.style.borderColor = '#10b981'; // Đổi viền xanh báo hiệu thành công
-        } else {
-            e.target.style.borderColor = 'var(--border)';
-        }
-    });
-</script>
 @endsection

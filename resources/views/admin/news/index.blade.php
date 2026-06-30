@@ -8,109 +8,173 @@
     @endif
 @endpush
 
-
 @section('content')
-
-<div class="wrap">
-    <div class="header-actions">
-        <h1 class="page-title">Quản lý tin tức</h1>
-
-        @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'staff']))
-            <a href="{{ route('admin.news.create') }}" class="btn-add">+ Viết bài mới</a>
-        @endif
+<div class="news-admin-page">
+    <div class="news-admin-head">
+        <div>
+            <p class="news-admin-kicker">CMS Tin tức</p>
+            <h1>Quản lý bài viết</h1>
+        </div>
+        <div class="news-admin-actions">
+            @can('news_categories.view')
+                <a class="news-btn news-btn-secondary" href="{{ route('admin.news-categories.index') }}">Chuyên mục</a>
+            @endcan
+            @can('news.create')
+                <a class="news-btn news-btn-primary" href="{{ route('admin.news.create') }}">Viết bài mới</a>
+            @endcan
+        </div>
     </div>
 
-    @if(session('success'))
-
-        <div id="success-alert" class="flash-alert">
-            <span>✅ {{ session('success') }}</span>
-            <button type="button" class="btn-close-alert" onclick="closeAlert()" aria-label="Đóng">&times;</button>
-        </div>
-
-        <script>
-            function closeAlert() {
-                const alertBox = document.getElementById('success-alert');
-                if (alertBox) {
-                    alertBox.classList.add('hide');
-                    setTimeout(() => {
-                        alertBox.remove();
-                    }, 500);
-                }
-            }
-
-            setTimeout(() => {
-                closeAlert();
-            }, 2000);
-        </script>
+    @if (session('success'))
+        <div class="news-alert is-success">{{ session('success') }}</div>
     @endif
 
-    <form class="search-bar" method="get" action="{{ route('admin.news.index') }}">
-        <input type="search" name="q" value="{{ $search ?? '' }}" placeholder="Tìm theo tiêu đề bài viết…" autocomplete="off">
-        <button type="submit">Tìm kiếm</button>
+    @if ($errors->any())
+        <div class="news-alert is-danger">{{ $errors->first() }}</div>
+    @endif
+
+    <div class="news-stat-grid">
+        <div class="news-stat"><span>Tổng bài</span><strong>{{ number_format($stats['total']) }}</strong></div>
+        <div class="news-stat"><span>Đã xuất bản</span><strong>{{ number_format($stats['published']) }}</strong></div>
+        <div class="news-stat"><span>Hẹn giờ</span><strong>{{ number_format($stats['scheduled']) }}</strong></div>
+        <div class="news-stat"><span>Bản nháp</span><strong>{{ number_format($stats['draft']) }}</strong></div>
+    </div>
+
+    <form class="news-filter" method="get" action="{{ route('admin.news.index') }}">
+        <label>
+            <span>Từ khóa</span>
+            <input type="search" name="q" value="{{ $filters['q'] }}" placeholder="Tiêu đề, tóm tắt, slug">
+        </label>
+
+        <label>
+            <span>Chuyên mục</span>
+            <select name="category_id">
+                <option value="">Tất cả</option>
+                @foreach ($categories as $category)
+                    <option value="{{ $category->id }}" @selected((string) $filters['category_id'] === (string) $category->id)>
+                        {{ $category->name }}
+                    </option>
+                @endforeach
+            </select>
+        </label>
+
+        <label>
+            <span>Trạng thái</span>
+            <select name="status">
+                <option value="">Tất cả</option>
+                @foreach ($statuses as $value => $label)
+                    <option value="{{ $value }}" @selected($filters['status'] === $value)>{{ $label }}</option>
+                @endforeach
+            </select>
+        </label>
+
+        <label>
+            <span>Tác giả</span>
+            <select name="author_id">
+                <option value="">Tất cả</option>
+                @foreach ($authors as $author)
+                    <option value="{{ $author->user_id }}" @selected((string) $filters['author_id'] === (string) $author->user_id)>
+                        {{ $author->name }}
+                    </option>
+                @endforeach
+            </select>
+        </label>
+
+        <label>
+            <span>Nổi bật</span>
+            <select name="featured">
+                <option value="">Tất cả</option>
+                <option value="1" @selected((string) $filters['featured'] === '1')>Có</option>
+                <option value="0" @selected((string) $filters['featured'] === '0')>Không</option>
+            </select>
+        </label>
+
+        <label>
+            <span>Từ ngày</span>
+            <input type="date" name="from" value="{{ $filters['from'] }}">
+        </label>
+
+        <label>
+            <span>Đến ngày</span>
+            <input type="date" name="to" value="{{ $filters['to'] }}">
+        </label>
+
+        <div class="news-filter-actions">
+            <button type="submit" class="news-btn news-btn-primary">Lọc</button>
+            <a class="news-btn news-btn-ghost" href="{{ route('admin.news.index') }}">Xóa lọc</a>
+        </div>
     </form>
 
-    @if ($news->isEmpty())
-        <div class="empty-state">Không có bài viết phù hợp. Thử bộ lọc khác hoặc <a href="{{ route('admin.news.index') }}">xóa tìm kiếm</a>.</div>
-    @else
-        <div class="table-responsive">
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th width="100">Hình ảnh</th>
-                        <th>Tiêu đề</th>
-                        <th>Trạng thái</th>
-                        <th>Ngày tạo</th>
-                        <th width="160">Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($news as $item)
+    <div class="news-table-wrap">
+        <table class="news-table">
+            <thead>
+                <tr>
+                    <th>Ảnh</th>
+                    <th>Tiêu đề</th>
+                    <th>Chuyên mục</th>
+                    <th>Tác giả</th>
+                    <th>Trạng thái</th>
+                    <th>Nổi bật</th>
+                    <th>Lượt xem</th>
+                    <th>Ngày đăng</th>
+                    <th>Ngày tạo</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($news as $item)
                     <tr>
                         <td>
-                            @if($item->image)
-                                <img src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->title }}" class="table-img">
+                            @if ($item->thumbnailUrl())
+                                <img class="news-thumb" src="{{ $item->thumbnailUrl() }}" alt="{{ $item->thumbnail_alt ?: $item->title }}">
                             @else
-                                <span class="admin-news-index-inline-6">Trống</span>
+                                <span class="news-thumb-empty">Lux Auto</span>
                             @endif
                         </td>
-                        <td class="admin-news-index-inline-5">{{ $item->title }}</td>
-
-                        <td>
-                            @if($item->status == 1)
-                                <span class="admin-news-index-inline-4">Đã xuất bản</span>
-                            @else
-                                <span class="admin-news-index-inline-3">Đang ẩn</span>
-                            @endif
+                        <td class="news-title-cell">
+                            <a href="{{ route('admin.news.show', $item) }}">{{ $item->title }}</a>
+                            <span>{{ $item->slug }}</span>
                         </td>
-
-                        <td class="admin-news-index-inline-2">{{ $item->created_at->format('d/m/Y') }}</td>
-
+                        <td>{{ $item->category?->name ?? 'Chưa phân loại' }}</td>
+                        <td>{{ $item->author?->name ?? 'Hệ thống' }}</td>
+                        <td><span class="news-badge {{ $item->statusBadgeClass() }}">{{ $item->statusLabel() }}</span></td>
                         <td>
-                            <div class="action-btns">
-                                <a href="{{ route('admin.news.show', $item->news_id) }}" class="btn-sm btn-view">Xem</a>
-
-                                @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'staff']))
-                                    <a href="{{ route('admin.news.edit', $item->news_id) }}" class="btn-sm btn-edit">Sửa</a>
-
-                                    <form class="admin-news-index-inline-1" action="{{ route('admin.news.destroy', $item->news_id) }}" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bài viết này không?');">
+                            <span class="news-badge {{ $item->is_featured ? 'is-warning' : 'is-muted' }}">
+                                {{ $item->is_featured ? 'Có' : 'Không' }}
+                            </span>
+                        </td>
+                        <td class="news-number">{{ number_format($item->views_count) }}</td>
+                        <td>{{ $item->effectivePublishedAt()?->format('d/m/Y H:i') ?? 'Chưa đăng' }}</td>
+                        <td>{{ $item->created_at?->format('d/m/Y') }}</td>
+                        <td>
+                            <div class="news-row-actions">
+                                <a class="news-mini-btn" href="{{ route('admin.news.show', $item) }}">Xem</a>
+                                @can('news.edit')
+                                    <a class="news-mini-btn is-edit" href="{{ route('admin.news.edit', $item) }}">Sửa</a>
+                                @endcan
+                                @can('news.delete')
+                                    <form method="post" action="{{ route('admin.news.destroy', $item) }}" onsubmit="return confirm('Xóa bài viết này?');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn-sm btn-delete">Xóa</button>
+                                        <button class="news-mini-btn is-danger" type="submit">Xóa</button>
                                     </form>
-                                @endif
+                                @endcan
                             </div>
                         </td>
                     </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+                @empty
+                    <tr>
+                        <td colspan="10" class="news-empty">Chưa có bài viết phù hợp.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 
-        @if ($news->hasPages())
-            <div class="pagination-wrap">
-                {{ $news->links('pagination.lux') }}
-            </div>
-        @endif
+    @if ($news->hasPages())
+        <div class="news-pagination">
+            {{ $news->links('pagination.lux') }}
+        </div>
     @endif
 </div>
 @endsection

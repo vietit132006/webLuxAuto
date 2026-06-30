@@ -301,16 +301,61 @@
                 @endif
             </div>
 
+            @if(($reviewCount ?? 0) > 0)
+                <div class="review-breakdown" aria-label="Phân bố sao đánh giá">
+                    @foreach([5, 4, 3, 2, 1] as $star)
+                        @php
+                            $starCount = (int) (($reviewDistribution ?? collect())[$star] ?? 0);
+                            $starPercent = $reviewCount > 0 ? round($starCount / $reviewCount * 100) : 0;
+                        @endphp
+                        <div class="review-breakdown__row">
+                            <span>{{ $star }} sao</span>
+                            <div class="review-breakdown__bar"><i style="width: {{ $starPercent }}%"></i></div>
+                            <strong>{{ $starCount }}</strong>
+                        </div>
+                    @endforeach
+                </div>
+
+                <nav class="review-filters" aria-label="Lọc đánh giá">
+                    @foreach([
+                        'latest' => 'Mới nhất',
+                        'highest' => 'Cao nhất',
+                        'lowest' => 'Thấp nhất',
+                        'with_images' => 'Có ảnh',
+                        'purchase' => 'Đã mua xe',
+                    ] as $filterKey => $filterLabel)
+                        <a class="{{ ($reviewFilter ?? 'latest') === $filterKey ? 'is-active' : '' }}" href="{{ request()->fullUrlWithQuery(['review_filter' => $filterKey]) }}#danh-gia">{{ $filterLabel }}</a>
+                    @endforeach
+                </nav>
+            @endif
+
             @if(session('review_success'))
                 <div class="review-flash" role="status">{{ session('review_success') }}</div>
+            @endif
+
+            @if($userReview?->isPending())
+                <div class="review-notice" role="status">Đánh giá của bạn đang chờ duyệt.</div>
+            @elseif($userReview?->status === \App\Models\Review::STATUS_REJECTED)
+                <div class="review-notice is-warning" role="status">
+                    Đánh giá trước đó của bạn đã bị từ chối.
+                    @if($userReview->rejected_reason)
+                        <span>{{ $userReview->rejected_reason }}</span>
+                    @endif
+                </div>
             @endif
 
             @auth
                 @if(auth()->user()->role === 'customer')
                     <div class="review-form">
-                        <form action="{{ route('cars.reviews.store', $car->car_id) }}" method="post">
+                        <form action="{{ route('cars.reviews.store', $car->car_id) }}" method="post" enctype="multipart/form-data">
                             @csrf
                             @error('review')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+
+                            <label for="review-title">Tiêu đề đánh giá</label>
+                            <input name="title" id="review-title" type="text" maxlength="150" value="{{ old('title', $userReview?->title ?? '') }}" placeholder="Ví dụ: Trải nghiệm nhận xe rất chỉn chu">
+                            @error('title')
                                 <p class="form-error">{{ $message }}</p>
                             @enderror
 
@@ -325,8 +370,34 @@
                             @enderror
 
                             <label for="comment" class="review-comment-label">Nhận xét</label>
-                            <textarea name="comment" id="comment" maxlength="2000" placeholder="Chia sẻ trải nghiệm của bạn về xe này...">{{ old('comment', $userReview?->comment ?? '') }}</textarea>
+                            <textarea name="comment" id="comment" maxlength="3000" placeholder="Chia sẻ trải nghiệm của bạn về xe này...">{{ old('comment', $userReview?->comment ?? '') }}</textarea>
                             @error('comment')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+
+                            <label for="review-images" class="review-comment-label">Ảnh đánh giá</label>
+                            <input name="images[]" id="review-images" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+                            @error('images')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+                            @error('images.*')
+                                <p class="form-error">{{ $message }}</p>
+                            @enderror
+
+                            @if($userReview?->images?->isNotEmpty())
+                                <div class="review-existing-images">
+                                    @foreach($userReview->images as $image)
+                                        <img src="{{ $image->imageUrl() }}" alt="Ảnh đánh giá hiện tại {{ $loop->iteration }}">
+                                    @endforeach
+                                </div>
+                                <p class="form-hint">Nếu tải ảnh mới, hệ thống sẽ thay bộ ảnh cũ của đánh giá này.</p>
+                            @endif
+
+                            <label class="review-check">
+                                <input type="checkbox" name="truthful" value="1" @checked(old('truthful')) required>
+                                <span>Tôi xác nhận đánh giá này phản ánh trải nghiệm thật của mình.</span>
+                            </label>
+                            @error('truthful')
                                 <p class="form-error">{{ $message }}</p>
                             @enderror
 
@@ -338,7 +409,7 @@
                                     <p class="form-hint">Bạn đã đánh giá trước đó, gửi lại để chỉnh sửa nội dung.</p>
                                 @endif
                             @else
-                                <p class="form-hint form-hint--warning">Bạn cần đặt lịch lái thử hoặc đặt cọc xe này trước khi gửi đánh giá.</p>
+                                <p class="form-hint form-hint--warning">Bạn cần mua xe, đặt cọc, hoàn thành lái thử hoặc có lịch sử dịch vụ liên quan trước khi gửi đánh giá.</p>
                             @endif
                         </form>
                     </div>
@@ -353,7 +424,10 @@
                 @forelse($reviews ?? [] as $review)
                     <article class="review-item">
                         <div class="review-item__head">
-                            <span class="review-item__name">{{ $review->user->name ?? 'Khách hàng' }}</span>
+                            <div>
+                                <span class="review-item__name">{{ $review->user->name ?? 'Khách hàng' }}</span>
+                                <span class="review-verified">{{ $review->verifiedLabel() }}</span>
+                            </div>
                             <span class="review-item__date">{{ $review->created_at?->format('d/m/Y H:i') }}</span>
                         </div>
                         <div class="stars" aria-label="{{ $review->rating }} trên 5 sao">
@@ -361,13 +435,53 @@
                                 {{ $s <= (int) $review->rating ? '★' : '☆' }}
                             @endfor
                         </div>
+                        @if($review->title)
+                            <h3 class="review-item__title">{{ $review->title }}</h3>
+                        @endif
                         @if($review->comment)
                             <p class="review-item__text">{{ $review->comment }}</p>
                         @else
                             <p class="review-item__text muted-italic">Không có nhận xét.</p>
                         @endif
+                        @if($review->images->isNotEmpty())
+                            <div class="review-gallery">
+                                @foreach($review->images as $image)
+                                    <a href="{{ $image->imageUrl() }}" target="_blank" rel="noopener">
+                                        <img src="{{ $image->imageUrl() }}" alt="Ảnh đánh giá {{ $loop->iteration }} của {{ $review->user->name ?? 'khách hàng' }}" loading="lazy">
+                                    </a>
+                                @endforeach
+                            </div>
+                        @endif
+                        @if($review->reply_content)
+                            <div class="review-reply">
+                                <strong>Phản hồi từ LUXAUTO</strong>
+                                <p>{{ $review->reply_content }}</p>
+                            </div>
+                        @endif
+                        <div class="review-actions">
+                            <span>{{ number_format((int) $review->helpful_count) }} hữu ích</span>
+                            @auth
+                                @if((int) $review->user_id !== (int) auth()->id())
+                                    <form method="post" action="{{ route('cars.reviews.vote', [$car->car_id, $review->review_id]) }}">
+                                        @csrf
+                                        <button type="submit">Hữu ích</button>
+                                    </form>
+                                    <form method="post" action="{{ route('cars.reviews.report', [$car->car_id, $review->review_id]) }}" class="review-report-form">
+                                        @csrf
+                                        <select name="reason" aria-label="Lý do báo cáo đánh giá" required>
+                                            <option value="spam">Spam hoặc quảng cáo</option>
+                                            <option value="offensive">Ngôn từ không phù hợp</option>
+                                            <option value="fake">Không đúng trải nghiệm thực tế</option>
+                                            <option value="privacy">Lộ thông tin cá nhân</option>
+                                        </select>
+                                        <button type="submit">Báo cáo</button>
+                                    </form>
+                                @endif
+                            @endauth
+                        </div>
                     </article>
                 @empty
+                    <p class="reviews-empty">Chưa có đánh giá phù hợp với bộ lọc hiện tại.</p>
                 @endforelse
             </div>
 

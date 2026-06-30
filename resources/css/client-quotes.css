@@ -287,6 +287,35 @@
     white-space: pre-line;
 }
 
+.client-quote-promotions {
+    display: grid;
+    gap: 0.7rem;
+}
+
+.client-quote-promotions > div {
+    padding: 0.85rem;
+    border: 1px solid rgba(201, 169, 98, 0.18);
+    border-radius: 8px;
+    background: rgba(201, 169, 98, 0.08);
+}
+
+.client-quote-promotions strong,
+.client-quote-promotions span,
+.client-quote-promotions small {
+    display: block;
+}
+
+.client-quote-promotions span {
+    margin-top: 0.25rem;
+    color: var(--accent);
+    font-weight: 850;
+}
+
+.client-quote-promotions small {
+    margin-top: 0.25rem;
+    color: var(--muted);
+}
+
 .client-quote-response-form {
     display: grid;
     gap: 0.85rem;

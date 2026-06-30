@@ -186,6 +186,13 @@ class Order extends Model
         return max(0, (float) $this->total_price - (float) ($this->deposit_amount ?? 0));
     }
 
+    public function promotionDiscountTotal(): float
+    {
+        $this->loadMissing('orderPromotions');
+
+        return (float) $this->orderPromotions->sum(fn (OrderPromotion $orderPromotion): float => (float) $orderPromotion->discount_amount);
+    }
+
     public function details()
     {
         return $this->hasMany(OrderDetail::class, 'order_id', 'order_id');
@@ -196,9 +203,19 @@ class Order extends Model
         return $this->hasMany(StockReservation::class, 'order_id', 'order_id');
     }
 
+    public function orderPromotions()
+    {
+        return $this->hasMany(OrderPromotion::class, 'order_id', 'order_id');
+    }
+
     public function delivery()
     {
         return $this->hasOne(Delivery::class, 'order_id', 'order_id');
+    }
+
+    public function warranty()
+    {
+        return $this->hasOne(Warranty::class, 'order_id', 'order_id');
     }
 
     public function activeStockReservations()

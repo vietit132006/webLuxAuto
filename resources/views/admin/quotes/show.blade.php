@@ -152,6 +152,28 @@
                     </dd>
                 </div>
             @endif
+            @if($quote->liveSession)
+                <div>
+                    <dt>Nguồn livestream</dt>
+                    <dd>
+                        @can('live.view')
+                            <a class="quote-source-link" href="{{ route('admin.live.show', $quote->liveSession) }}">
+                                {{ $quote->liveSession->live_code }} - {{ $quote->liveSession->title }}
+                            </a>
+                        @else
+                            {{ $quote->liveSession->live_code }} - {{ $quote->liveSession->title }}
+                        @endcan
+                        @if($quote->liveLead)
+                            <br>
+                            @can('live.leads.view')
+                                <a class="quote-source-link" href="{{ route('admin.live.leads.show', $quote->liveLead) }}">Live lead #{{ $quote->liveLead->id }}</a>
+                            @else
+                                Live lead #{{ $quote->liveLead->id }}
+                            @endcan
+                        @endif
+                    </dd>
+                </div>
+            @endif
             <div>
                 <dt>Ngày tạo</dt>
                 <dd>{{ $quote->created_at?->format('d/m/Y H:i') }}</dd>
@@ -225,6 +247,27 @@
             </div>
         </div>
     </section>
+
+    @if($quote->quotePromotions->isNotEmpty())
+        <section class="quote-note-panel quote-promotion-summary">
+            <div class="quote-section-title">
+                <h2>Khuyến mãi đã áp dụng</h2>
+                <span>{{ number_format($quote->promotionDiscountTotal(), 0, ',', '.') }} đ</span>
+            </div>
+
+            <div class="quote-promotion-summary-list">
+                @foreach($quote->quotePromotions as $quotePromotion)
+                    <div>
+                        <strong>{{ $quotePromotion->promotion?->promotion_code ?? 'KM đã xóa' }} - {{ $quotePromotion->promotion?->title ?? 'Khuyến mãi đã xóa' }}</strong>
+                        <span>Giảm {{ number_format((float) $quotePromotion->discount_amount, 0, ',', '.') }} đ</span>
+                        @if($quotePromotion->gift_note)
+                            <small>{{ $quotePromotion->gift_note }}</small>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        </section>
+    @endif
 
     @if($quote->note)
         <section class="quote-note-panel">

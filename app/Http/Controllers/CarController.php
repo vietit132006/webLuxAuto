@@ -2,23 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Car;
 use App\Models\Brand;
-use App\Models\OrderDetail;
+use App\Models\Car;
 use App\Models\Review;
-use App\Models\Ticket;
+use App\Models\ReviewReport;
+use App\Models\ReviewVote;
+use App\Services\ReviewEligibilityService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class CarController extends Controller
 {
-    // Hiển thị danh sách xe cho khách hàng (Trang chủ)
     public function index(Request $request)
     {
-        // 1. Lấy danh sách các Hãng xe để đổ ra Sidebar lọc
         $brands = Brand::query()
             ->active()
             ->whereHas('carModels.cars', function (Builder $query): void {
@@ -28,17 +28,14 @@ class CarController extends Controller
             ->orderBy('name')
             ->get();
 
-        // 2. Bắt đầu câu truy vấn (Query Builder)
         $query = Car::query()
             ->with(['brand', 'carModel.brand'])
             ->withActiveBrand();
 
-        // Lọc theo Tên xe (Từ khóa)
         $query->when($request->keyword, function ($q, $keyword) {
             return $q->where('name', 'like', '%' . $keyword . '%');
         });
 
-        // Lọc theo Hãng xe
         $query->when($request->brand_id, function ($q, $brand_id) {
             return $q->whereHas('carModel.brand', function ($brandQuery) use ($brand_id) {
                 $brandQuery->active()
@@ -46,67 +43,84 @@ class CarController extends Controller
             });
         });
 
-        // Lọc theo Trạng thái (Ví dụ: 1 = Mới 100%, 0 = Xe lướt)
         $query->when($request->has('status') && $request->status != '', function ($q) use ($request) {
             return $q->where('status', $request->status);
         });
 
-        // Lọc theo Khoảng giá (Từ Min đến Max)
         $query->when($request->min_price, function ($q, $min_price) {
             return $q->where('price', '>=', $min_price);
         });
+
         $query->when($request->max_price, function ($q, $max_price) {
             return $q->where('price', '<=', $max_price);
         });
 
-        // 3. Thực thi truy vấn, sắp xếp xe mới nhất lên đầu và phân trang
-        // LƯU Ý: Phải có withQueryString() để khi khách bấm sang Trang 2, bộ lọc không bị mất!
         $cars = $query->orderBy('created_at', 'desc')->paginate(12)->withQueryString();
 
         return view('client.index', compact('cars', 'brands'));
     }
 
-    // Hiển thị trang chi tiết xe dành cho Khách hàng
-    public function show(Car $car): View
+    public function show(Request $request, Car $car, ReviewEligibilityService $eligibilityService): View
     {
         $car->load(['brand', 'carModel.brand', 'images']);
         abort_unless((bool) $car->carModel?->brand?->is_active, 404);
 
-        $reviews = Review::query()
-            ->with('user:user_id,name')
+        $reviewFilter = in_array($request->query('review_filter'), ['latest', 'highest', 'lowest', 'with_images', 'purchase'], true)
+            ? (string) $request->query('review_filter')
+            : 'latest';
+
+        $approvedReviewsBase = Review::query()
             ->where('car_id', $car->car_id)
-            ->orderByDesc('created_at')
+            ->where('status', Review::STATUS_APPROVED);
+
+        $reviewDistribution = (clone $approvedReviewsBase)
+            ->selectRaw('rating, COUNT(*) as cnt')
+            ->groupBy('rating')
+            ->pluck('cnt', 'rating');
+
+        $reviewsQuery = Review::query()
+            ->with(['user:user_id,name', 'images'])
+            ->where('car_id', $car->car_id)
+            ->where('status', Review::STATUS_APPROVED)
+            ->when($reviewFilter === 'with_images', fn (Builder $query) => $query->whereHas('images'))
+            ->when($reviewFilter === 'purchase', fn (Builder $query) => $query->where('verified_type', Review::VERIFIED_PURCHASE));
+
+        match ($reviewFilter) {
+            'highest' => $reviewsQuery->orderByDesc('rating')->orderByDesc('created_at'),
+            'lowest' => $reviewsQuery->orderBy('rating')->orderByDesc('created_at'),
+            default => $reviewsQuery->orderByDesc('created_at'),
+        };
+
+        $reviews = $reviewsQuery
             ->paginate(8)
             ->withQueryString();
 
-        $avgRating = (float) (Review::where('car_id', $car->car_id)->avg('rating') ?? 0);
-        $reviewCount = Review::where('car_id', $car->car_id)->count();
+        $reviewCount = (int) ($car->reviews_count ?? (clone $approvedReviewsBase)->count());
+        $avgRating = $reviewCount > 0
+            ? (float) ($car->avg_rating ?? ((clone $approvedReviewsBase)->avg('rating') ?? 0))
+            : 0.0;
 
         $userReview = null;
         $canReview = false;
+        $reviewEligibility = [
+            'can_review' => false,
+            'verified_type' => Review::VERIFIED_NONE,
+            'order_id' => null,
+            'ticket_id' => null,
+            'service_record_id' => null,
+        ];
+
         if (auth()->check()) {
-            $userReview = Review::where('car_id', $car->car_id)
+            $userReview = Review::query()
+                ->where('car_id', $car->car_id)
                 ->where('user_id', auth()->id())
+                ->with('images')
                 ->first();
 
-            $hasDepositOrBuy = OrderDetail::query()
-                ->where('car_id', $car->car_id)
-                ->whereHas('order', function ($query) {
-                    $query->where('user_id', auth()->id())
-                        ->whereIn('status', [1, 2]);
-                })
-                ->exists();
-
-            $hasTestDrive = false;
-            if (Schema::hasColumn('support_tickets', 'ticket_type') && Schema::hasColumn('support_tickets', 'car_id')) {
-                $hasTestDrive = Ticket::query()
-                    ->where('user_id', auth()->id())
-                    ->where('ticket_type', 'test_drive')
-                    ->where('car_id', $car->car_id)
-                    ->exists();
+            if (auth()->user()?->role === 'customer') {
+                $reviewEligibility = $eligibilityService->resolve($car, auth()->user());
+                $canReview = (bool) $reviewEligibility['can_review'];
             }
-
-            $canReview = $hasDepositOrBuy || $hasTestDrive;
         }
 
         return view('client.show', [
@@ -114,12 +128,15 @@ class CarController extends Controller
             'reviews' => $reviews,
             'avgRating' => $avgRating,
             'reviewCount' => $reviewCount,
+            'reviewDistribution' => $reviewDistribution,
+            'reviewFilter' => $reviewFilter,
             'userReview' => $userReview,
             'canReview' => $canReview,
+            'reviewEligibility' => $reviewEligibility,
         ]);
     }
 
-    public function storeReview(Request $request, Car $car): RedirectResponse
+    public function storeReview(Request $request, Car $car, ReviewEligibilityService $eligibilityService): RedirectResponse
     {
         $user = $request->user();
         if ($user->role !== 'customer') {
@@ -128,48 +145,157 @@ class CarController extends Controller
                 ->withErrors(['review' => 'Chỉ tài khoản khách hàng mới có thể gửi đánh giá sản phẩm.']);
         }
 
-        $canReview = OrderDetail::query()
-            ->where('car_id', $car->car_id)
-            ->whereHas('order', function ($query) use ($user) {
-                $query->where('user_id', $user->user_id)
-                    ->whereIn('status', [1, 2]);
-            })
-            ->exists();
+        $reviewEligibility = $eligibilityService->resolve($car, $user);
 
-        $hasTestDrive = false;
-        if (Schema::hasColumn('support_tickets', 'ticket_type') && Schema::hasColumn('support_tickets', 'car_id')) {
-            $hasTestDrive = Ticket::query()
-                ->where('user_id', $user->user_id)
-                ->where('ticket_type', 'test_drive')
-                ->where('car_id', $car->car_id)
-                ->exists();
-        }
-
-        if (! $canReview && ! $hasTestDrive) {
+        if (!$reviewEligibility['can_review']) {
             return back()
                 ->withInput()
-                ->withErrors(['review' => 'Bạn cần đặt lịch lái thử hoặc đặt cọc xe này trước khi gửi đánh giá.']);
+                ->withErrors(['review' => 'Bạn cần mua xe, đặt cọc, hoàn thành lái thử hoặc đã dùng dịch vụ liên quan trước khi gửi đánh giá.']);
         }
 
         $data = $request->validate([
+            'title' => 'nullable|string|max:150',
             'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'nullable|string|max:2000',
+            'comment' => 'nullable|string|max:3000',
+            'images' => 'nullable|array|max:6',
+            'images.*' => 'file|mimes:jpg,jpeg,png,webp|max:3072',
+            'truthful' => 'accepted',
         ]);
 
-        Review::updateOrCreate(
-            [
-                'user_id' => $user->user_id,
-                'car_id' => $car->car_id,
-            ],
-            [
+        if ((int) $data['rating'] <= 2 && mb_strlen(trim((string) ($data['comment'] ?? ''))) < 20) {
+            return back()
+                ->withInput()
+                ->withErrors(['comment' => 'Vui lòng mô tả rõ lý do khi đánh giá 1-2 sao.']);
+        }
+
+        DB::transaction(function () use ($request, $user, $car, $data, $reviewEligibility): void {
+            $review = Review::query()
+                ->where('user_id', $user->user_id)
+                ->where('car_id', $car->car_id)
+                ->first();
+
+            if (!$review) {
+                $review = new Review([
+                    'user_id' => $user->user_id,
+                    'car_id' => $car->car_id,
+                ]);
+            }
+
+            $review->forceFill([
+                'title' => $data['title'] ?? null,
                 'rating' => $data['rating'],
                 'comment' => $data['comment'] ?? null,
-            ]
-        );
+                'status' => Review::STATUS_PENDING,
+                'verified_type' => $reviewEligibility['verified_type'],
+                'order_id' => $reviewEligibility['order_id'],
+                'ticket_id' => $reviewEligibility['ticket_id'],
+                'service_record_id' => $reviewEligibility['service_record_id'],
+                'approved_by' => null,
+                'approved_at' => null,
+                'rejected_by' => null,
+                'rejected_at' => null,
+                'rejected_reason' => null,
+                'is_featured' => false,
+            ])->save();
+
+            if ($request->hasFile('images')) {
+                $review->load('images');
+
+                foreach ($review->images as $image) {
+                    Storage::disk('public')->delete($image->image_path);
+                    $image->delete();
+                }
+
+                foreach ($request->file('images', []) as $index => $file) {
+                    $review->images()->create([
+                        'image_path' => $file->store('review-images/' . $review->review_id, 'public'),
+                        'sort_order' => $index,
+                    ]);
+                }
+            }
+        });
 
         return redirect()
             ->route('cars.show_public', $car->car_id)
             ->withFragment('danh-gia')
-            ->with('review_success', 'Đã lưu đánh giá của bạn. Cảm ơn bạn!');
+            ->with('review_success', 'Đánh giá của bạn đã được gửi và đang chờ duyệt.');
+    }
+
+    public function voteReview(Request $request, Car $car, Review $review): RedirectResponse
+    {
+        abort_unless((int) $review->car_id === (int) $car->car_id && $review->canBeShown(), 404);
+
+        if ((int) $review->user_id === (int) $request->user()->user_id) {
+            return back()
+                ->withFragment('danh-gia')
+                ->withErrors(['review' => 'Bạn không thể tự đánh dấu hữu ích cho đánh giá của mình.']);
+        }
+
+        $vote = ReviewVote::firstOrCreate(
+            [
+                'review_id' => $review->review_id,
+                'user_id' => $request->user()->user_id,
+            ],
+            [
+                'type' => ReviewVote::TYPE_HELPFUL,
+            ]
+        );
+
+        if (!$vote->wasRecentlyCreated) {
+            return back()
+                ->withFragment('danh-gia')
+                ->with('review_success', 'Bạn đã đánh dấu hữu ích cho đánh giá này.');
+        }
+
+        $review->forceFill([
+            'helpful_count' => $review->votes()->where('type', ReviewVote::TYPE_HELPFUL)->count(),
+        ])->save();
+
+        return back()
+            ->withFragment('danh-gia')
+            ->with('review_success', 'Cảm ơn bạn đã đánh dấu đánh giá hữu ích.');
+    }
+
+    public function reportReview(Request $request, Car $car, Review $review): RedirectResponse
+    {
+        abort_unless((int) $review->car_id === (int) $car->car_id && $review->canBeShown(), 404);
+
+        if ((int) $review->user_id === (int) $request->user()->user_id) {
+            return back()
+                ->withFragment('danh-gia')
+                ->withErrors(['review' => 'Bạn không thể báo cáo đánh giá của mình.']);
+        }
+
+        $data = $request->validate([
+            'reason' => 'required|string|max:120',
+            'note' => 'nullable|string|max:1000',
+        ]);
+
+        $report = ReviewReport::firstOrCreate(
+            [
+                'review_id' => $review->review_id,
+                'user_id' => $request->user()->user_id,
+            ],
+            [
+                'reason' => $data['reason'],
+                'note' => $data['note'] ?? null,
+            ]
+        );
+
+        if (!$report->wasRecentlyCreated) {
+            return back()
+                ->withFragment('danh-gia')
+                ->with('review_success', 'Bạn đã báo cáo đánh giá này trước đó.');
+        }
+
+        $review->forceFill([
+            'status' => Review::STATUS_REPORTED,
+            'report_count' => $review->reports()->count(),
+            'is_featured' => false,
+        ])->save();
+
+        return back()
+            ->withFragment('danh-gia')
+            ->with('review_success', 'Cảm ơn bạn. Đánh giá đã được gửi cho quản trị viên kiểm tra.');
     }
 }

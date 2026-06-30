@@ -16,6 +16,9 @@ class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,
             CarSeeder::class,
             UserSeeder::class,
+            NewsCategorySeeder::class,
+            NewsSeeder::class,
+            PromotionSeeder::class,
         ]);
 
         // Tạo user test

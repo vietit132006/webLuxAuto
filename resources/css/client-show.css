@@ -556,6 +556,8 @@
         font-weight: 850;
     }
 
+    .review-form input[type="text"],
+    .review-form input[type="file"],
     .review-form select,
     .review-form textarea {
         width: 100%;
@@ -566,10 +568,15 @@
         font: inherit;
     }
 
+    .review-form input[type="text"],
+    .review-form input[type="file"],
     .review-form select {
-        max-width: 260px;
         min-height: 42px;
         padding: 0 0.72rem;
+    }
+
+    .review-form select {
+        max-width: 260px;
     }
 
     .review-form textarea {
@@ -578,6 +585,8 @@
         resize: vertical;
     }
 
+    .review-form input[type="text"]:focus,
+    .review-form input[type="file"]:focus,
     .review-form select:focus,
     .review-form textarea:focus {
         outline: none;
@@ -612,6 +621,124 @@
         margin-top: 0.85rem;
     }
 
+    .review-notice {
+        margin-bottom: 1rem;
+        padding: 0.85rem 1rem;
+        border: 1px solid rgba(251, 191, 36, 0.42);
+        border-radius: 8px;
+        background: rgba(251, 191, 36, 0.11);
+        color: #fde68a;
+        font-weight: 800;
+    }
+
+    .review-notice span {
+        display: block;
+        margin-top: 0.3rem;
+        color: #fca5a5;
+        font-weight: 700;
+    }
+
+    .review-breakdown {
+        display: grid;
+        gap: 0.45rem;
+        margin-bottom: 1rem;
+        padding: 0.9rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.025);
+    }
+
+    .review-breakdown__row {
+        display: grid;
+        grid-template-columns: 58px minmax(0, 1fr) 34px;
+        gap: 0.65rem;
+        align-items: center;
+        color: var(--muted);
+        font-size: 0.84rem;
+    }
+
+    .review-breakdown__bar {
+        overflow: hidden;
+        height: 8px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .review-breakdown__bar i {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--accent);
+    }
+
+    .review-breakdown__row strong {
+        color: var(--text);
+        text-align: right;
+    }
+
+    .review-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .review-filters a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 34px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 999px;
+        padding: 0 0.75rem;
+        color: #dbe3ef;
+        font-size: 0.84rem;
+        font-weight: 850;
+    }
+
+    .review-filters a:hover,
+    .review-filters a:focus-visible,
+    .review-filters a.is-active {
+        border-color: rgba(201, 169, 98, 0.55);
+        background: rgba(201, 169, 98, 0.12);
+        color: var(--accent);
+        outline: none;
+    }
+
+    .review-existing-images,
+    .review-gallery {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+    }
+
+    .review-existing-images img,
+    .review-gallery img {
+        width: 86px;
+        height: 64px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        object-fit: cover;
+        background: #090d13;
+    }
+
+    .review-check {
+        display: flex !important;
+        align-items: flex-start;
+        gap: 0.55rem;
+        margin-top: 0.85rem;
+        color: #dbe3ef;
+        line-height: 1.5;
+    }
+
+    .review-check input {
+        width: 18px;
+        height: 18px;
+        margin-top: 0.15rem;
+        accent-color: var(--accent);
+        flex: 0 0 auto;
+    }
+
     .reviews-list {
         display: grid;
         gap: 0.75rem;
@@ -637,6 +764,21 @@
         font-weight: 900;
     }
 
+    .review-verified {
+        display: inline-flex;
+        align-items: center;
+        min-height: 24px;
+        margin-left: 0.5rem;
+        padding: 0 0.55rem;
+        border: 1px solid rgba(52, 211, 153, 0.32);
+        border-radius: 999px;
+        background: rgba(52, 211, 153, 0.1);
+        color: #a7f3d0;
+        font-size: 0.74rem;
+        font-weight: 850;
+        vertical-align: middle;
+    }
+
     .review-item__date {
         color: var(--muted);
         font-size: 0.82rem;
@@ -647,6 +789,79 @@
         margin: 0.45rem 0 0;
         color: #dbe3ef;
         line-height: 1.65;
+    }
+
+    .review-item__title {
+        margin: 0.45rem 0 0;
+        color: var(--text);
+        font-size: 1rem;
+        font-weight: 900;
+    }
+
+    .review-reply {
+        margin-top: 0.85rem;
+        border-left: 3px solid var(--accent);
+        border-radius: 8px;
+        padding: 0.75rem 0.85rem;
+        background: rgba(201, 169, 98, 0.08);
+    }
+
+    .review-reply strong {
+        color: var(--accent);
+        font-size: 0.84rem;
+    }
+
+    .review-reply p {
+        margin: 0.35rem 0 0;
+        color: #dbe3ef;
+        line-height: 1.6;
+    }
+
+    .review-actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.55rem;
+        margin-top: 0.85rem;
+        color: var(--muted);
+        font-size: 0.84rem;
+    }
+
+    .review-actions form {
+        margin: 0;
+        display: inline-flex;
+        gap: 0.45rem;
+        align-items: center;
+    }
+
+    .review-actions button,
+    .review-actions select {
+        min-height: 32px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 7px;
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text);
+        font: inherit;
+        font-size: 0.82rem;
+    }
+
+    .review-actions button {
+        cursor: pointer;
+        padding: 0 0.65rem;
+        font-weight: 850;
+    }
+
+    .review-actions select {
+        max-width: 190px;
+        padding: 0 0.45rem;
+    }
+
+    .review-actions button:hover,
+    .review-actions button:focus-visible,
+    .review-actions select:focus-visible {
+        border-color: rgba(201, 169, 98, 0.55);
+        color: var(--accent);
+        outline: none;
     }
 
     .muted-italic {
@@ -730,6 +945,18 @@
 
         .review-item__date {
             white-space: normal;
+        }
+
+        .review-actions,
+        .review-actions form,
+        .review-actions select,
+        .review-actions button {
+            width: 100%;
+        }
+
+        .review-actions form {
+            display: grid;
+            grid-template-columns: 1fr;
         }
 
         .media-thumbs {
