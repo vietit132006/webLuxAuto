@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Storage;
 
 class ReviewImage extends Model
 {
@@ -30,6 +29,12 @@ class ReviewImage extends Model
 
     public function imageUrl(): string
     {
-        return Storage::disk('public')->url($this->image_path);
+        $path = ltrim((string) $this->image_path, '/');
+
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+
+        return '/' . (str_starts_with($path, 'storage/') ? $path : 'storage/' . $path);
     }
 }
