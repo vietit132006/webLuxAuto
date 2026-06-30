@@ -46,6 +46,8 @@ class TestDriveService
                 'quotes.customer',
                 'quotes.car.modelInfo.brand',
                 'quotes.user',
+                'liveSession',
+                'liveLead',
             ])
             ->findOrFail($id);
     }

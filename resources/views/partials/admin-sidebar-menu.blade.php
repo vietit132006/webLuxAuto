@@ -92,6 +92,7 @@
                 ['label' => 'Khuyến mãi', 'route' => 'admin.reports.promotions', 'active' => ['admin.reports.promotions'], 'icon' => 'tag', 'permission' => 'reports.view'],
                 ['label' => 'Đánh giá', 'route' => 'admin.reports.reviews', 'active' => ['admin.reports.reviews', 'admin.reports.reviews.export'], 'icon' => 'star', 'permission' => ['reports.view', 'reviews.view']],
                 ['label' => 'Chuyển đổi', 'route' => 'admin.reports.conversion', 'active' => ['admin.reports.conversion'], 'icon' => 'bar_chart', 'permission' => 'reports.view'],
+                ['label' => 'Livestream', 'route' => 'admin.reports.live', 'active' => ['admin.reports.live'], 'icon' => 'video', 'permission' => 'live.reports.view'],
             ],
         ],
         [

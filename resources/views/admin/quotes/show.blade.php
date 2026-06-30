@@ -152,6 +152,28 @@
                     </dd>
                 </div>
             @endif
+            @if($quote->liveSession)
+                <div>
+                    <dt>Nguồn livestream</dt>
+                    <dd>
+                        @can('live.view')
+                            <a class="quote-source-link" href="{{ route('admin.live.show', $quote->liveSession) }}">
+                                {{ $quote->liveSession->live_code }} - {{ $quote->liveSession->title }}
+                            </a>
+                        @else
+                            {{ $quote->liveSession->live_code }} - {{ $quote->liveSession->title }}
+                        @endcan
+                        @if($quote->liveLead)
+                            <br>
+                            @can('live.leads.view')
+                                <a class="quote-source-link" href="{{ route('admin.live.leads.show', $quote->liveLead) }}">Live lead #{{ $quote->liveLead->id }}</a>
+                            @else
+                                Live lead #{{ $quote->liveLead->id }}
+                            @endcan
+                        @endif
+                    </dd>
+                </div>
+            @endif
             <div>
                 <dt>Ngày tạo</dt>
                 <dd>{{ $quote->created_at?->format('d/m/Y H:i') }}</dd>

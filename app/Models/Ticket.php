@@ -45,6 +45,8 @@ class Ticket extends Model
         'user_id',
         'ticket_type',
         'car_id',
+        'live_session_id',
+        'live_lead_id',
         'subject',
         'message',
         'status',
@@ -133,6 +135,16 @@ class Ticket extends Model
     public function car(): BelongsTo
     {
         return $this->belongsTo(Car::class, 'car_id', 'car_id');
+    }
+
+    public function liveSession(): BelongsTo
+    {
+        return $this->belongsTo(LiveSession::class);
+    }
+
+    public function liveLead(): BelongsTo
+    {
+        return $this->belongsTo(LiveLead::class);
     }
 
     public function statusHistories(): HasMany

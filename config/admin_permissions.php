@@ -50,7 +50,13 @@ $permissions = [
     'reviews.delete' => 'Xóa đánh giá',
     'reviews.export' => 'Xuất Excel đánh giá',
     'live.view' => 'Xem livestream',
+    'live.create' => 'Tạo phiên livestream',
     'live.edit' => 'Cập nhật livestream',
+    'live.delete' => 'Xóa phiên livestream',
+    'live.manage' => 'Bật tắt và kết thúc livestream',
+    'live.leads.view' => 'Xem live lead',
+    'live.leads.edit' => 'Cập nhật live lead',
+    'live.reports.view' => 'Xem báo cáo livestream',
     'tickets.view' => 'Xem hỗ trợ',
     'tickets.reply' => 'Trả lời hỗ trợ',
     'warranties.view' => 'Xem bảo hành',
@@ -111,6 +117,8 @@ return [
                 'test_drives.edit',
                 'test_drives.delete',
                 'test_drives.export',
+                'live.leads.view',
+                'live.leads.edit',
             ],
         ],
         'marketing' => [
@@ -137,7 +145,10 @@ return [
                 'reviews.delete',
                 'reviews.export',
                 'live.view',
+                'live.create',
                 'live.edit',
+                'live.manage',
+                'live.leads.view',
             ],
         ],
         'support' => [
@@ -164,7 +175,7 @@ return [
         ],
         'reports' => [
             'label' => 'Báo cáo',
-            'permissions' => ['reports.view'],
+            'permissions' => ['reports.view', 'live.reports.view'],
         ],
         'system' => [
             'label' => 'Hệ thống',
@@ -223,6 +234,8 @@ return [
                 'test_drives.export',
                 'warranties.view',
                 'reviews.view',
+                'live.leads.view',
+                'live.leads.edit',
             ],
         ],
         'Nhân viên dịch vụ / CSKH' => [
@@ -263,6 +276,11 @@ return [
                 'promotions.publish',
                 'promotions.apply',
                 'reviews.view',
+                'live.view',
+                'live.create',
+                'live.edit',
+                'live.manage',
+                'live.leads.view',
             ],
         ],
         'Kế toán' => [

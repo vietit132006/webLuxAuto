@@ -39,6 +39,7 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/livestream', [LiveController::class, 'index'])->name('livestream');
+Route::post('/livestream/leads', [LiveController::class, 'storeLead'])->name('livestream.leads.store');
 Route::get('/tin-tuc', [NewsController::class, 'index'])->name('news.index');
 Route::get('/tin-tuc/{slug}', [NewsController::class, 'show'])->name('news.show');
 Route::get('/khuyen-mai', [PromotionController::class, 'index'])->name('promotions.index');
@@ -409,6 +410,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/reports/conversion', [AdminReportController::class, 'conversion'])
             ->middleware('permission:reports.view')
             ->name('reports.conversion');
+        Route::get('/reports/live', [AdminReportController::class, 'live'])
+            ->middleware('permission:live.reports.view')
+            ->name('reports.live');
         Route::get('/reports/reviews', [AdminReportController::class, 'reviews'])
             ->middleware('permission:reports.view|reviews.view')
             ->name('reports.reviews');
@@ -477,9 +481,45 @@ Route::middleware('auth')->group(function () {
         Route::get('/live', [AdminLiveController::class, 'index'])
             ->middleware('permission:live.view')
             ->name('live.index');
-        Route::post('/live/update', [AdminLiveController::class, 'update'])
+        Route::get('/live/create', [AdminLiveController::class, 'create'])
+            ->middleware('permission:live.create')
+            ->name('live.create');
+        Route::post('/live', [AdminLiveController::class, 'store'])
+            ->middleware('permission:live.create')
+            ->name('live.store');
+        Route::get('/live/leads/{lead}', [AdminLiveController::class, 'lead'])
+            ->middleware('permission:live.leads.view')
+            ->name('live.leads.show');
+        Route::patch('/live/leads/{lead}', [AdminLiveController::class, 'updateLead'])
+            ->middleware('permission:live.leads.edit')
+            ->name('live.leads.update');
+        Route::post('/live/leads/{lead}/quote', [AdminLiveController::class, 'createQuoteFromLead'])
+            ->middleware(['permission:live.leads.edit', 'permission:quotes.create'])
+            ->name('live.leads.quote');
+        Route::post('/live/leads/{lead}/test-drive', [AdminLiveController::class, 'createTestDriveFromLead'])
+            ->middleware(['permission:live.leads.edit', 'permission:test_drives.edit'])
+            ->name('live.leads.test_drive');
+        Route::get('/live/{liveSession}', [AdminLiveController::class, 'show'])
+            ->middleware('permission:live.view')
+            ->name('live.show');
+        Route::get('/live/{liveSession}/edit', [AdminLiveController::class, 'edit'])
+            ->middleware('permission:live.edit')
+            ->name('live.edit');
+        Route::put('/live/{liveSession}', [AdminLiveController::class, 'update'])
             ->middleware('permission:live.edit')
             ->name('live.update');
+        Route::patch('/live/{liveSession}/start', [AdminLiveController::class, 'start'])
+            ->middleware('permission:live.manage')
+            ->name('live.start');
+        Route::patch('/live/{liveSession}/stop', [AdminLiveController::class, 'stop'])
+            ->middleware('permission:live.manage')
+            ->name('live.stop');
+        Route::patch('/live/{liveSession}/end', [AdminLiveController::class, 'end'])
+            ->middleware('permission:live.manage')
+            ->name('live.end');
+        Route::delete('/live/{liveSession}', [AdminLiveController::class, 'destroy'])
+            ->middleware('permission:live.delete')
+            ->name('live.destroy');
 
         Route::get('/tickets', [AdminTicketController::class, 'index'])
             ->middleware('permission:tickets.view')

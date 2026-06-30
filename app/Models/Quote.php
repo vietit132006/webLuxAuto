@@ -34,6 +34,8 @@ class Quote extends Model
         'car_id',
         'user_id',
         'test_drive_id',
+        'live_session_id',
+        'live_lead_id',
         'vehicle_price',
         'discount_amount',
         'registration_fee',
@@ -98,6 +100,16 @@ class Quote extends Model
     public function testDrive(): BelongsTo
     {
         return $this->belongsTo(Ticket::class, 'test_drive_id', 'ticket_id');
+    }
+
+    public function liveSession(): BelongsTo
+    {
+        return $this->belongsTo(LiveSession::class);
+    }
+
+    public function liveLead(): BelongsTo
+    {
+        return $this->belongsTo(LiveLead::class);
     }
 
     public function order(): HasOne

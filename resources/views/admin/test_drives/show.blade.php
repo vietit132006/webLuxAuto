@@ -105,6 +105,28 @@
                         <span>Nhân viên phụ trách</span>
                         <strong>{{ $booking->sales_person ?: 'Chưa phân công' }}</strong>
                     </div>
+                    @if($booking->liveSession)
+                        <div class="info-item">
+                            <span>Nguồn livestream</span>
+                            <strong>
+                                @can('live.view')
+                                    <a href="{{ route('admin.live.show', $booking->liveSession) }}">{{ $booking->liveSession->live_code }}</a>
+                                @else
+                                    {{ $booking->liveSession->live_code }}
+                                @endcan
+                            </strong>
+                            <small>{{ $booking->liveSession->title }}</small>
+                            @if($booking->liveLead)
+                                <small>
+                                    @can('live.leads.view')
+                                        <a href="{{ route('admin.live.leads.show', $booking->liveLead) }}">Live lead #{{ $booking->liveLead->id }}</a>
+                                    @else
+                                        Live lead #{{ $booking->liveLead->id }}
+                                    @endcan
+                                </small>
+                            @endif
+                        </div>
+                    @endif
                 </div>
 
                 <div class="request-box">

@@ -1,6 +1,6 @@
 @extends('layouts.site')
 
-@section('title', 'Livestream bán xe - Lux Auto')
+@section('title', 'Livestream ban xe - Lux Auto')
 
 @push('styles')
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
@@ -8,112 +8,225 @@
     @endif
 @endpush
 
-
-@push('styles')
-@endpush
-
 @section('content')
+@php
+    $stateClass = $isLiveActive ? 'is-live' : ($session?->isScheduled() ? 'is-scheduled' : ($session?->isEnded() ? 'is-ended' : 'is-offline'));
+    $stateLabel = $session?->frontendStateLabel() ?: 'Chua phat song';
+    $leadSessionId = $session?->id;
+@endphp
+
 <div class="live-page">
     <section class="live-hero">
         <div class="live-wrap">
             <div class="live-hero__grid">
                 <div>
-                    <div class="live-kicker">Phòng phát sóng Lux Auto</div>
-                    <h1 class="live-title">Lux Auto <span>trực tiếp</span></h1>
+                    <p class="live-kicker">Phong phat song Lux Auto</p>
+                    <h1 class="live-title">{{ $session?->title ?: 'Lux Auto truc tiep' }}</h1>
                     <p class="live-copy">
-                        Theo dõi phiên live để xem xe đang được giới thiệu, kiểm tra giá và chuyển sang chi tiết xe khi muốn đặt cọc hoặc đặt lịch lái thử.
+                        {{ $session?->description ?: 'Theo doi cac phien live gioi thieu xe, uu dai rieng trong live va gui yeu cau bao gia hoac lai thu ngay khi co mau xe phu hop.' }}
                     </p>
                 </div>
 
-                <div class="live-status {{ $isLiveActive ? '' : 'live-status--offline' }}" aria-label="Trạng thái livestream">
+                <div class="live-status {{ $stateClass }}" aria-label="Trang thai livestream">
                     <span class="live-status__dot" aria-hidden="true"></span>
-                    {{ $isLiveActive ? 'Đang phát sóng' : 'Chưa phát sóng' }}
+                    {{ $stateLabel }}
                 </div>
             </div>
         </div>
     </section>
 
     <main class="live-wrap live-stage">
+        @if(session('success'))
+            <div class="live-alert is-success">{{ session('success') }}</div>
+        @endif
+
+        @if($errors->any())
+            <div class="live-alert is-error">{{ $errors->first() }}</div>
+        @endif
+
         <section class="live-player-card">
             <div class="live-player">
                 @if($liveVideoId)
                     <iframe
-                        src="https://www.youtube.com/embed/{{ $liveVideoId }}?autoplay=1&mute=1&rel=0"
-                        title="Livestream bán xe Lux Auto"
+                        src="https://www.youtube.com/embed/{{ $liveVideoId }}?autoplay={{ $isLiveActive ? '1' : '0' }}&mute={{ $isLiveActive ? '1' : '0' }}&rel=0"
+                        title="{{ $session?->title ?: 'Livestream Lux Auto' }}"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowfullscreen></iframe>
                 @else
                     <div class="live-player-empty">
-                        <div>
-                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9A2.25 2.25 0 0 0 4.5 18.75Z" />
-                            </svg>
-                            <div>Chưa có video livestream được cấu hình.</div>
-                        </div>
+                        @if($session?->isScheduled())
+                            <strong>Sap phat song</strong>
+                            <span data-countdown="{{ $session->starts_at?->toIso8601String() }}">
+                                Bat dau luc {{ $session->starts_at?->format('H:i d/m/Y') }}
+                            </span>
+                        @elseif($session?->isEnded())
+                            <strong>Phien live da ket thuc</strong>
+                            <span>{{ $session->replay_enabled ? 'Replay chua san sang.' : 'Replay khong duoc bat cho phien nay.' }}</span>
+                        @else
+                            <strong>Chua phat song</strong>
+                            <span>Phien live dang tam tat hoac chua co lich phat song.</span>
+                        @endif
                     </div>
                 @endif
             </div>
             <div class="live-player-caption">
-                <div>{{ $isLiveActive ? 'Đang phát sóng' : 'Phiên live đang tạm tắt' }}: <strong>Ưu đãi xe tuyển chọn trong phiên live</strong></div>
-                <div>{{ $featuredCars->count() }} xe đang được ghim</div>
+                <div>
+                    <strong>{{ $stateLabel }}</strong>
+                    @if($session?->starts_at)
+                        <span>{{ $session->starts_at->format('H:i d/m/Y') }}</span>
+                    @endif
+                </div>
+                <div>{{ $liveCars->count() }} xe trong live / {{ number_format((int) ($session->views_count ?? 0)) }} luot xem</div>
             </div>
         </section>
+
+        @if($focusCars->isNotEmpty())
+            <section class="live-focus">
+                <div class="live-section-head">
+                    <div>
+                        <p class="live-section-eyebrow">Dang focus</p>
+                        <h2 class="live-section-title">Xe dang len song</h2>
+                    </div>
+                </div>
+                <div class="live-focus-grid">
+                    @foreach($focusCars as $sessionCar)
+                        @include('client.partials.live-car-card', ['sessionCar' => $sessionCar, 'leadSessionId' => $leadSessionId, 'isFocus' => true])
+                    @endforeach
+                </div>
+            </section>
+        @endif
 
         <section>
             <div class="live-section-head">
                 <div>
-                    <p class="live-section-eyebrow">Giỏ hàng trong live</p>
-                    <h2 class="live-section-title">Xe đang lên sóng</h2>
+                    <p class="live-section-eyebrow">Showroom trong live</p>
+                    <h2 class="live-section-title">{{ $session?->isScheduled() ? 'Xe du kien len song' : 'Xe dang duoc ghim' }}</h2>
                 </div>
-                <div class="live-products-count">{{ $featuredCars->count() }} mẫu xe</div>
+                <div class="live-products-count">{{ $liveCars->count() }} mau xe</div>
             </div>
 
             <div class="live-grid">
-                @forelse($featuredCars as $car)
-                    @php
-                        $brandName = $car->carModel?->brand?->name ?? $car->brand?->name ?? null;
-                        $modelName = $car->carModel?->name ?? null;
-                        $statusText = match ((int) $car->status) {
-                            2 => 'Đã đặt cọc',
-                            3 => 'Đã bán',
-                            default => 'Sẵn sàng',
-                        };
-                    @endphp
-
-                    <article class="live-car">
-                        <a class="live-car__media" href="{{ route('cars.show_public', $car->car_id) }}" aria-label="Xem chi tiết {{ $car->name }}">
-                            @if($car->image)
-                                <img src="{{ asset('storage/' . $car->image) }}" alt="{{ trim(($brandName ? $brandName . ' ' : '') . $car->name) }}" loading="lazy">
-                            @else
-                                <div class="live-car__empty">Chưa có ảnh</div>
-                            @endif
-                            <span class="live-badge">Đang lên sóng</span>
-                        </a>
-
-                        <div class="live-car__body">
-                            <div>
-                                <div class="live-car__brand">
-                                    {{ $brandName ? $brandName . ($modelName ? ' - ' . $modelName : '') : 'Đang cập nhật dòng xe' }}
-                                </div>
-                                <h3 class="live-car__title">{{ $car->name }}</h3>
-                            </div>
-
-                            <div class="live-car__meta">
-                                <span>Đời {{ $car->year ?? 'đang cập nhật' }}</span>
-                                <span>{{ $statusText }}</span>
-                            </div>
-
-                            <div class="live-car__price">{{ number_format($car->price, 0, ',', '.') }} VNĐ</div>
-                            <a href="{{ route('cars.show_public', $car->car_id) }}" class="live-btn">Xem và đặt cọc</a>
-                        </div>
-                    </article>
+                @forelse($liveCars as $sessionCar)
+                    @include('client.partials.live-car-card', ['sessionCar' => $sessionCar, 'leadSessionId' => $leadSessionId, 'isFocus' => false])
                 @empty
-                    <div class="live-empty">
-                        Chưa có xe nào được ghim trong phiên live này.
-                    </div>
+                    <div class="live-empty">Chua co xe nao duoc ghim trong phien live nay.</div>
                 @endforelse
             </div>
+        </section>
+
+        <section class="live-lead-panel" id="live-lead-form">
+            <div>
+                <p class="live-section-eyebrow">Dang ky tu livestream</p>
+                <h2 class="live-section-title">De lai nhu cau</h2>
+            </div>
+
+            @if($leadSessionId && $session?->canShowFrontend())
+                <form class="live-lead-form" method="post" action="{{ route('livestream.leads.store') }}" data-live-lead-form>
+                    @csrf
+                    <input type="hidden" name="live_session_id" value="{{ $leadSessionId }}">
+                    <input type="hidden" name="car_id" value="{{ old('car_id') }}" data-live-lead-car>
+
+                    <div class="live-lead-field">
+                        <label for="lead_type">Nhu cau</label>
+                        <select id="lead_type" name="lead_type" data-live-lead-type required>
+                            @foreach($leadTypeOptions as $value => $label)
+                                <option value="{{ $value }}" @selected(old('lead_type') === $value)>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    @guest
+                        <div class="live-lead-field">
+                            <label for="customer_name">Ho ten</label>
+                            <input id="customer_name" name="customer_name" type="text" value="{{ old('customer_name') }}" required>
+                        </div>
+                        <div class="live-lead-field">
+                            <label for="phone">So dien thoai</label>
+                            <input id="phone" name="phone" type="tel" value="{{ old('phone') }}" required>
+                        </div>
+                        <div class="live-lead-field">
+                            <label for="email">Email</label>
+                            <input id="email" name="email" type="email" value="{{ old('email') }}">
+                        </div>
+                    @endguest
+
+                    <div class="live-lead-field is-wide">
+                        <label for="message">Ghi chu</label>
+                        <textarea id="message" name="message" rows="3" data-live-lead-message>{{ old('message') }}</textarea>
+                    </div>
+
+                    <div class="live-lead-actions">
+                        <button class="live-btn live-btn-primary" type="submit">Gui yeu cau</button>
+                        @if($session?->cta_label && $session?->cta_url)
+                            <a class="live-btn live-btn-secondary" href="{{ $session->cta_url }}">{{ $session->cta_label }}</a>
+                        @endif
+                    </div>
+                </form>
+            @else
+                <div class="live-empty is-compact">Hien chua nhan lead vi phien live khong cong khai hoac da tam tat.</div>
+            @endif
         </section>
     </main>
 </div>
 @endsection
+
+@push('scripts')
+    <script>
+        (() => {
+            const form = document.querySelector('[data-live-lead-form]');
+
+            document.querySelectorAll('[data-live-action]').forEach((button) => {
+                button.addEventListener('click', () => {
+                    if (!form) {
+                        return;
+                    }
+
+                    const carInput = form.querySelector('[data-live-lead-car]');
+                    const typeInput = form.querySelector('[data-live-lead-type]');
+                    const messageInput = form.querySelector('[data-live-lead-message]');
+
+                    if (carInput) {
+                        carInput.value = button.dataset.carId || '';
+                    }
+
+                    if (typeInput && button.dataset.leadType) {
+                        typeInput.value = button.dataset.leadType;
+                    }
+
+                    if (messageInput && button.dataset.carName) {
+                        messageInput.value = `Toi quan tam ${button.dataset.carName}`;
+                    }
+
+                    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    form.querySelector('input:not([type="hidden"]), select, textarea')?.focus({ preventScroll: true });
+                });
+            });
+
+            document.querySelectorAll('[data-countdown]').forEach((target) => {
+                const start = new Date(target.dataset.countdown);
+
+                if (Number.isNaN(start.getTime())) {
+                    return;
+                }
+
+                const render = () => {
+                    const diff = start.getTime() - Date.now();
+
+                    if (diff <= 0) {
+                        target.textContent = 'Sap bat dau';
+                        return;
+                    }
+
+                    const totalMinutes = Math.floor(diff / 60000);
+                    const days = Math.floor(totalMinutes / 1440);
+                    const hours = Math.floor((totalMinutes % 1440) / 60);
+                    const minutes = totalMinutes % 60;
+                    target.textContent = `${days} ngay ${hours} gio ${minutes} phut nua`;
+                };
+
+                render();
+                window.setInterval(render, 60000);
+            });
+        })();
+    </script>
+@endpush

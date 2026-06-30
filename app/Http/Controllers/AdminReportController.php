@@ -16,6 +16,8 @@ use App\Models\CarModel;
 use App\Models\Customer;
 use App\Models\Delivery;
 use App\Models\InventoryLog;
+use App\Models\LiveLead;
+use App\Models\LiveSession;
 use App\Models\Order;
 use App\Models\Quote;
 use App\Models\Review;
@@ -486,6 +488,100 @@ class AdminReportController extends Controller
         ]);
     }
 
+    public function live(Request $request): View
+    {
+        $filters = [
+            ...$this->dateFilters($request),
+            'live_session_id' => $this->intFilter($request, 'live_session_id'),
+            'car_id' => $this->intFilter($request, 'car_id'),
+            'assigned_to' => $this->intFilter($request, 'assigned_to'),
+        ];
+
+        $leadsQuery = LiveLead::query()
+            ->with(['liveSession', 'car.carModel.brand', 'assignedTo', 'quote', 'testDrive']);
+
+        $this->applyLiveLeadFilters($leadsQuery, $filters);
+
+        $leads = (clone $leadsQuery)
+            ->orderByDesc('created_at')
+            ->paginate(25)
+            ->withQueryString();
+
+        $quoteQuery = Quote::query()->where(function (Builder $query): void {
+            $query->whereNotNull('live_session_id')
+                ->orWhereNotNull('live_lead_id');
+        });
+        $orderQuery = Order::query()
+            ->join('quotes', 'quotes.quote_id', '=', 'orders.quote_id')
+            ->where(function (Builder $query): void {
+                $query->whereNotNull('quotes.live_session_id')
+                    ->orWhereNotNull('quotes.live_lead_id');
+            });
+
+        if ($filters['live_session_id']) {
+            $quoteQuery->where('live_session_id', $filters['live_session_id']);
+            $orderQuery->where('quotes.live_session_id', $filters['live_session_id']);
+        }
+
+        if ($filters['car_id']) {
+            $quoteQuery->where('car_id', $filters['car_id']);
+            $orderQuery->join('order_details', 'order_details.order_id', '=', 'orders.order_id')
+                ->where('order_details.car_id', $filters['car_id']);
+        }
+
+        if ($dateRange = AdminReportQuery::dateRange($filters)) {
+            $quoteQuery->whereBetween('created_at', $dateRange);
+            $orderQuery->whereBetween('orders.created_at', $dateRange);
+        }
+
+        $leadStatsQuery = clone $leadsQuery;
+        $totalLeads = (int) (clone $leadStatsQuery)->count();
+        $convertedLeads = (int) (clone $leadStatsQuery)->where('status', LiveLead::STATUS_CONVERTED)->count();
+
+        $topCars = (clone $leadsQuery)
+            ->whereNotNull('live_leads.car_id')
+            ->join('cars', 'cars.car_id', '=', 'live_leads.car_id')
+            ->leftJoin('car_models', 'car_models.id', '=', 'cars.car_model_id')
+            ->leftJoin('brands', 'brands.brand_id', '=', 'car_models.brand_id')
+            ->selectRaw('cars.car_id, cars.name, car_models.name as model_name, brands.name as brand_name, COUNT(*) as leads_count')
+            ->groupBy('cars.car_id', 'cars.name', 'car_models.name', 'brands.name')
+            ->orderByDesc('leads_count')
+            ->take(8)
+            ->get();
+
+        $topSessions = (clone $leadsQuery)
+            ->join('live_sessions', 'live_sessions.id', '=', 'live_leads.live_session_id')
+            ->selectRaw('live_sessions.id, live_sessions.live_code, live_sessions.title, COUNT(*) as leads_count')
+            ->groupBy('live_sessions.id', 'live_sessions.live_code', 'live_sessions.title')
+            ->orderByDesc('leads_count')
+            ->take(8)
+            ->get();
+
+        return view('admin.reports.live', [
+            'filters' => $filters,
+            'leads' => $leads,
+            'stats' => [
+                'sessions' => LiveSession::count(),
+                'completed_sessions' => LiveSession::whereIn('status', [LiveSession::STATUS_LIVE, LiveSession::STATUS_ENDED])->count(),
+                'leads' => $totalLeads,
+                'quote_requests' => (int) (clone $leadStatsQuery)->where('lead_type', LiveLead::TYPE_QUOTE_REQUEST)->count(),
+                'test_drive_requests' => (int) (clone $leadStatsQuery)->where('lead_type', LiveLead::TYPE_TEST_DRIVE_REQUEST)->count(),
+                'deposit_interests' => (int) (clone $leadStatsQuery)->where('lead_type', LiveLead::TYPE_DEPOSIT_INTEREST)->count(),
+                'converted_leads' => $convertedLeads,
+                'conversion_rate' => $this->safeRate($convertedLeads, $totalLeads),
+                'quotes_from_live' => (int) $quoteQuery->count(),
+                'orders_from_live' => (int) $orderQuery->distinct('orders.order_id')->count('orders.order_id'),
+            ],
+            'topCars' => $topCars,
+            'topSessions' => $topSessions,
+            'sessions' => LiveSession::query()->orderByDesc('starts_at')->orderByDesc('created_at')->get(['id', 'live_code', 'title']),
+            'cars' => $this->carsForFilter(),
+            'staff' => $this->staffOptions(),
+            'leadStatusOptions' => LiveLead::STATUSES,
+            'leadTypeOptions' => LiveLead::TYPES,
+        ]);
+    }
+
     public function inventoryCheck(): View
     {
         $cars = Car::with('brand')->orderBy('name')->get();
@@ -866,6 +962,20 @@ class AdminReportController extends Controller
                     ->whereColumn('review_images.review_id', 'reviews.review_id');
             });
         }
+    }
+
+    private function applyLiveLeadFilters(Builder $query, array $filters): void
+    {
+        $query
+            ->when($filters['live_session_id'] ?? null, fn (Builder $query, int $sessionId): Builder => $query->where('live_session_id', $sessionId))
+            ->when($filters['car_id'] ?? null, fn (Builder $query, int $carId): Builder => $query->where('live_leads.car_id', $carId))
+            ->when($filters['assigned_to'] ?? null, fn (Builder $query, int $userId): Builder => $query->where('assigned_to', $userId))
+            ->when($filters['date_from'] ?? '', function (Builder $query, string $date): void {
+                $query->where('live_leads.created_at', '>=', Carbon::parse($date)->startOfDay());
+            })
+            ->when($filters['date_to'] ?? '', function (Builder $query, string $date): void {
+                $query->where('live_leads.created_at', '<=', Carbon::parse($date)->endOfDay());
+            });
     }
 
     private function customerSourceChart(array $filters): array

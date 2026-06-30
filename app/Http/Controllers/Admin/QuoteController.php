@@ -174,7 +174,7 @@ class QuoteController extends Controller
 
     public function show(Quote $quote): View
     {
-        $quote->load(['customer', 'car.modelInfo.brand', 'user', 'testDrive', 'order', 'quotePromotions.promotion']);
+        $quote->load(['customer', 'car.modelInfo.brand', 'user', 'testDrive', 'liveSession', 'liveLead', 'order', 'quotePromotions.promotion']);
 
         return view('admin.quotes.show', compact('quote'));
     }
