@@ -76,6 +76,17 @@ class CustomerController extends Controller
 
         $customer = Customer::create($data);
 
+        app(\App\Services\AdminNotificationService::class)->createOnce(
+            'customers',
+            'customer_created',
+            'Khach hang moi ' . $customer->customer_code,
+            'Ho so khach hang moi vua duoc tao trong CRM.',
+            route('admin.customers.show', $customer, false),
+            ['customer_id' => $customer->customer_id],
+            \App\Models\AdminNotification::PRIORITY_NORMAL,
+            $request->user()
+        );
+
         return redirect()
             ->route('admin.customers.show', $customer)
             ->with('success', 'Đã thêm khách hàng mới.');

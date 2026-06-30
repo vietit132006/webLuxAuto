@@ -63,7 +63,7 @@ class TicketController extends Controller
             return back()->withInput()->withErrors(['car_id' => 'Xe đã chọn hiện không khả dụng trên frontend.']);
         }
 
-        Ticket::create([
+        $ticket = Ticket::create([
             'user_id' => Auth::id(),
             'ticket_type' => $request->ticket_type,
             'car_id' => $request->car_id,
@@ -71,6 +71,28 @@ class TicketController extends Controller
             'message' => $request->message,
             'status' => 'pending' // Mặc định là chờ xử lý
         ]);
+
+        if ($ticket->ticket_type === Ticket::TYPE_TEST_DRIVE) {
+            app(\App\Services\AdminNotificationService::class)->createOnce(
+                'test_drives',
+                'test_drive_created',
+                'Khach dat lich lai thu moi',
+                'Lich ' . $ticket->display_code . ' vua duoc gui tu website.',
+                route('admin.test_drives.show', $ticket->ticket_id, false),
+                ['ticket_id' => $ticket->ticket_id],
+                \App\Models\AdminNotification::PRIORITY_HIGH
+            );
+        } else {
+            app(\App\Services\AdminNotificationService::class)->createOnce(
+                'tickets',
+                'ticket_created',
+                'Ticket ho tro moi',
+                'Khach hang vua gui ticket ho tro can CSKH phan hoi.',
+                route('admin.tickets.index', [], false),
+                ['ticket_id' => $ticket->ticket_id],
+                \App\Models\AdminNotification::PRIORITY_NORMAL
+            );
+        }
 
         return redirect()->route('ticket.history')->with('success', 'Đã gửi yêu cầu hỗ trợ thành công. Chúng tôi sẽ phản hồi sớm nhất!');
     }

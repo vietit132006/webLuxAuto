@@ -62,6 +62,20 @@ class PublicQuoteController extends Controller
             'customer_responded_at' => now(),
         ])->save();
 
+        app(\App\Services\AdminNotificationService::class)->createOnce(
+            'quotes',
+            $quoteModel->status === Quote::STATUS_ACCEPTED ? 'quote_accepted' : 'quote_rejected',
+            $quoteModel->status === Quote::STATUS_ACCEPTED
+                ? 'Bao gia ' . $quoteModel->quote_code . ' duoc khach chap nhan'
+                : 'Bao gia ' . $quoteModel->quote_code . ' bi khach tu choi',
+            $quoteModel->customer_response_note,
+            route('admin.quotes.show', $quoteModel, false),
+            ['quote_id' => $quoteModel->quote_id, 'response' => $quoteModel->status],
+            $quoteModel->status === Quote::STATUS_ACCEPTED
+                ? \App\Models\AdminNotification::PRIORITY_HIGH
+                : \App\Models\AdminNotification::PRIORITY_NORMAL
+        );
+
         return redirect()
             ->route('quotes.public.show', ['quote' => $quoteModel->quote_code, 'token' => $token])
             ->with('success', $quoteModel->status === Quote::STATUS_ACCEPTED

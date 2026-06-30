@@ -59,6 +59,9 @@ class AdminDashboardService
         $reviewStats = $permissions['reviews']
             ? $this->reviewStats($range)
             : null;
+        $notificationStats = ($permissions['notifications'] && $user instanceof \App\Models\User)
+            ? ['unread' => app(AdminNotificationService::class)->unreadCount($user)]
+            : null;
 
         return [
             'dashboardRange' => $range,
@@ -72,7 +75,8 @@ class AdminDashboardService
                 $orderStats,
                 $deliveryStats,
                 $revenueStats,
-                $reviewStats
+                $reviewStats,
+                $notificationStats
             ),
             'dashboardCharts' => $this->charts($range, $permissions),
             'recentCars' => $permissions['cars'] ? $this->recentCars() : collect(),
@@ -94,6 +98,7 @@ class AdminDashboardService
             'canViewOrders' => $permissions['orders'],
             'canViewTestDrives' => $permissions['test_drives'],
             'canViewReviews' => $permissions['reviews'],
+            'canViewNotifications' => $permissions['notifications'],
         ];
     }
 
@@ -109,6 +114,7 @@ class AdminDashboardService
             'orders' => $user?->can('orders.view') ?? false,
             'test_drives' => $user?->can('test_drives.view') ?? false,
             'reviews' => $user?->can('reviews.view') ?? false,
+            'notifications' => $user?->can('notifications.view') ?? false,
         ];
     }
 
@@ -328,9 +334,21 @@ class AdminDashboardService
         ?array $orderStats,
         ?array $deliveryStats,
         ?array $revenueStats,
-        ?array $reviewStats
+        ?array $reviewStats,
+        ?array $notificationStats
     ): array {
         $cards = [];
+
+        if ($notificationStats) {
+            $cards[] = [
+                'key' => 'unread_notifications',
+                'label' => 'Thong bao chua doc',
+                'value' => number_format($notificationStats['unread']),
+                'meta' => 'Viec moi theo quyen module cua tai khoan',
+                'icon' => 'fa-bell',
+                'tone' => 'orange',
+            ];
+        }
 
         if ($inventory) {
             $cards[] = [
@@ -508,7 +526,7 @@ class AdminDashboardService
 
         return [
             'labels' => $months->pluck('label')->values(),
-            'data' => $months->map(fn (array $month): float => round((float) ($rows[$month['key']] ?? 0), 0))->values(),
+            'data' => $months->map(fn(array $month): float => round((float) ($rows[$month['key']] ?? 0), 0))->values(),
         ];
     }
 
@@ -526,7 +544,7 @@ class AdminDashboardService
 
         return [
             'labels' => $months->pluck('label')->values(),
-            'data' => $months->map(fn (array $month): int => (int) ($rows[$month['key']] ?? 0))->values(),
+            'data' => $months->map(fn(array $month): int => (int) ($rows[$month['key']] ?? 0))->values(),
         ];
     }
 
@@ -541,7 +559,7 @@ class AdminDashboardService
         return [
             'labels' => array_values(Quote::STATUSES),
             'data' => collect(array_keys(Quote::STATUSES))
-                ->map(fn (string $status): int => (int) ($rows[$status] ?? 0))
+                ->map(fn(string $status): int => (int) ($rows[$status] ?? 0))
                 ->values(),
         ];
     }
@@ -556,7 +574,7 @@ class AdminDashboardService
         return [
             'labels' => array_values(Ticket::TEST_DRIVE_STATUS_LABELS),
             'data' => collect(array_keys(Ticket::TEST_DRIVE_STATUS_LABELS))
-                ->map(fn (string $status): int => (int) ($rows[$status] ?? 0))
+                ->map(fn(string $status): int => (int) ($rows[$status] ?? 0))
                 ->values(),
         ];
     }

@@ -168,7 +168,7 @@ class CarController extends Controller
                 ->withErrors(['comment' => 'Vui lòng mô tả rõ lý do khi đánh giá 1-2 sao.']);
         }
 
-        DB::transaction(function () use ($request, $user, $car, $data, $reviewEligibility): void {
+        $review = DB::transaction(function () use ($request, $user, $car, $data, $reviewEligibility): Review {
             $review = Review::query()
                 ->where('user_id', $user->user_id)
                 ->where('car_id', $car->car_id)
@@ -213,7 +213,21 @@ class CarController extends Controller
                     ]);
                 }
             }
+
+            return $review;
         });
+
+        app(\App\Services\AdminNotificationService::class)->createOnce(
+            'reviews',
+            (int) $review->rating <= 2 ? 'review_low_rating' : 'review_pending',
+            (int) $review->rating <= 2 ? 'Danh gia 1-2 sao can xu ly' : 'Danh gia moi cho duyet',
+            'Review #' . $review->review_id . ' dang cho kiem duyet, rating ' . $review->rating . '/5.',
+            route('admin.reviews.index', ['status' => Review::STATUS_PENDING], false),
+            ['review_id' => $review->review_id, 'rating' => $review->rating],
+            (int) $review->rating <= 2
+                ? \App\Models\AdminNotification::PRIORITY_HIGH
+                : \App\Models\AdminNotification::PRIORITY_NORMAL
+        );
 
         return redirect()
             ->route('cars.show_public', $car->car_id)
@@ -293,6 +307,16 @@ class CarController extends Controller
             'report_count' => $review->reports()->count(),
             'is_featured' => false,
         ])->save();
+
+        app(\App\Services\AdminNotificationService::class)->createOnce(
+            'reviews',
+            'review_reported',
+            'Review bi bao cao',
+            'Review #' . $review->review_id . ' vua bi khach bao cao can kiem tra.',
+            route('admin.reviews.index', ['status' => Review::STATUS_REPORTED], false),
+            ['review_id' => $review->review_id, 'report_id' => $report->id],
+            \App\Models\AdminNotification::PRIORITY_HIGH
+        );
 
         return back()
             ->withFragment('danh-gia')

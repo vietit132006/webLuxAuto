@@ -42,8 +42,8 @@
                 ['label' => 'Quản lý kho xe', 'route' => 'admin.cars.index', 'active' => ['admin.cars.*'], 'icon' => 'car', 'permission' => 'cars.view'],
                 ['label' => 'Hãng xe', 'route' => 'admin.brands.index', 'active' => ['admin.brands.*'], 'icon' => 'building', 'permission' => 'cars.view'],
                 ['label' => 'Dòng xe', 'route' => 'admin.car-models.index', 'active' => ['admin.car-models.*'], 'icon' => 'list_tree', 'permission' => 'cars.view'],
-                ['label' => 'Tồn kho', 'route' => 'admin.reports.inventory', 'active' => ['admin.reports.inventory'], 'icon' => 'boxes', 'permission' => 'inventory.view'],
-                ['label' => 'Kiểm tra tồn', 'route' => 'admin.reports.inventory_check', 'active' => ['admin.reports.inventory_check', 'admin.reports.inventory_log'], 'icon' => 'clipboard_check', 'permission' => 'inventory.adjust'],
+                ['label' => 'Tồn kho', 'route' => 'admin.reports.inventory', 'active' => ['admin.reports.inventory'], 'icon' => 'boxes', 'permission' => 'inventory.view', 'notification_modules' => ['inventory']],
+                ['label' => 'Kiểm tra tồn', 'route' => 'admin.reports.inventory_check', 'active' => ['admin.reports.inventory_check', 'admin.reports.inventory_log'], 'icon' => 'clipboard_check', 'permission' => 'inventory.adjust', 'notification_modules' => ['inventory']],
                 ['label' => 'Lịch sử tồn kho', 'route' => 'admin.stock-movements.index', 'active' => ['admin.stock-movements.*'], 'icon' => 'history', 'permission' => 'inventory.history'],
             ],
         ],
@@ -51,30 +51,30 @@
             'label' => 'Bán hàng',
             'icon' => 'shopping_cart',
             'items' => [
-                ['label' => 'Khách hàng', 'route' => 'admin.customers.index', 'active' => ['admin.customers.*'], 'icon' => 'users', 'permission' => 'customers.view'],
-                ['label' => 'Báo giá', 'route' => 'admin.quotes.index', 'active' => ['admin.quotes.*'], 'icon' => 'file_text', 'permission' => 'quotes.view'],
-                ['label' => 'Đơn hàng', 'route' => 'admin.orders.index', 'active' => ['admin.orders.*'], 'icon' => 'shopping_cart', 'permission' => 'orders.view'],
-                ['label' => 'Lái thử', 'route' => 'admin.test_drives.index', 'active' => ['admin.test_drives.*'], 'icon' => 'calendar', 'permission' => 'test_drives.view'],
+                ['label' => 'Khách hàng', 'route' => 'admin.customers.index', 'active' => ['admin.customers.*'], 'icon' => 'users', 'permission' => 'customers.view', 'notification_modules' => ['customers']],
+                ['label' => 'Báo giá', 'route' => 'admin.quotes.index', 'active' => ['admin.quotes.*'], 'icon' => 'file_text', 'permission' => 'quotes.view', 'notification_modules' => ['quotes']],
+                ['label' => 'Đơn hàng', 'route' => 'admin.orders.index', 'active' => ['admin.orders.*'], 'icon' => 'shopping_cart', 'permission' => 'orders.view', 'notification_modules' => ['orders', 'deliveries']],
+                ['label' => 'Lái thử', 'route' => 'admin.test_drives.index', 'active' => ['admin.test_drives.*'], 'icon' => 'calendar', 'permission' => 'test_drives.view', 'notification_modules' => ['test_drives']],
             ],
         ],
         [
             'label' => 'Marketing',
             'icon' => 'megaphone',
             'items' => [
-                ['label' => 'Tin tức', 'route' => 'admin.news.index', 'active' => ['admin.news.*'], 'icon' => 'newspaper', 'permission' => 'news.view'],
+                ['label' => 'Tin tức', 'route' => 'admin.news.index', 'active' => ['admin.news.*'], 'icon' => 'newspaper', 'permission' => 'news.view', 'notification_modules' => ['news']],
                 ['label' => 'Chuyên mục tin', 'route' => 'admin.news-categories.index', 'active' => ['admin.news-categories.*'], 'icon' => 'list_tree', 'permission' => 'news_categories.view'],
-                ['label' => 'Khuyến mãi', 'route' => 'admin.promotions', 'active' => ['admin.promotions*'], 'icon' => 'tag', 'permission' => 'promotions.view'],
-                ['label' => 'Đánh giá', 'route' => 'admin.reviews.index', 'active' => ['admin.reviews.*'], 'icon' => 'star', 'permission' => 'reviews.view'],
-                ['label' => 'Livestream', 'route' => 'admin.live.index', 'active' => ['admin.live.*'], 'icon' => 'video', 'class' => 'sidebar-link-live', 'permission' => 'live.view'],
+                ['label' => 'Khuyến mãi', 'route' => 'admin.promotions', 'active' => ['admin.promotions*'], 'icon' => 'tag', 'permission' => 'promotions.view', 'notification_modules' => ['promotions']],
+                ['label' => 'Đánh giá', 'route' => 'admin.reviews.index', 'active' => ['admin.reviews.*'], 'icon' => 'star', 'permission' => 'reviews.view', 'notification_modules' => ['reviews']],
+                ['label' => 'Livestream', 'route' => 'admin.live.index', 'active' => ['admin.live.*'], 'icon' => 'video', 'class' => 'sidebar-link-live', 'permission' => 'live.view', 'notification_modules' => ['live']],
             ],
         ],
         [
             'label' => 'Hỗ trợ khách hàng',
             'icon' => 'headset',
             'items' => [
-                ['label' => 'Hỗ trợ', 'route' => 'admin.tickets.index', 'active' => ['admin.tickets.*'], 'icon' => 'headset', 'permission' => 'tickets.view'],
-                ['label' => 'Bảo hành', 'route' => 'admin.warranties.index', 'active' => ['admin.warranties.*'], 'icon' => 'clipboard_check', 'permission' => 'warranties.view'],
-                ['label' => 'Bảo dưỡng', 'route' => 'admin.service-appointments.index', 'active' => ['admin.service-appointments.*'], 'icon' => 'calendar', 'permission' => 'services.view'],
+                ['label' => 'Hỗ trợ', 'route' => 'admin.tickets.index', 'active' => ['admin.tickets.*'], 'icon' => 'headset', 'permission' => 'tickets.view', 'notification_modules' => ['tickets']],
+                ['label' => 'Bảo hành', 'route' => 'admin.warranties.index', 'active' => ['admin.warranties.*'], 'icon' => 'clipboard_check', 'permission' => 'warranties.view', 'notification_modules' => ['warranties']],
+                ['label' => 'Bảo dưỡng', 'route' => 'admin.service-appointments.index', 'active' => ['admin.service-appointments.*'], 'icon' => 'calendar', 'permission' => 'services.view', 'notification_modules' => ['services']],
                 ['label' => 'Lịch sử dịch vụ', 'route' => 'admin.service-records.index', 'active' => ['admin.service-records.*'], 'icon' => 'history', 'permission' => 'service_records.view'],
             ],
         ],
@@ -116,6 +116,28 @@
     };
 
     $isVisibleSidebarItem = fn (array $item): bool => $canSeePermission($item['permission'] ?? null);
+    $notificationCountsByModule = collect($adminNotificationUnreadByModule ?? []);
+    $notificationCountForModules = function (array $modules) use ($notificationCountsByModule, $adminNotificationsEnabled): int {
+        if (!($adminNotificationsEnabled ?? false) || $modules === []) {
+            return 0;
+        }
+
+        return collect($modules)
+            ->sum(fn (string $module): int => (int) ($notificationCountsByModule[$module] ?? 0));
+    };
+    $renderNotificationBadge = function (array $modules) use ($notificationCountForModules): string {
+        $modules = collect($modules)->filter()->unique()->values()->all();
+
+        if ($modules === []) {
+            return '';
+        }
+
+        $count = $notificationCountForModules($modules);
+        $label = $count > 99 ? '99+' : (string) $count;
+        $classes = 'sidebar-notification-badge ' . ($count > 0 ? '' : 'is-hidden');
+
+        return '<span class="' . e(trim($classes)) . '" data-notification-module-badge data-notification-modules="' . e(implode(',', $modules)) . '">' . e($label) . '</span>';
+    };
 @endphp
 
 <nav class="sidebar-nav" aria-label="Menu quản trị">
@@ -132,6 +154,13 @@
             $isGroupActive = $isDirectLink
                 ? request()->routeIs(...$group['active'])
                 : $visibleItems->contains(fn ($item) => request()->routeIs(...$item['active']));
+            $groupNotificationModules = $isDirectLink
+                ? (array) ($group['notification_modules'] ?? [])
+                : $visibleItems
+                    ->flatMap(fn ($item) => (array) ($item['notification_modules'] ?? []))
+                    ->unique()
+                    ->values()
+                    ->all();
             $groupId = 'admin-menu-group-' . $loop->index;
         @endphp
 
@@ -139,6 +168,7 @@
             <a href="{{ route($group['route']) }}" class="sidebar-link {{ $isGroupActive ? 'active' : '' }}">
                 {!! $sidebarIcon($group['icon']) !!}
                 <span class="sidebar-label">{{ $group['label'] }}</span>
+                {!! $renderNotificationBadge($groupNotificationModules) !!}
             </a>
         @else
             <div class="sidebar-group {{ $isGroupActive ? 'is-open' : '' }}" data-sidebar-group>
@@ -149,6 +179,7 @@
                     aria-controls="{{ $groupId }}">
                     {!! $sidebarIcon($group['icon']) !!}
                     <span class="sidebar-label">{{ $group['label'] }}</span>
+                    {!! $renderNotificationBadge($groupNotificationModules) !!}
                     <svg class="sidebar-caret" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
                     </svg>
@@ -164,6 +195,7 @@
                         <a href="{{ route($item['route']) }}" class="{{ $itemClasses }}">
                             {!! $sidebarIcon($item['icon']) !!}
                             <span class="sidebar-label">{{ $item['label'] }}</span>
+                            {!! $renderNotificationBadge((array) ($item['notification_modules'] ?? [])) !!}
                         </a>
                     @endforeach
                 </div>
