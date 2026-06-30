@@ -526,7 +526,7 @@ class AdminDashboardService
 
         return [
             'labels' => $months->pluck('label')->values(),
-            'data' => $months->map(fn (array $month): float => round((float) ($rows[$month['key']] ?? 0), 0))->values(),
+            'data' => $months->map(fn(array $month): float => round((float) ($rows[$month['key']] ?? 0), 0))->values(),
         ];
     }
 
@@ -544,7 +544,7 @@ class AdminDashboardService
 
         return [
             'labels' => $months->pluck('label')->values(),
-            'data' => $months->map(fn (array $month): int => (int) ($rows[$month['key']] ?? 0))->values(),
+            'data' => $months->map(fn(array $month): int => (int) ($rows[$month['key']] ?? 0))->values(),
         ];
     }
 
@@ -559,7 +559,7 @@ class AdminDashboardService
         return [
             'labels' => array_values(Quote::STATUSES),
             'data' => collect(array_keys(Quote::STATUSES))
-                ->map(fn (string $status): int => (int) ($rows[$status] ?? 0))
+                ->map(fn(string $status): int => (int) ($rows[$status] ?? 0))
                 ->values(),
         ];
     }
@@ -574,7 +574,7 @@ class AdminDashboardService
         return [
             'labels' => array_values(Ticket::TEST_DRIVE_STATUS_LABELS),
             'data' => collect(array_keys(Ticket::TEST_DRIVE_STATUS_LABELS))
-                ->map(fn (string $status): int => (int) ($rows[$status] ?? 0))
+                ->map(fn(string $status): int => (int) ($rows[$status] ?? 0))
                 ->values(),
         ];
     }
