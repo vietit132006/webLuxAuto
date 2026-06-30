@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\CarModelController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\PromotionController as AdminPromotionController;
 use App\Http\Controllers\Admin\QuoteController;
+use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\ServiceAppointmentController;
 use App\Http\Controllers\Admin\ServiceFileController;
@@ -84,6 +85,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/xe', [ClientCarController::class, 'index'])->name('cars.index');
     Route::get('/xe/{car}', [ClientCarController::class, 'show'])->name('cars.show_public');
     Route::post('/xe/{car}/danh-gia', [ClientCarController::class, 'storeReview'])->name('cars.reviews.store');
+    Route::post('/xe/{car}/danh-gia/{review}/huu-ich', [ClientCarController::class, 'voteReview'])->name('cars.reviews.vote');
+    Route::post('/xe/{car}/danh-gia/{review}/bao-cao', [ClientCarController::class, 'reportReview'])->name('cars.reviews.report');
 
     Route::get('/so-sanh-xe', [CompareController::class, 'index'])->name('compare.index');
 
@@ -407,8 +410,11 @@ Route::middleware('auth')->group(function () {
             ->middleware('permission:reports.view')
             ->name('reports.conversion');
         Route::get('/reports/reviews', [AdminReportController::class, 'reviews'])
-            ->middleware('permission:reviews.view')
+            ->middleware('permission:reports.view|reviews.view')
             ->name('reports.reviews');
+        Route::get('/reports/reviews/export', [AdminReportController::class, 'exportReviews'])
+            ->middleware('permission:reports.view|reviews.export')
+            ->name('reports.reviews.export');
         Route::get('/reports/promotions', [AdminPromotionController::class, 'report'])
             ->middleware('permission:reports.view')
             ->name('reports.promotions');
@@ -439,6 +445,34 @@ Route::middleware('auth')->group(function () {
         Route::delete('/promotions/{promotion}', [AdminPromotionController::class, 'destroy'])
             ->middleware('permission:promotions.delete')
             ->name('promotions.destroy');
+
+        Route::get('/reviews/export', [AdminReviewController::class, 'export'])
+            ->middleware('permission:reviews.export')
+            ->name('reviews.export');
+        Route::get('/reviews', [AdminReviewController::class, 'index'])
+            ->middleware('permission:reviews.view')
+            ->name('reviews.index');
+        Route::get('/reviews/{review}', [AdminReviewController::class, 'show'])
+            ->middleware('permission:reviews.view')
+            ->name('reviews.show');
+        Route::patch('/reviews/{review}/approve', [AdminReviewController::class, 'approve'])
+            ->middleware('permission:reviews.moderate')
+            ->name('reviews.approve');
+        Route::patch('/reviews/{review}/reject', [AdminReviewController::class, 'reject'])
+            ->middleware('permission:reviews.moderate')
+            ->name('reviews.reject');
+        Route::patch('/reviews/{review}/hide', [AdminReviewController::class, 'hide'])
+            ->middleware('permission:reviews.moderate')
+            ->name('reviews.hide');
+        Route::patch('/reviews/{review}/reply', [AdminReviewController::class, 'reply'])
+            ->middleware('permission:reviews.reply')
+            ->name('reviews.reply');
+        Route::patch('/reviews/{review}/featured', [AdminReviewController::class, 'toggleFeatured'])
+            ->middleware('permission:reviews.moderate')
+            ->name('reviews.featured');
+        Route::delete('/reviews/{review}', [AdminReviewController::class, 'destroy'])
+            ->middleware('permission:reviews.delete')
+            ->name('reviews.destroy');
 
         Route::get('/live', [AdminLiveController::class, 'index'])
             ->middleware('permission:live.view')

@@ -44,6 +44,8 @@ class Car extends Model
         'current_location',
         'stock_quantity',
         'reserved_quantity',
+        'avg_rating',
+        'reviews_count',
         'stock',
     ];
 
@@ -63,6 +65,8 @@ class Car extends Model
             'mileage_km' => 'integer',
             'stock_quantity' => 'integer',
             'reserved_quantity' => 'integer',
+            'avg_rating' => 'decimal:2',
+            'reviews_count' => 'integer',
             'stock' => 'integer',
             'stock_in_date' => 'date',
             'on_road_date' => 'date',

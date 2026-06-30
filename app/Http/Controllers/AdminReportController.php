@@ -6,6 +6,7 @@ use App\Exports\CustomerReportExport;
 use App\Exports\DeliveryReportExport;
 use App\Exports\InventoryReportExport;
 use App\Exports\ReservationReportExport;
+use App\Exports\ReviewsExport;
 use App\Exports\SalesReportExport;
 use App\Exports\ServiceReportExport;
 use App\Exports\StaffReportExport;
@@ -544,22 +545,79 @@ class AdminReportController extends Controller
         return redirect()->route('admin.reports.inventory_check')->with('success', 'Đã ghi nhận kiểm kho và cập nhật tồn.');
     }
 
-    public function reviews(): View
+    public function reviews(Request $request): View
     {
-        $avgRating = Review::avg('rating');
-        $totalReviews = Review::count();
+        $filters = \App\Support\ReviewQuery::cleanFilters($request);
 
-        $reviews = Review::with(['user', 'car.brand'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(25);
+        $reviewsQuery = Review::query()
+            ->with(['user', 'car.carModel.brand'])
+            ->withCount('images');
+        \App\Support\ReviewQuery::applyFilters($reviewsQuery, $filters);
 
-        $distribution = Review::query()
+        $statsQuery = Review::query();
+        \App\Support\ReviewQuery::applyFilters($statsQuery, $filters);
+
+        $approvedQuery = (clone $statsQuery)->where('status', Review::STATUS_APPROVED);
+        $approvedCount = (int) (clone $approvedQuery)->count();
+        $positiveCount = (int) (clone $approvedQuery)->where('rating', '>=', 4)->count();
+        $statusCounts = (clone $statsQuery)
+            ->selectRaw('status, COUNT(*) as aggregate')
+            ->groupBy('status')
+            ->pluck('aggregate', 'status');
+
+        $stats = [
+            'avg_rating' => (float) ((clone $approvedQuery)->avg('rating') ?? 0),
+            'total' => (int) (clone $statsQuery)->count(),
+            'pending' => (int) ($statusCounts[Review::STATUS_PENDING] ?? 0),
+            'approved' => $approvedCount,
+            'rejected' => (int) ($statusCounts[Review::STATUS_REJECTED] ?? 0),
+            'low_rating' => (int) (clone $statsQuery)->where('rating', '<=', 2)->count(),
+            'positive_rate' => $this->safeRate($positiveCount, $approvedCount),
+        ];
+
+        $distribution = (clone $statsQuery)
             ->selectRaw('rating, COUNT(*) as cnt')
             ->groupBy('rating')
             ->orderBy('rating')
             ->pluck('cnt', 'rating');
 
-        return view('admin.reports.reviews', compact('reviews', 'avgRating', 'totalReviews', 'distribution'));
+        $reviews = $reviewsQuery
+            ->orderByDesc('created_at')
+            ->orderByDesc('review_id')
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('admin.reports.reviews', [
+            'filters' => $filters,
+            'reviews' => $reviews,
+            'stats' => $stats,
+            'distribution' => $distribution,
+            'monthlyChart' => $this->reviewsMonthlyChart($filters),
+            'brandChart' => $this->reviewsBrandChart($filters),
+            'topHighCars' => $this->reviewsTopCars($filters, 'high'),
+            'topLowCars' => $this->reviewsTopCars($filters, 'low'),
+            'badReviews' => (clone $statsQuery)
+                ->with(['user', 'car'])
+                ->where(function (Builder $query): void {
+                    $query->where('rating', '<=', 2)
+                        ->orWhere('status', Review::STATUS_REPORTED);
+                })
+                ->orderByDesc('created_at')
+                ->take(8)
+                ->get(),
+            'statusOptions' => Review::statusOptions(),
+            'verifiedTypeOptions' => Review::verifiedTypeOptions(),
+            ...$this->vehicleAndStaffOptions(),
+            'cars' => $this->carsForFilter(),
+        ]);
+    }
+
+    public function exportReviews(Request $request): BinaryFileResponse
+    {
+        return Excel::download(
+            new ReviewsExport(\App\Support\ReviewQuery::cleanFilters($request)),
+            'luxauto-review-report-' . now()->format('Ymd-His') . '.xlsx'
+        );
     }
 
     private function salesMonthlyChart(array $filters): array
@@ -690,7 +748,124 @@ class AdminReportController extends Controller
             'data' => collect(array_keys(Quote::STATUSES))
                 ->map(fn (string $status): int => (int) ($rows[$status] ?? 0))
                 ->values(),
+            ];
+    }
+
+    private function reviewsMonthlyChart(array $filters): array
+    {
+        [$months, $windowFrom, $windowTo] = $this->monthWindow($filters['date_to'] ?? null);
+        $chartFilters = $this->filtersWithoutDates($filters);
+        $monthExpression = AdminReportQuery::monthKeyExpression('reviews.created_at');
+
+        $query = Review::query()
+            ->leftJoin('cars', 'cars.car_id', '=', 'reviews.car_id')
+            ->leftJoin('car_models', 'car_models.id', '=', 'cars.car_model_id')
+            ->leftJoin('brands', 'brands.brand_id', '=', 'car_models.brand_id')
+            ->whereBetween('reviews.created_at', [$windowFrom, $windowTo])
+            ->selectRaw($monthExpression . ' as month_key')
+            ->selectRaw('COUNT(DISTINCT reviews.review_id) as reviews_count')
+            ->selectRaw('ROUND(AVG(reviews.rating), 2) as avg_rating')
+            ->groupBy('month_key');
+
+        $this->applyReviewJoinedFilters($query, $chartFilters);
+
+        $rows = $query->get()->keyBy('month_key');
+
+        return [
+            'labels' => $months->pluck('label')->values(),
+            'counts' => $months->map(fn (array $month): int => (int) ($rows[$month['key']]->reviews_count ?? 0))->values(),
+            'avg' => $months->map(fn (array $month): float => (float) ($rows[$month['key']]->avg_rating ?? 0))->values(),
         ];
+    }
+
+    private function reviewsBrandChart(array $filters): array
+    {
+        $query = Review::query()
+            ->join('cars', 'cars.car_id', '=', 'reviews.car_id')
+            ->join('car_models', 'car_models.id', '=', 'cars.car_model_id')
+            ->join('brands', 'brands.brand_id', '=', 'car_models.brand_id')
+            ->where('reviews.status', Review::STATUS_APPROVED)
+            ->selectRaw('brands.name as label')
+            ->selectRaw('COUNT(*) as reviews_count')
+            ->selectRaw('ROUND(AVG(reviews.rating), 2) as avg_rating')
+            ->groupBy('brands.brand_id', 'brands.name')
+            ->orderByDesc('reviews_count')
+            ->take(8);
+
+        $this->applyReviewJoinedFilters($query, $filters);
+
+        $rows = $query->get();
+
+        return [
+            'labels' => $rows->pluck('label')->values(),
+            'counts' => $rows->pluck('reviews_count')->map(fn ($value): int => (int) $value)->values(),
+            'avg' => $rows->pluck('avg_rating')->map(fn ($value): float => (float) $value)->values(),
+        ];
+    }
+
+    private function reviewsTopCars(array $filters, string $mode)
+    {
+        $query = Review::query()
+            ->join('cars', 'cars.car_id', '=', 'reviews.car_id')
+            ->leftJoin('car_models', 'car_models.id', '=', 'cars.car_model_id')
+            ->leftJoin('brands', 'brands.brand_id', '=', 'car_models.brand_id')
+            ->where('reviews.status', Review::STATUS_APPROVED)
+            ->selectRaw('cars.car_id, cars.name, brands.name as brand_name, car_models.name as model_name')
+            ->selectRaw('COUNT(*) as reviews_count')
+            ->selectRaw('ROUND(AVG(reviews.rating), 2) as avg_rating')
+            ->groupBy('cars.car_id', 'cars.name', 'brands.name', 'car_models.name')
+            ->havingRaw('COUNT(*) > 0')
+            ->take(8);
+
+        $this->applyReviewJoinedFilters($query, $filters);
+
+        if ($mode === 'low') {
+            $query->orderBy('avg_rating')->orderByDesc('reviews_count');
+        } else {
+            $query->orderByDesc('avg_rating')->orderByDesc('reviews_count');
+        }
+
+        return $query->get();
+    }
+
+    private function applyReviewJoinedFilters(Builder $query, array $filters): void
+    {
+        $query
+            ->when($filters['q'] ?? '', function (Builder $query, string $search): void {
+                $query->where(function (Builder $inner) use ($search): void {
+                    $inner->where('reviews.title', 'like', "%{$search}%")
+                        ->orWhere('reviews.comment', 'like', "%{$search}%")
+                        ->orWhere('cars.name', 'like', "%{$search}%");
+                });
+            })
+            ->when($filters['car_id'] ?? null, fn (Builder $query, int $carId) => $query->where('reviews.car_id', $carId))
+            ->when($filters['brand_id'] ?? null, fn (Builder $query, int $brandId) => $query->where('brands.brand_id', $brandId))
+            ->when($filters['model_id'] ?? null, fn (Builder $query, int $modelId) => $query->where('cars.car_model_id', $modelId))
+            ->when($filters['rating'] ?? null, fn (Builder $query, int $rating) => $query->where('reviews.rating', $rating))
+            ->when(($filters['status'] ?? '') !== '', fn (Builder $query) => $query->where('reviews.status', $filters['status']))
+            ->when(($filters['verified_type'] ?? '') !== '', fn (Builder $query) => $query->where('reviews.verified_type', $filters['verified_type']))
+            ->when($filters['date_from'] ?? '', function (Builder $query, string $date): void {
+                $query->where('reviews.created_at', '>=', Carbon::parse($date)->startOfDay());
+            })
+            ->when($filters['date_to'] ?? '', function (Builder $query, string $date): void {
+                $query->where('reviews.created_at', '<=', Carbon::parse($date)->endOfDay());
+            });
+
+        if (($filters['has_images'] ?? '') === '1') {
+            $query->whereExists(function ($subQuery): void {
+                $subQuery->selectRaw('1')
+                    ->from('review_images')
+                    ->whereColumn('review_images.review_id', 'reviews.review_id');
+            });
+        }
+
+        if (($filters['has_images'] ?? '') === '0') {
+            $query->whereNotExists(function ($subQuery): void {
+                $subQuery->selectRaw('1')
+                    ->from('review_images')
+                    ->whereColumn('review_images.review_id', 'reviews.review_id');
+            });
+        }
     }
 
     private function customerSourceChart(array $filters): array

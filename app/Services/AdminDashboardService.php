@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Delivery;
 use App\Models\Order;
 use App\Models\Quote;
+use App\Models\Review;
 use App\Models\StockMovement;
 use App\Models\StockReservation;
 use App\Models\Ticket;
@@ -55,6 +56,10 @@ class AdminDashboardService
             ? $this->revenueStats($range)
             : null;
 
+        $reviewStats = $permissions['reviews']
+            ? $this->reviewStats($range)
+            : null;
+
         return [
             'dashboardRange' => $range,
             'dashboardRangeOptions' => $this->rangeOptions(),
@@ -66,7 +71,8 @@ class AdminDashboardService
                 $quoteStats,
                 $orderStats,
                 $deliveryStats,
-                $revenueStats
+                $revenueStats,
+                $reviewStats
             ),
             'dashboardCharts' => $this->charts($range, $permissions),
             'recentCars' => $permissions['cars'] ? $this->recentCars() : collect(),
@@ -87,6 +93,7 @@ class AdminDashboardService
             'canViewQuotes' => $permissions['quotes'],
             'canViewOrders' => $permissions['orders'],
             'canViewTestDrives' => $permissions['test_drives'],
+            'canViewReviews' => $permissions['reviews'],
         ];
     }
 
@@ -101,6 +108,7 @@ class AdminDashboardService
             'quotes' => $user?->can('quotes.view') ?? false,
             'orders' => $user?->can('orders.view') ?? false,
             'test_drives' => $user?->can('test_drives.view') ?? false,
+            'reviews' => $user?->can('reviews.view') ?? false,
         ];
     }
 
@@ -297,6 +305,20 @@ class AdminDashboardService
         ];
     }
 
+    private function reviewStats(array $range): array
+    {
+        $periodQuery = Review::query()
+            ->whereBetween('created_at', [$range['from'], $range['to']]);
+
+        return [
+            'pending' => (clone $periodQuery)->where('status', Review::STATUS_PENDING)->count(),
+            'low_rating' => (clone $periodQuery)->where('rating', '<=', 2)->count(),
+            'avg_rating' => (float) (Review::query()
+                ->where('status', Review::STATUS_APPROVED)
+                ->avg('rating') ?? 0),
+        ];
+    }
+
     private function statCards(
         array $range,
         ?array $inventory,
@@ -305,7 +327,8 @@ class AdminDashboardService
         ?array $quoteStats,
         ?array $orderStats,
         ?array $deliveryStats,
-        ?array $revenueStats
+        ?array $revenueStats,
+        ?array $reviewStats
     ): array {
         $cards = [];
 
@@ -407,6 +430,25 @@ class AdminDashboardService
                 'meta' => 'Delivered trong ' . $range['label'],
                 'icon' => 'fa-circle-check',
                 'tone' => 'green',
+            ];
+        }
+
+        if ($reviewStats) {
+            $cards[] = [
+                'key' => 'pending_reviews',
+                'label' => 'Review chờ duyệt',
+                'value' => number_format($reviewStats['pending']),
+                'meta' => 'Đánh giá cần kiểm duyệt trong ' . $range['label'],
+                'icon' => 'fa-star-half-stroke',
+                'tone' => 'amber',
+            ];
+            $cards[] = [
+                'key' => 'low_reviews',
+                'label' => 'Review cần xử lý',
+                'value' => number_format($reviewStats['low_rating']),
+                'meta' => 'Điểm trung bình approved: ' . number_format($reviewStats['avg_rating'], 1) . '/5',
+                'icon' => 'fa-triangle-exclamation',
+                'tone' => 'orange',
             ];
         }
 
