@@ -1,6 +1,9 @@
 <?php
 
 $permissions = [
+    'notifications.view' => 'Xem thong bao noi bo',
+    'notifications.manage' => 'Quan ly thong bao noi bo',
+    'notifications.mark_read' => 'Danh dau thong bao da doc',
     'dashboard.view' => 'Xem bảng điều khiển',
     'cars.view' => 'Xem xe',
     'cars.create' => 'Tạo xe',
@@ -79,12 +82,16 @@ $permissions = [
 
 $allPermissions = array_keys($permissions);
 
-return [
+$config = [
     'guard' => 'web',
 
     'permissions' => $permissions,
 
     'groups' => [
+        'notifications' => [
+            'label' => 'Thong bao',
+            'permissions' => ['notifications.view', 'notifications.manage', 'notifications.mark_read'],
+        ],
         'dashboard' => [
             'label' => 'Bảng điều khiển',
             'permissions' => ['dashboard.view'],
@@ -298,3 +305,22 @@ return [
         ],
     ],
 ];
+
+$operationalNotificationPermissions = ['notifications.view', 'notifications.mark_read'];
+
+foreach ($config['roles'] as $roleName => $definition) {
+    if (($definition['permissions'] ?? null) === '*') {
+        continue;
+    }
+
+    if (!in_array('dashboard.view', $definition['permissions'] ?? [], true)) {
+        continue;
+    }
+
+    $config['roles'][$roleName]['permissions'] = array_values(array_unique(array_merge(
+        $definition['permissions'],
+        $operationalNotificationPermissions
+    )));
+}
+
+return $config;

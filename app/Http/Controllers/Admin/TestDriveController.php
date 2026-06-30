@@ -75,6 +75,19 @@ class TestDriveController extends Controller
             $redirect->with('warning', 'Trạng thái đã lưu, nhưng email thông báo chưa gửi được. Vui lòng kiểm tra cấu hình mail.');
         }
 
+        if ($changed && $updatedBooking->status === Ticket::STATUS_COMPLETED) {
+            app(\App\Services\AdminNotificationService::class)->createOnce(
+                'test_drives',
+                'test_drive_completed',
+                'Lich lai thu ' . $updatedBooking->display_code . ' hoan thanh',
+                'Lich lai thu da hoan thanh, co the handoff sang bao gia neu phu hop.',
+                route('admin.test_drives.show', $updatedBooking->ticket_id, false),
+                ['ticket_id' => $updatedBooking->ticket_id],
+                \App\Models\AdminNotification::PRIORITY_NORMAL,
+                $request->user()
+            );
+        }
+
         return $redirect;
     }
 

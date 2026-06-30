@@ -80,6 +80,22 @@ class ServiceAppointmentController extends Controller
     {
         $appointment = ServiceAppointment::create($this->appointmentPayload($this->validatedAppointment($request)));
 
+        app(\App\Services\AdminNotificationService::class)->createOnce(
+            'services',
+            $appointment->appointment_date?->isToday() ? 'service_today' : 'service_created',
+            $appointment->appointment_date?->isToday()
+                ? 'Lich dich vu hom nay'
+                : 'Lich dich vu moi ' . $appointment->appointment_code,
+            'Lich dich vu can CSKH theo doi.',
+            route('admin.service-appointments.show', $appointment, false),
+            ['service_appointment_id' => $appointment->id, 'appointment_date' => $appointment->appointment_date?->toDateString()],
+            $appointment->appointment_date?->isToday()
+                ? \App\Models\AdminNotification::PRIORITY_HIGH
+                : \App\Models\AdminNotification::PRIORITY_NORMAL,
+            $request->user(),
+            $appointment->appointment_date?->isToday() ? 20 : null
+        );
+
         return redirect()
             ->route('admin.service-appointments.show', $appointment)
             ->with('success', 'Đã tạo lịch dịch vụ ' . $appointment->appointment_code . '.');

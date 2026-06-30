@@ -59,6 +59,9 @@ class AdminDashboardService
         $reviewStats = $permissions['reviews']
             ? $this->reviewStats($range)
             : null;
+        $notificationStats = ($permissions['notifications'] && $user instanceof \App\Models\User)
+            ? ['unread' => app(AdminNotificationService::class)->unreadCount($user)]
+            : null;
 
         return [
             'dashboardRange' => $range,
@@ -72,7 +75,8 @@ class AdminDashboardService
                 $orderStats,
                 $deliveryStats,
                 $revenueStats,
-                $reviewStats
+                $reviewStats,
+                $notificationStats
             ),
             'dashboardCharts' => $this->charts($range, $permissions),
             'recentCars' => $permissions['cars'] ? $this->recentCars() : collect(),
@@ -94,6 +98,7 @@ class AdminDashboardService
             'canViewOrders' => $permissions['orders'],
             'canViewTestDrives' => $permissions['test_drives'],
             'canViewReviews' => $permissions['reviews'],
+            'canViewNotifications' => $permissions['notifications'],
         ];
     }
 
@@ -109,6 +114,7 @@ class AdminDashboardService
             'orders' => $user?->can('orders.view') ?? false,
             'test_drives' => $user?->can('test_drives.view') ?? false,
             'reviews' => $user?->can('reviews.view') ?? false,
+            'notifications' => $user?->can('notifications.view') ?? false,
         ];
     }
 
@@ -328,9 +334,21 @@ class AdminDashboardService
         ?array $orderStats,
         ?array $deliveryStats,
         ?array $revenueStats,
-        ?array $reviewStats
+        ?array $reviewStats,
+        ?array $notificationStats
     ): array {
         $cards = [];
+
+        if ($notificationStats) {
+            $cards[] = [
+                'key' => 'unread_notifications',
+                'label' => 'Thong bao chua doc',
+                'value' => number_format($notificationStats['unread']),
+                'meta' => 'Viec moi theo quyen module cua tai khoan',
+                'icon' => 'fa-bell',
+                'tone' => 'orange',
+            ];
+        }
 
         if ($inventory) {
             $cards[] = [

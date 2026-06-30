@@ -140,6 +140,30 @@ class AdminOrderController extends Controller
             return back()->withInput()->withErrors(['stock' => $e->getMessage()]);
         }
 
+        app(\App\Services\AdminNotificationService::class)->createOnce(
+            'orders',
+            'order_created',
+            'Don hang moi ' . $order->display_code,
+            'Don hang moi duoc tao tu trang quan tri.',
+            route('admin.orders.show', $order->order_id, false),
+            ['order_id' => $order->order_id, 'status' => $order->status],
+            \App\Models\AdminNotification::PRIORITY_HIGH,
+            $request->user()
+        );
+
+        if (Order::normalizeStatus($order->status) === Order::STATUS_DEPOSITED) {
+            app(\App\Services\AdminNotificationService::class)->createOnce(
+                'orders',
+                'order_deposited',
+                'Don hang ' . $order->display_code . ' da dat coc',
+                'Don hang moi tao da co thong tin dat coc, can theo doi giu xe va giao xe.',
+                route('admin.orders.show', $order->order_id, false),
+                ['order_id' => $order->order_id, 'deposit_amount' => $order->deposit_amount],
+                \App\Models\AdminNotification::PRIORITY_HIGH,
+                $request->user()
+            );
+        }
+
         return redirect()
             ->route('admin.orders.show', $order->order_id)
             ->with('success', 'Đã tạo đơn hàng ' . $order->display_code . ' thành công!');
@@ -196,6 +220,17 @@ class AdminOrderController extends Controller
 
         $order->update($this->depositPayload($validated, $request));
 
+        app(\App\Services\AdminNotificationService::class)->createOnce(
+            'orders',
+            'order_deposited',
+            'Don hang ' . $order->display_code . ' da dat coc',
+            'Thong tin dat coc vua duoc cap nhat tren don hang.',
+            route('admin.orders.show', $order->order_id, false),
+            ['order_id' => $order->order_id, 'deposit_amount' => $validated['deposit_amount']],
+            \App\Models\AdminNotification::PRIORITY_HIGH,
+            $request->user()
+        );
+
         return back()->with('success', 'Đã cập nhật thông tin đặt cọc thành công!');
     }
 
@@ -212,9 +247,10 @@ class AdminOrderController extends Controller
         $validated = $request->validate([
             'status' => 'required|integer|in:0,1,2,3',
         ]);
+        $statusChanged = false;
 
         try {
-            DB::transaction(function () use ($id, $request, $validated) {
+            DB::transaction(function () use ($id, $request, $validated, &$statusChanged) {
                 $order = Order::with(['details.car', 'user', 'delivery'])
                     ->lockForUpdate()
                     ->findOrFail($id);
@@ -225,6 +261,8 @@ class AdminOrderController extends Controller
                 if ((string) $statusBefore === (string) $statusAfter) {
                     return;
                 }
+
+                $statusChanged = true;
 
                 if ($this->orderHasDeliveredDelivery($order)) {
                     throw ValidationException::withMessages([
@@ -283,6 +321,28 @@ class AdminOrderController extends Controller
             });
         } catch (InvalidArgumentException $e) {
             return back()->withErrors(['stock' => $e->getMessage()]);
+        }
+
+        if ($statusChanged && in_array((int) $validated['status'], [Order::STATUS_DEPOSITED, Order::STATUS_CANCELLED], true)) {
+            $order = Order::query()->findOrFail($id);
+            $isDeposited = (int) $validated['status'] === Order::STATUS_DEPOSITED;
+
+            app(\App\Services\AdminNotificationService::class)->createOnce(
+                'orders',
+                $isDeposited ? 'order_deposited' : 'order_cancelled',
+                $isDeposited
+                    ? 'Don hang ' . $order->display_code . ' da dat coc'
+                    : 'Don hang ' . $order->display_code . ' bi huy',
+                $isDeposited
+                    ? 'Don hang da chuyen sang trang thai dat coc.'
+                    : 'Don hang da chuyen sang trang thai huy, can kiem tra neu co giu xe.',
+                route('admin.orders.show', $order->order_id, false),
+                ['order_id' => $order->order_id, 'status' => $order->status],
+                $isDeposited
+                    ? \App\Models\AdminNotification::PRIORITY_HIGH
+                    : \App\Models\AdminNotification::PRIORITY_NORMAL,
+                $request->user()
+            );
         }
 
         return back()->with('success', 'Đã cập nhật trạng thái đơn hàng thành công!');
@@ -401,6 +461,47 @@ class AdminOrderController extends Controller
             return back()
                 ->withInput()
                 ->withErrors(['delivery_status' => $e->getMessage()]);
+        }
+
+        if (in_array($validated['status'], [Delivery::STATUS_PENDING, Delivery::STATUS_PREPARING, Delivery::STATUS_READY, Delivery::STATUS_DELIVERED], true)) {
+            $isDelivered = $validated['status'] === Delivery::STATUS_DELIVERED;
+
+            app(\App\Services\AdminNotificationService::class)->createOnce(
+                'deliveries',
+                $isDelivered ? 'delivery_completed' : 'delivery_waiting',
+                $isDelivered
+                    ? 'Giao xe hoan tat cho don ' . $order->display_code
+                    : 'Don ' . $order->display_code . ' dang cho giao',
+                $isDelivered
+                    ? 'Xe da duoc xac nhan giao thanh cong.'
+                    : 'Don hang co thong tin giao xe can theo doi.',
+                route('admin.orders.show', $order->order_id, false),
+                ['order_id' => $order->order_id, 'delivery_status' => $validated['status']],
+                $isDelivered
+                    ? \App\Models\AdminNotification::PRIORITY_HIGH
+                    : \App\Models\AdminNotification::PRIORITY_NORMAL,
+                $request->user(),
+                $isDelivered ? null : 24
+            );
+
+            if ($isDelivered) {
+                $warranty = \App\Models\Warranty::query()
+                    ->where('order_id', $order->order_id)
+                    ->first();
+
+                if ($warranty) {
+                    app(\App\Services\AdminNotificationService::class)->createOnce(
+                        'warranties',
+                        'warranty_created_after_delivery',
+                        'Bao hanh moi ' . $warranty->warranty_code,
+                        'Ho so bao hanh duoc tao sau khi giao xe thanh cong.',
+                        route('admin.warranties.show', $warranty, false),
+                        ['warranty_id' => $warranty->id, 'order_id' => $order->order_id],
+                        \App\Models\AdminNotification::PRIORITY_NORMAL,
+                        $request->user()
+                    );
+                }
+            }
         }
 
         return back()->with('success', 'Đã cập nhật thông tin giao xe thành công!');

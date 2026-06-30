@@ -167,6 +167,17 @@ class QuoteController extends Controller
             return $quote;
         });
 
+        app(\App\Services\AdminNotificationService::class)->createOnce(
+            'quotes',
+            'quote_created',
+            'Bao gia moi ' . $quote->quote_code,
+            'Bao gia moi vua duoc tao va can theo doi pipeline ban hang.',
+            route('admin.quotes.show', $quote, false),
+            ['quote_id' => $quote->quote_id],
+            \App\Models\AdminNotification::PRIORITY_NORMAL,
+            $request->user()
+        );
+
         return redirect()
             ->route('admin.quotes.show', $quote)
             ->with('success', 'Đã tạo báo giá mới.');
@@ -187,6 +198,7 @@ class QuoteController extends Controller
     public function update(Request $request, Quote $quote): RedirectResponse
     {
         $data = $this->validatedData($request);
+        $statusBefore = $quote->status;
         $promotionPayloads = $this->promotionPayloadsForRequest($request, $data);
 
         if ($promotionPayloads->isNotEmpty()) {
@@ -200,6 +212,21 @@ class QuoteController extends Controller
             $quote->update($data);
             $this->promotionApplications->syncQuotePromotions($quote, $promotionPayloads);
         });
+
+        $quote->refresh();
+
+        if ($statusBefore !== $quote->status && $quote->status === Quote::STATUS_ACCEPTED) {
+            app(\App\Services\AdminNotificationService::class)->createOnce(
+                'quotes',
+                'quote_accepted',
+                'Bao gia ' . $quote->quote_code . ' da duoc chap nhan',
+                'Bao gia da chuyen sang trang thai accepted, co the tao don hang neu du dieu kien.',
+                route('admin.quotes.show', $quote, false),
+                ['quote_id' => $quote->quote_id, 'status_before' => $statusBefore],
+                \App\Models\AdminNotification::PRIORITY_HIGH,
+                $request->user()
+            );
+        }
 
         return redirect()
             ->route('admin.quotes.show', $quote)
@@ -310,6 +337,17 @@ class QuoteController extends Controller
                 ->route('admin.orders.show', $order->order_id)
                 ->with('success', 'Báo giá ' . $quoteCode . ' đã có đơn hàng ' . $order->display_code . '.');
         }
+
+        app(\App\Services\AdminNotificationService::class)->createOnce(
+            'orders',
+            'order_created',
+            'Don hang moi ' . $order->display_code,
+            'Don hang duoc tao tu bao gia ' . $quoteCode . '.',
+            route('admin.orders.show', $order->order_id, false),
+            ['order_id' => $order->order_id, 'quote_id' => $quote->quote_id],
+            \App\Models\AdminNotification::PRIORITY_HIGH,
+            $request->user()
+        );
 
         if ($createdCustomerUser) {
             return redirect()

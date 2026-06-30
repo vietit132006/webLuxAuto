@@ -21,6 +21,28 @@
  </head>
 
  <body>
+     @php
+         $adminNotificationUnreadTotal = 0;
+         $adminNotificationUnreadByModule = [];
+         $adminLatestNotifications = collect();
+         $adminNotificationsEnabled = false;
+         $adminNotificationUser = auth()->user();
+
+         try {
+             $adminNotificationsEnabled = $adminNotificationUser
+                 && $adminNotificationUser->can('notifications.view');
+         } catch (\Throwable) {
+             $adminNotificationsEnabled = false;
+         }
+
+         if ($adminNotificationsEnabled) {
+             $adminNotificationService = app(\App\Services\AdminNotificationService::class);
+             $adminNotificationUnreadTotal = $adminNotificationService->unreadCount($adminNotificationUser);
+             $adminNotificationUnreadByModule = $adminNotificationService->unreadCountByModule($adminNotificationUser);
+             $adminLatestNotifications = $adminNotificationService->latestUnread($adminNotificationUser, 10);
+         }
+     @endphp
+
      <aside class="admin-sidebar" id="admin-sidebar">
          <a href="{{ route('home') }}" class="sidebar-brand" target="_blank" title="Mở trang khách hàng">
              Lux <span>Auto</span>
@@ -51,6 +73,8 @@
                          </form>
                      </div>
                  @endif
+
+                 @include('partials.admin-notification-bell')
 
                  <div class="admin-account-menu" data-account-menu>
                      <button type="button" class="admin-account-trigger" data-account-menu-trigger aria-haspopup="true"
@@ -172,9 +196,210 @@
                  link.addEventListener('click', () => setMenuOpen(false));
              });
 
+             const dropdownMenus = [
+                 {
+                     menu: document.querySelector('[data-account-menu]'),
+                     trigger: document.querySelector('[data-account-menu-trigger]'),
+                 },
+                 {
+                     menu: document.querySelector('[data-admin-notifications]'),
+                     trigger: document.querySelector('[data-admin-notification-trigger]'),
+                 },
+             ].filter((item) => item.menu && item.trigger);
+
+             const closeDropdowns = (except = null) => {
+                 dropdownMenus.forEach(({ menu, trigger }) => {
+                     if (menu === except) {
+                         return;
+                     }
+
+                     menu.classList.remove('is-open');
+                     trigger.setAttribute('aria-expanded', 'false');
+                 });
+             };
+
+             dropdownMenus.forEach(({ menu, trigger }) => {
+                 trigger.addEventListener('click', (event) => {
+                     event.stopPropagation();
+                     const willOpen = !menu.classList.contains('is-open');
+
+                     closeDropdowns(menu);
+                     menu.classList.toggle('is-open', willOpen);
+                     trigger.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+                 });
+
+                 menu.addEventListener('click', (event) => {
+                     event.stopPropagation();
+                 });
+             });
+
+             document.addEventListener('click', () => closeDropdowns());
+
+             const notificationRoot = document.querySelector('[data-admin-notifications]');
+
+             if (notificationRoot) {
+                 const csrfToken = notificationRoot.dataset.csrfToken;
+                 const summaryUrl = notificationRoot.dataset.summaryUrl;
+                 const latestRoot = notificationRoot.querySelector('[data-notification-latest]');
+                 const headerCount = notificationRoot.querySelector('[data-notification-header-count]');
+                 const readAllForm = notificationRoot.querySelector('[data-notification-read-all-form]');
+
+                 const formatCount = (value) => {
+                     const count = Number.parseInt(value || 0, 10);
+
+                     return count > 99 ? '99+' : String(Math.max(0, count));
+                 };
+
+                 const setCountBadge = (element, count) => {
+                     if (!element) {
+                         return;
+                     }
+
+                     element.textContent = formatCount(count);
+                     element.classList.toggle('is-hidden', Number(count) <= 0);
+                 };
+
+                 const updateModuleBadges = (modules = {}) => {
+                     document.querySelectorAll('[data-notification-module-badge]').forEach((badge) => {
+                         const moduleNames = String(badge.dataset.notificationModules || '')
+                             .split(',')
+                             .map((module) => module.trim())
+                             .filter(Boolean);
+                         const count = moduleNames.reduce((sum, module) => sum + Number(modules[module] || 0), 0);
+
+                         setCountBadge(badge, count);
+                     });
+                 };
+
+                 const appendText = (parent, text) => {
+                     parent.appendChild(document.createTextNode(text || ''));
+                 };
+
+                 const renderLatest = (items = []) => {
+                     if (!latestRoot) {
+                         return;
+                     }
+
+                     latestRoot.replaceChildren();
+
+                     if (!items.length) {
+                         const empty = document.createElement('div');
+                         empty.className = 'admin-notification-empty';
+                         empty.dataset.notificationEmpty = '';
+                         appendText(empty, 'Chua co thong bao moi.');
+                         latestRoot.appendChild(empty);
+
+                         return;
+                     }
+
+                     items.forEach((item) => {
+                         const form = document.createElement('form');
+                         form.method = 'POST';
+                         form.action = item.read_url;
+                         form.className = 'admin-notification-row-form';
+
+                         const token = document.createElement('input');
+                         token.type = 'hidden';
+                         token.name = '_token';
+                         token.value = csrfToken;
+                         form.appendChild(token);
+
+                         const button = document.createElement('button');
+                         button.type = 'submit';
+                         button.className = `admin-notification-item ${item.priority_class || ''}`;
+                         button.setAttribute('role', 'menuitem');
+
+                         const main = document.createElement('span');
+                         main.className = 'admin-notification-item-main';
+
+                         const title = document.createElement('span');
+                         title.className = 'admin-notification-title';
+                         appendText(title, item.title);
+
+                         const meta = document.createElement('span');
+                         meta.className = 'admin-notification-meta';
+
+                         const module = document.createElement('span');
+                         appendText(module, item.module_label);
+
+                         const time = document.createElement('span');
+                         appendText(time, item.created_at_human);
+
+                         meta.append(module, time);
+                         main.append(title, meta);
+
+                         const priority = document.createElement('span');
+                         priority.className = `admin-notification-priority ${item.priority_class || ''}`;
+                         appendText(priority, item.priority_label);
+
+                         button.append(main, priority);
+                         form.appendChild(button);
+                         latestRoot.appendChild(form);
+                     });
+                 };
+
+                 const updateNotificationSummary = (payload) => {
+                     const total = Number(payload.total || 0);
+
+                     document.querySelectorAll('[data-notification-total]').forEach((badge) => setCountBadge(badge, total));
+
+                     if (headerCount) {
+                         headerCount.textContent = `${new Intl.NumberFormat('vi-VN').format(total)} chua doc`;
+                     }
+
+                     updateModuleBadges(payload.modules || {});
+                     renderLatest(payload.latest || []);
+                 };
+
+                 const refreshNotifications = async () => {
+                     if (!summaryUrl) {
+                         return;
+                     }
+
+                     try {
+                         const response = await fetch(summaryUrl, {
+                             headers: {
+                                 Accept: 'application/json',
+                             },
+                         });
+
+                         if (response.ok) {
+                             updateNotificationSummary(await response.json());
+                         }
+                     } catch (error) {
+                         // Polling is a progressive enhancement; keep the server-rendered state on failure.
+                     }
+                 };
+
+                 if (readAllForm) {
+                     readAllForm.addEventListener('submit', async (event) => {
+                         event.preventDefault();
+
+                         try {
+                             const response = await fetch(readAllForm.action, {
+                                 method: 'POST',
+                                 headers: {
+                                     Accept: 'application/json',
+                                     'X-CSRF-TOKEN': csrfToken,
+                                 },
+                             });
+
+                             if (response.ok) {
+                                 updateNotificationSummary(await response.json());
+                             }
+                         } catch (error) {
+                             readAllForm.submit();
+                         }
+                     });
+                 }
+
+                 window.setInterval(refreshNotifications, 45000);
+             }
+
              window.addEventListener('keydown', (event) => {
                  if (event.key === 'Escape') {
                      setMenuOpen(false);
+                     closeDropdowns();
                  }
              });
 

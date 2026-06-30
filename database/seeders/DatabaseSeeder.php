@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             NewsCategorySeeder::class,
             NewsSeeder::class,
             PromotionSeeder::class,
+            AdminNotificationSeeder::class,
         ]);
 
         // Tạo user test

@@ -89,6 +89,17 @@ class WarrantyController extends Controller
             throw $e;
         }
 
+        app(\App\Services\AdminNotificationService::class)->createOnce(
+            'warranties',
+            'warranty_created',
+            'Bao hanh moi ' . $warranty->warranty_code,
+            'Ho so bao hanh vua duoc tao va can theo doi hau mai.',
+            route('admin.warranties.show', $warranty, false),
+            ['warranty_id' => $warranty->id, 'order_id' => $warranty->order_id],
+            \App\Models\AdminNotification::PRIORITY_NORMAL,
+            $request->user()
+        );
+
         return redirect()
             ->route('admin.warranties.show', $warranty)
             ->with('success', 'Đã tạo hồ sơ bảo hành ' . $warranty->warranty_code . '.');

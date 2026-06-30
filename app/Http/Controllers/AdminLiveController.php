@@ -314,6 +314,17 @@ class AdminLiveController extends Controller
             return $quote;
         });
 
+        app(\App\Services\AdminNotificationService::class)->createOnce(
+            'quotes',
+            'quote_created',
+            'Bao gia moi ' . $quote->quote_code,
+            'Bao gia duoc tao tu live lead #' . $lead->id . '.',
+            route('admin.quotes.show', $quote, false),
+            ['quote_id' => $quote->quote_id, 'live_lead_id' => $lead->id],
+            \App\Models\AdminNotification::PRIORITY_NORMAL,
+            request()->user()
+        );
+
         return redirect()
             ->route('admin.quotes.show', $quote)
             ->with('success', 'Da tao bao gia nhap tu live lead.');
@@ -355,6 +366,17 @@ class AdminLiveController extends Controller
 
             return $booking;
         });
+
+        app(\App\Services\AdminNotificationService::class)->createOnce(
+            'test_drives',
+            'test_drive_created',
+            'Lich lai thu moi ' . $booking->display_code,
+            'Lich lai thu duoc tao tu live lead #' . $lead->id . '.',
+            route('admin.test_drives.show', $booking->ticket_id, false),
+            ['ticket_id' => $booking->ticket_id, 'live_lead_id' => $lead->id],
+            \App\Models\AdminNotification::PRIORITY_HIGH,
+            request()->user()
+        );
 
         return redirect()
             ->route('admin.test_drives.show', $booking->ticket_id)

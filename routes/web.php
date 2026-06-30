@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccountSwitchController;
+use App\Http\Controllers\Admin\AdminNotificationController;
 use App\Http\Controllers\Admin\CarController as AdminCarController;
 use App\Http\Controllers\Admin\CarExcelController;
 use App\Http\Controllers\Admin\CarModelController;
@@ -99,6 +100,19 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])
             ->middleware('permission:dashboard.view')
             ->name('dashboard');
+
+        Route::get('/notifications/unread-summary', [AdminNotificationController::class, 'unreadSummary'])
+            ->middleware('permission:notifications.view')
+            ->name('notifications.unread-summary');
+        Route::get('/notifications', [AdminNotificationController::class, 'index'])
+            ->middleware('permission:notifications.view')
+            ->name('notifications.index');
+        Route::post('/notifications/read-all', [AdminNotificationController::class, 'readAll'])
+            ->middleware('permission:notifications.mark_read')
+            ->name('notifications.read-all');
+        Route::post('/notifications/{notification}/read', [AdminNotificationController::class, 'read'])
+            ->middleware('permission:notifications.mark_read')
+            ->name('notifications.read');
 
         Route::get('/xe', [AdminCarController::class, 'index'])
             ->middleware('permission:cars.view')

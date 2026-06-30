@@ -84,7 +84,7 @@ class LiveController extends Controller
             ]);
         }
 
-        LiveLead::create([
+        $lead = LiveLead::create([
             'live_session_id' => $session->id,
             'car_id' => $data['car_id'] ?? null,
             'user_id' => $request->user()?->getKey(),
@@ -95,6 +95,24 @@ class LiveController extends Controller
             'message' => $data['message'] ?? null,
             'status' => LiveLead::STATUS_NEW,
         ]);
+
+        $type = match ($lead->lead_type) {
+            LiveLead::TYPE_QUOTE_REQUEST => 'live_quote_request',
+            LiveLead::TYPE_TEST_DRIVE_REQUEST => 'live_test_drive_request',
+            default => 'live_lead_new',
+        };
+
+        app(\App\Services\AdminNotificationService::class)->createOnce(
+            'live',
+            $type,
+            'Live lead moi',
+            $lead->customerDisplayName() . ' de lai nhu cau ' . $lead->leadTypeLabel() . '.',
+            route('admin.live.leads.show', $lead, false),
+            ['live_lead_id' => $lead->id, 'lead_type' => $lead->lead_type],
+            in_array($lead->lead_type, [LiveLead::TYPE_QUOTE_REQUEST, LiveLead::TYPE_TEST_DRIVE_REQUEST], true)
+                ? \App\Models\AdminNotification::PRIORITY_URGENT
+                : \App\Models\AdminNotification::PRIORITY_HIGH
+        );
 
         return back()->with('success', 'Lux Auto da nhan yeu cau tu livestream. Nhan vien se lien he ban som.');
     }
